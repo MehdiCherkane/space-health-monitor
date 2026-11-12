@@ -1,0 +1,82 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Astro Vital — Crew Health Monitor</title>
+  <meta name="description" content="Self-service health monitoring for astronauts on long-duration space missions.">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <header class="hero">
+    <p class="eyebrow">NASA Space Apps Challenge 2026 · Human Exploration</p>
+    <h1>Astro Vital</h1>
+    <p class="lede">Crew self-check for long-duration missions. Log your indicators, see what needs attention, and act before a small change becomes a mission risk.</p>
+  </header>
+
+  <main>
+    <section class="panel" aria-labelledby="checkin-title">
+      <h2 id="checkin-title">Today's check-in</h2>
+      <form id="checkin-form">
+        <fieldset>
+          <legend>Vital signs</legend>
+          <div class="grid">
+            <label>Heart rate <span class="unit">bpm</span>
+              <input type="number" id="heartRate" min="20" max="220" step="1" required>
+            </label>
+            <label>Blood oxygen <span class="unit">SpO₂ %</span>
+              <input type="number" id="spo2" min="50" max="100" step="0.1" required>
+            </label>
+            <label>Systolic pressure <span class="unit">mmHg</span>
+              <input type="number" id="systolic" min="50" max="250" step="1" required>
+            </label>
+            <label>Diastolic pressure <span class="unit">mmHg</span>
+              <input type="number" id="diastolic" min="30" max="150" step="1" required>
+            </label>
+            <label>Body temperature <span class="unit">°C</span>
+              <input type="number" id="temperature" min="33" max="42" step="0.1" required>
+            </label>
+          </div>
+        </fieldset>
+
+        <fieldset>
+          <legend>Daily habits</legend>
+          <div class="grid">
+            <label>Sleep <span class="unit">hours</span>
+              <input type="number" id="sleep" min="0" max="16" step="0.5" required>
+            </label>
+            <label>Exercise <span class="unit">minutes</span>
+              <input type="number" id="exercise" min="0" max="300" step="5" required>
+            </label>
+            <label>Stress <span class="unit">1 low – 10 high</span>
+              <input type="number" id="stress" min="1" max="10" step="1" required>
+            </label>
+          </div>
+        </fieldset>
+
+        <button type="submit">Evaluate health status</button>
+      </form>
+    </section>
+
+    <section class="panel" aria-labelledby="assessment-title">
+      <h2 id="assessment-title">Assessment</h2>
+      <div id="results" aria-live="polite">
+        <p class="muted">Complete a check-in to see your status.</p>
+      </div>
+    </section>
+
+    <section class="panel" aria-labelledby="history-title">
+      <h2 id="history-title">Check-in history</h2>
+      <p class="muted">Saved on this device only — no data leaves the spacecraft.</p>
+      <div id="history"></div>
+      <button type="button" id="clear-history" class="ghost" hidden>Clear history</button>
+    </section>
+  </main>
+
+  <footer>
+    <p>Ranges are general adult reference values, not a medical diagnosis. On a real mission, always defer to your flight surgeon.</p>
+  </footer>
+
+  <script src="script.js"></script>
+</body>
+</html>

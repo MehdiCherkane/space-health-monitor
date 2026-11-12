@@ -1,0 +1,8 @@
+# Code owners are automatically requested for review on pull requests.
+# https://docs.github.com/en/repositories/managing-your-repositorys-settings-and-features/customizing-your-repository/about-code-owners
+
+* @MehdiCherkane
+
+# Health thresholds and their tests must be reviewed together.
+/script.js @MehdiCherkane
+/test.js @MehdiCherkane
