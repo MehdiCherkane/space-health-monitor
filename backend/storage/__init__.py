@@ -1,5 +1,5 @@
 """Local SQLite persistence. See `store.py`."""
 
-from .store import Storage, SubmissionConflict
+from .store import DuplicateSeedError, Storage, SubmissionConflict
 
-__all__ = ["Storage", "SubmissionConflict"]
+__all__ = ["DuplicateSeedError", "Storage", "SubmissionConflict"]

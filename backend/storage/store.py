@@ -66,6 +66,44 @@ class SubmissionConflict(Exception):
     """A submission ID was replayed with a different validated payload."""
 
 
+class DuplicateSeedError(Exception):
+    """Seed input repeats an observation id, so the run cannot be seeded as given."""
+
+
+def _observation_rows(run_id: str, observations: list[dict[str, Any]]) -> list[tuple[Any, ...]]:
+    return [
+        (
+            run_id,
+            row["id"],
+            row.get("subject_id"),
+            row["metric"],
+            row["value"],
+            row["unit"],
+            row["observed_at"],
+            row["source_id"],
+            row["provenance"],
+            row.get("source_timestamp"),
+            json.dumps(row["metadata"]) if row.get("metadata") is not None else None,
+        )
+        for row in observations
+    ]
+
+
+def _insert_seed_rows(
+    connection: sqlite3.Connection, run_id: str, observations: list[dict[str, Any]]
+) -> None:
+    """Insert seed rows with a plain INSERT: a repeated id is an error, never ignored."""
+    try:
+        connection.executemany(
+            "INSERT INTO observations (run_id, id, subject_id, metric, value, unit,"
+            " observed_at, source_id, provenance, source_timestamp, metadata)"
+            " VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)",
+            _observation_rows(run_id, observations),
+        )
+    except sqlite3.IntegrityError as error:
+        raise DuplicateSeedError(f"duplicate seed observation in run {run_id}: {error}") from error
+
+
 def _observation(row: sqlite3.Row) -> dict[str, Any]:
     value = row["value"]
     if isinstance(value, float) and value.is_integer():
@@ -109,9 +147,17 @@ class Storage:
         finally:
             connection.close()
 
-    def create_run(self, run: dict[str, str]) -> None:
+    def create_run(
+        self, run: dict[str, str], observations: list[dict[str, Any]] | None = None
+    ) -> None:
+        """Create a run and, when seeds are supplied, write them in one transaction.
+
+        A seed failure rolls back the run itself, so a run is never left orphaned or
+        half-seeded with observations the caller did not supply.
+        """
         connection = self._connect()
         try:
+            connection.execute("BEGIN IMMEDIATE")
             connection.execute(
                 "INSERT INTO runs (run_id, scenario_id, initial_as_of, range_start, range_end)"
                 " VALUES (?, ?, ?, ?, ?)",
@@ -123,6 +169,15 @@ class Storage:
                     run["range_end"],
                 ),
             )
+            if observations:
+                _insert_seed_rows(connection, run["run_id"], observations)
+            connection.execute("COMMIT")
+        except BaseException:
+            try:
+                connection.execute("ROLLBACK")
+            except sqlite3.Error:
+                pass
+            raise
         finally:
             connection.close()
 
@@ -137,6 +192,14 @@ class Storage:
         finally:
             connection.close()
         return dict(row) if row else None
+
+    def count_runs(self) -> int:
+        connection = self._connect()
+        try:
+            row = connection.execute("SELECT COUNT(*) AS total FROM runs").fetchone()
+        finally:
+            connection.close()
+        return int(row["total"])
 
     def count_observations(self, run_id: str) -> int:
         connection = self._connect()
@@ -186,33 +249,17 @@ class Storage:
         return rows
 
     def seed_observations(self, run_id: str, observations: list[dict[str, Any]]) -> None:
-        """Insert seed observations for a run atomically."""
+        """Merge seed rows into an existing run atomically.
+
+        A repeated observation id raises `DuplicateSeedError` and rolls back the whole
+        batch; seed input is never silently ignored.
+        """
         if not observations:
             return
         connection = self._connect()
         try:
             connection.execute("BEGIN IMMEDIATE")
-            connection.executemany(
-                "INSERT OR IGNORE INTO observations (run_id, id, subject_id, metric, value, unit,"
-                " observed_at, source_id, provenance, source_timestamp, metadata)"
-                " VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)",
-                [
-                    (
-                        run_id,
-                        row["id"],
-                        row.get("subject_id"),
-                        row["metric"],
-                        row["value"],
-                        row["unit"],
-                        row["observed_at"],
-                        row["source_id"],
-                        row["provenance"],
-                        row.get("source_timestamp"),
-                        json.dumps(row["metadata"]) if row.get("metadata") is not None else None,
-                    )
-                    for row in observations
-                ],
-            )
+            _insert_seed_rows(connection, run_id, observations)
             connection.execute("COMMIT")
         except BaseException:
             try:
