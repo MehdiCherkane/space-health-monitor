@@ -1,0 +1,190 @@
+{
+  "schema_version": 1,
+  "fixture_id": "crew-demo-sleep-vigilance-v1",
+  "scenario_id": "sleep_vigilance",
+  "subject_id": "crew-demo-1",
+  "observations": [
+    {
+      "id": "base-sleep-1",
+      "subject_id": "crew-demo-1",
+      "metric": "sleep_duration",
+      "value": 450,
+      "unit": "min",
+      "observed_at": "2026-01-01T07:00:00Z",
+      "source_id": "crew_sleep_log",
+      "provenance": "SYNTHETIC"
+    },
+    {
+      "id": "base-sleep-2",
+      "subject_id": "crew-demo-1",
+      "metric": "sleep_duration",
+      "value": 440,
+      "unit": "min",
+      "observed_at": "2026-01-02T07:00:00Z",
+      "source_id": "crew_sleep_log",
+      "provenance": "SYNTHETIC"
+    },
+    {
+      "id": "base-sleep-3",
+      "subject_id": "crew-demo-1",
+      "metric": "sleep_duration",
+      "value": 450,
+      "unit": "min",
+      "observed_at": "2026-01-03T07:00:00Z",
+      "source_id": "crew_sleep_log",
+      "provenance": "SYNTHETIC"
+    },
+    {
+      "id": "base-sleep-4",
+      "subject_id": "crew-demo-1",
+      "metric": "sleep_duration",
+      "value": 460,
+      "unit": "min",
+      "observed_at": "2026-01-04T07:00:00Z",
+      "source_id": "crew_sleep_log",
+      "provenance": "SYNTHETIC"
+    },
+    {
+      "id": "base-sleep-5",
+      "subject_id": "crew-demo-1",
+      "metric": "sleep_duration",
+      "value": 445,
+      "unit": "min",
+      "observed_at": "2026-01-05T07:00:00Z",
+      "source_id": "crew_sleep_log",
+      "provenance": "SYNTHETIC"
+    },
+    {
+      "id": "sleep-08",
+      "subject_id": "crew-demo-1",
+      "metric": "sleep_duration",
+      "value": 380,
+      "unit": "min",
+      "observed_at": "2026-01-08T07:00:00Z",
+      "source_id": "crew_sleep_log",
+      "provenance": "SYNTHETIC"
+    },
+    {
+      "id": "sleep-09",
+      "subject_id": "crew-demo-1",
+      "metric": "sleep_duration",
+      "value": 370,
+      "unit": "min",
+      "observed_at": "2026-01-09T07:00:00Z",
+      "source_id": "crew_sleep_log",
+      "provenance": "SYNTHETIC"
+    },
+    {
+      "id": "sleep-10",
+      "subject_id": "crew-demo-1",
+      "metric": "sleep_duration",
+      "value": 420,
+      "unit": "min",
+      "observed_at": "2026-01-10T07:00:00Z",
+      "source_id": "crew_sleep_log",
+      "provenance": "SYNTHETIC"
+    },
+    {
+      "id": "base-reaction-1",
+      "subject_id": "crew-demo-1",
+      "metric": "reaction_time",
+      "value": 245,
+      "unit": "ms",
+      "observed_at": "2026-01-01T09:00:00Z",
+      "source_id": "reaction_task",
+      "provenance": "SYNTHETIC",
+      "metadata": {
+        "task_version": "demo-rt-v1",
+        "input_profile": "seeded-demo",
+        "trial_count": 5,
+        "false_starts": 0,
+        "completed": true
+      }
+    },
+    {
+      "id": "base-reaction-2",
+      "subject_id": "crew-demo-1",
+      "metric": "reaction_time",
+      "value": 250,
+      "unit": "ms",
+      "observed_at": "2026-01-02T09:00:00Z",
+      "source_id": "reaction_task",
+      "provenance": "SYNTHETIC",
+      "metadata": {
+        "task_version": "demo-rt-v1",
+        "input_profile": "seeded-demo",
+        "trial_count": 5,
+        "false_starts": 0,
+        "completed": true
+      }
+    },
+    {
+      "id": "base-reaction-3",
+      "subject_id": "crew-demo-1",
+      "metric": "reaction_time",
+      "value": 255,
+      "unit": "ms",
+      "observed_at": "2026-01-03T09:00:00Z",
+      "source_id": "reaction_task",
+      "provenance": "SYNTHETIC",
+      "metadata": {
+        "task_version": "demo-rt-v1",
+        "input_profile": "seeded-demo",
+        "trial_count": 5,
+        "false_starts": 0,
+        "completed": true
+      }
+    },
+    {
+      "id": "base-reaction-4",
+      "subject_id": "crew-demo-1",
+      "metric": "reaction_time",
+      "value": 248,
+      "unit": "ms",
+      "observed_at": "2026-01-04T09:00:00Z",
+      "source_id": "reaction_task",
+      "provenance": "SYNTHETIC",
+      "metadata": {
+        "task_version": "demo-rt-v1",
+        "input_profile": "seeded-demo",
+        "trial_count": 5,
+        "false_starts": 0,
+        "completed": true
+      }
+    },
+    {
+      "id": "base-reaction-5",
+      "subject_id": "crew-demo-1",
+      "metric": "reaction_time",
+      "value": 252,
+      "unit": "ms",
+      "observed_at": "2026-01-05T09:00:00Z",
+      "source_id": "reaction_task",
+      "provenance": "SYNTHETIC",
+      "metadata": {
+        "task_version": "demo-rt-v1",
+        "input_profile": "seeded-demo",
+        "trial_count": 5,
+        "false_starts": 0,
+        "completed": true
+      }
+    },
+    {
+      "id": "reaction-10",
+      "subject_id": "crew-demo-1",
+      "metric": "reaction_time",
+      "value": 310,
+      "unit": "ms",
+      "observed_at": "2026-01-10T09:01:00Z",
+      "source_id": "reaction_task",
+      "provenance": "SYNTHETIC",
+      "metadata": {
+        "task_version": "demo-rt-v1",
+        "input_profile": "seeded-demo",
+        "trial_count": 5,
+        "false_starts": 0,
+        "completed": true
+      }
+    }
+  ]
+}
