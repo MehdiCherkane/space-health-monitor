@@ -1,5 +1,9 @@
 # El Mahdi kickoff handoff
 
+Current ownership is in the [team update](../plans/team-update.md):
+Amine owns the dashboard, Nassim owns the shared frontend UI/UX layer, and Fadoua owns
+fixtures and evidence/demo. The original kickoff notes below are historical.
+
 Update after kickoff: PR #1 is merged at `533309242e58985dfa919225b9c2d515c7585872`.
 El Mahdi confirmed the interface in the working session. The initial statuses below
 describe the kickoff review; see [engine handoff](engine-handoff.md) for current progress.
@@ -38,7 +42,7 @@ Review the proposed evaluator section of `contracts/v1.md` and confirm or amend:
 4. The Example B input/output distinction and the disabled-resource interpretation.
 
 Hamza also supplies frontend props/types and chooses the test/dependency setup in his
-owned paths. Hajar and Hamza still own the crew seed shape and reaction observation IDs.
+owned paths. D2 is settled in `contracts/v1.md`: Fadoua writes the seed file and Hamza loads it.
 Fadoua cross-checks the examples and arithmetic independently.
 
 After agreement, record who confirmed which decisions, update the contract status and
@@ -110,11 +114,13 @@ These are contract checks. They do not verify the engine, API or historical arch
 
 - **El Mahdi:** EM-07 policy → EM-08 selection → EM-09–EM-11 freshness/incidents →
   EM-12–EM-14 behavioral/missing/comparability paths → EM-15 tests and EM-16 explanation.
-- **Hamza:** shared shell/types and preview endpoints; obtain the actual RadLab CSV
-  immediately, then importer, SQLite and evaluator wiring.
+- **Hamza:** shared shell/types, API/state wiring, fixture loader, RadLab archive/importer
+  and A01–A04; SQLite, E2E and evaluator integration.
+- **Nassim:** build the shared UI kit and state gallery, pair with Amine and Mohsine on
+  the dashboard/check-in visuals, and run the visual acceptance pass.
 - **Amine / Mohsine:** work in their respective feature folders from the examples,
   agreed props and labeled stub callbacks.
-- **Hajar:** finalize the 14-row fixture after D2/D3 and seed shape are settled.
+- **Fadoua:** write the 14-row fixture to the settled D2 shape, then evidence and acceptance work.
 - **Fadoua:** evidence review and acceptance/pitch preparation; final verification
   must use the merged build with Wi-Fi disabled before launch.
 

@@ -21,7 +21,7 @@ def load(relative):
 
 
 def crew_fixture():
-    """Test-only IDs for reaction rows; Hajar owns the production seed IDs."""
+    """Test-only IDs; production IDs are fixed by contract D2 (`base-reaction-*`, `reaction-10`)."""
     rows = deepcopy(load("contracts/examples/sleep-vigilance-missing.json")["observations"])
     for row in rows:
         row["provenance"] = "SYNTHETIC"

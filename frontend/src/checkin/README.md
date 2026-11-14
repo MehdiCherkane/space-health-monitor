@@ -277,7 +277,7 @@ check needs the shared shell/toolchain or API that is not in this checkout (plan
 | MO-13 component-level spy checks (cancel zero calls, one completed task submits once, available/unavailable rendering) | **Blocked** | Local harness 13/13, not reproducible from this branch until the shell toolchain merges. |
 | MO-14 integrated verification B01/B04/B05 | **Blocked** | No shell/API or merged build in this checkout. |
 | MO-15 PR handoff | **Pass** | This README + PR text below. |
-| B01 insufficient-data view at 09:00Z | **Blocked** | Needs Hamza shell + Hajar seeded run. |
+| B01 insufficient-data view at 09:00Z | **Blocked** | Needs Hamza shell + Fadoua seeded run. |
 | B04 unavailable reaction path, assessment pending | **Blocked** | Component fallback source complete; integrated assessment is shell/dashboard wiring. |
 | B05 submission retry/409/run isolation | **Blocked** | Server behavior is HZ-12; client retry/id semantics verified in `submission.test.mjs`. |
 

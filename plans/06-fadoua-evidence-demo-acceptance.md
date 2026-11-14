@@ -1,4 +1,6 @@
-# Fadoua · Evidence, demo and acceptance
+# Fadoua · Synthetic fixture, evidence, demo and acceptance
+
+> **Current ownership:** Read [the team update](team-update.md) first. Amine owns the dashboard, Nassim owns the shared frontend UI/UX layer, and Fadoua owns the crew fixture and evidence/demo. That update overrides older owner names, branch suggestions and path restrictions below; technical requirements and task IDs remain unchanged.
 
 **Project:** NASA Space Apps — offline astronaut health monitoring prototype (two-day team plan)
 **How to use this file:** give it to your agent session together with the repo path and branch name. Sections 4–5 are your task list; Part A is your original brief; Part C is the shared contract/rules copied verbatim from the plan.
@@ -8,14 +10,14 @@
 | Item | Value |
 |---|---|
 | Branch | `build/demo-qa` |
-| You own | Evidence notes, manual acceptance checklist, pitch and recording |
-| Write only in | `evidence/`, `acceptance/`, `demo/` |
+| You own | Synthetic crew fixture and fixture checks, evidence notes, manual acceptance checklist, pitch and recording |
+| Write only in | `fixtures/crew/`, `tests/fixtures/`, `evidence/`, `acceptance/`, `demo/` |
 | Read-only for you | Everything else. Any rule-configuration change goes to El Mahdi |
-| Day 1 target | Prepare the walkthrough, source labels and acceptance steps |
+| Day 1 target | Deliver the 14-row fixture and checks first, then continue evidence, walkthrough and acceptance preparation |
 | Day 2 target | Run the offline demo on the merged build, record it and prepare submission text |
-| Checks you must pass | A01, B02, X01 must be reproducible by a teammate from your checklist; you co-own A01, B02, X01 |
-| You unblock | Everyone (checklist), El Mahdi (submission draft review) |
-| You depend on | El Mahdi (contract/examples), Hamza (launch command), Amine/Mohsine (UI labels), Hajar (numbers) |
+| Checks you must pass | Fixture arithmetic and variants B01–B03; co-own A01 with Hamza, B02, B03 and X01; checklist remains independently reproducible |
+| You unblock | Hamza (crew fixture), El Mahdi (fixture/engine checks), everyone (checklist), submission review |
+| You depend on | El Mahdi (contract, D2/D3, independent fixture/engine check), Hamza (loader and launch), Amine (dashboard labels), Mohsine (check-in labels), Nassim (visual QA and screenshots) |
 
 ## 1. Operating rules for your agent session (read first)
 
@@ -67,13 +69,15 @@
 | Assessment states | `observed`, `watch`, `insufficient_data`. Source states: `current`, `stale`, `missing`, `invalid`, `conflicting`. Incident states: `open`, `resolved` |
 | HTTP | Create run `201`; unknown run `404`; invalid payload/metric/source/unit/time range `422`; first submission `201`; identical retry `200` (same IDs); same submission ID with a different payload `409` |
 
-### 3.2 Things the plan does NOT settle (do not guess — ask the owner)
+### 3.2 Decisions and open items
+
+D1 and D3–D6 are settled in `contracts/v1.md`; D2 is settled there too. Treat those rows as reference, not open questions. D7, D8 retry confirmation, D10 and D11 remain open; do not invent values.
 
 | # | Open item | Owner to decide | Who is affected |
 |---|---|---|---|
 | D1 | Format of **real importer** observation IDs. Example IDs like `d1-231225` are *opaque fixture IDs*; the real importer generates stable IDs from source + normalized time. Tests against the integrated app must not hard-code example IDs unless the contract defines the format | El Mahdi + Hamza | Hamza, Amine, Fadoua, tests |
-| D2 | IDs for the 5 reaction-baseline rows and the 310 ms sample row in the crew fixture | Hajar + Hamza | Hajar, Hamza, El Mahdi |
-| D3 | Values of `trial_count` and `false_starts` on seeded reaction rows | El Mahdi | Hajar, Hamza |
+| D2 | Reaction IDs and seed-file shape are fixed in `contracts/v1.md`: `base-reaction-1`…`base-reaction-5`, `reaction-10`; object with `schema_version`, `fixture_id`, `scenario_id`, `subject_id`, `observations` | Settled by El Mahdi; Fadoua writes, Hamza loads (HZ-11) |
+| D3 | Values of `trial_count` and `false_starts` on seeded reaction rows | El Mahdi | Fadoua, Hamza |
 | D4 | Metadata **key name** for the browser's real capture time (plan says "record capture time separately in metadata") | El Mahdi + Hamza | Mohsine, Hamza |
 | D5 | Reaction baseline id (only `crew-demo-sleep-v1` appears in the plan), exact `unavailable_reason` text, assessment title when the result is `observed`, and the full list of `reason_code` values beyond those in the two examples | El Mahdi (publish in `contracts/v1.md`) | Amine, Mohsine, Fadoua |
 | D6 | Status code when `POST …/observations` is sent to a `radlab_stale` run (plan says behavioral only and "validates scope"; `422` is the natural fit) and when `as_of` is outside the run range (plan: invalid time range → `422`) | El Mahdi + Hamza | Hamza |
@@ -181,7 +185,7 @@ Record the full two-minute walkthrough offline from a fresh launch on the merged
 | El Mahdi | Discrepancy list, claim table, submission draft | Contract/examples, rule IDs |
 | Hamza | A01/X01 results, launch feedback | Launch command and expected screen |
 | Amine / Mohsine | Wording feedback | Control names (D11) |
-| Hajar | — | Numbers for B02 |
+| Fadoua | — | Numbers for B02 |
 
 ## 6. Handoff checklist and PR template
 
@@ -259,7 +263,7 @@ flowchart LR
 
 ### 3. Runtime contract · commit at kickoff
 
-El Mahdi commits `contracts/v1.md` and the two JSON examples below. Hamza agrees on the evaluator call with him before either implementation starts. Fadoua checks that the examples and demo instructions agree. The two UI owners can start from the examples and stubbed callbacks.
+El Mahdi commits `contracts/v1.md` and the two JSON examples below. Hamza agrees on the evaluator call with him before either implementation starts. Fadoua checks that the examples and demo instructions agree. The frontend owners can start from the examples and stubbed callbacks.
 
 #### Endpoints and time
 
@@ -364,14 +368,15 @@ Keep fatigue optional and descriptive. Mood and stress stay in the check-in. A b
 
 | Teammate | Owns | Day 1 target | Day 2 target |
 |---|---|---|---|
-| **El Mahdi** · `build/engine` | Shared contract, deterministic engine, rule config, PR review and merges | Publish contract/examples, then implement and test both rules as pure functions | Review wiring and edge cases, merge passing PRs and approve the submission build |
-| **Hamza** · `build/replay-api` | FastAPI, SQLite, RadLab ingestion and replay, UI-to-API wiring, local launch | Run the local app with stub states, then wire real RadLab replay | Wire crew input and persistence, verify offline launch and reset |
-| **Amine** · `build/dashboard` | Dashboard, readings, replay controls, Why drawer and incident list | Render the two supplied JSON examples with labeled data | Verify recovery and the missing-input flow against the integrated app |
-| **Mohsine** · `build/checkin` | Crew check-in and short local reaction task | Build a standalone form against a fake callback | Submit a completed result and verify skip, cancel and unavailable states |
-| **Hajar** · `build/fixtures` | Labeled synthetic crew fixture and expected scenario checkpoints | Deliver seed observations and fixture checks | Verify the behavioral run against those fixed checkpoints |
-| **Fadoua** · `build/demo-qa` | Evidence notes, manual acceptance checklist, pitch and recording | Prepare the walkthrough, source labels and acceptance steps | Run the offline demo on the merged build, record it and prepare submission text |
+| **El Mahdi** · `build/engine` | Shared contract, deterministic engine, rule config, PR review and merges | Keep contract/engine green; publish D2/D3 | Review integrations, merge passing PRs, approve the submission build |
+| **Hamza** · `build/replay-api` | FastAPI, SQLite, fixture loader, shell/adapter and local launch | Loader and real state path; publish dashboard props | Wire dashboard/check-in, offline launch, B05 |
+| **Amine** · `build/dashboard` | Dashboard, readings, replay controls, Why drawer and incident list | Render the two JSON examples with stub props | Verify recovery and missing-input flow on the integrated app |
+| **Mohsine** · `build/checkin` | Crew check-in and short local reaction task | Standalone form against a fake callback | Submit a completed result; verify skip, cancel and unavailable states |
+| **Fadoua** · `build/demo-qa` | Labeled synthetic crew fixture, evidence, acceptance, pitch and recording | Deliver the 14-row fixture and checks | Run offline acceptance, record and prepare submission text |
+| **Nassim** · `build/frontend-ui` | Shared UI kit, design tokens, dashboard/check-in visual integration, accessibility and visual QA | UI kit and state gallery; pair with Amine/Mohsine | Integrate, verify responsive/offline visuals, support X01 |
 
-Amine, Mohsine, Hajar and Fadoua can start from their brief below without reading either research repository. Each person runs the acceptance check in their brief and attaches the result to their PR. Use the existing tooling and dependency manifests. Ask El Mahdi to coordinate a shared-file change before editing it.
+
+Amine, Mohsine, Fadoua and Nassim can start from their brief below without reading either research repository. Each person runs the acceptance check in their brief and attaches the result to their PR. Use the existing tooling and dependency manifests. Ask El Mahdi to coordinate a shared-file change before editing it.
 
 #### Instructions to paste into every agent session
 
@@ -400,9 +405,9 @@ El Mahdi writes these into the shared contract. Hamza confirms the API and compo
 
 #### Git and handoffs
 
-1. El Mahdi publishes the approved contract and examples. Hamza publishes the minimal shared shell and adapter types from his owned paths. Tag the commit or post its SHA as the shared base. El Mahdi and Hamza can work on engine and replay in parallel after agreeing on the evaluator signature. Amine and Mohsine can start from fixture props and stub callbacks. Hajar and Fadoua can start from the seed values and checklist.
+1. El Mahdi publishes the approved contract and examples. Hamza publishes the minimal shared shell and adapter types from his owned paths. Tag the commit or post its SHA as the shared base. El Mahdi and Hamza can work on engine and replay in parallel after agreeing on the evaluator signature. Amine, Mohsine and Nassim can start from fixture props and stub callbacks. Fadoua can start from the seed values and checklist.
 2. Keep one branch per owner and use separate worktrees when agents share a checkout. El Mahdi owns the contract and all merges to `main`. Hamza owns the shared app entry points, API client, dependency manifests, lockfiles and launch wiring. The four feature branches never need to edit these shared files. Hamza mounts their exports after they land. On a shared-file conflict or pre-existing edit, send the path and intended diff to its owner and continue in your own files.
-3. Merge Hajar's fixture, Fadoua's draft checklist, Amine's dashboard and Mohsine's check-in when their standalone checks pass. Their PRs may mark integrated checks pending. Merge El Mahdi's tested engine and Hamza's real integration after the engine signature, fixture and UI exports are available. Hamza reviews the engine PR. Fadoua runs the final acceptance checks against the merged build.
+3. Merge Fadoua's fixture and checklist, Amine's dashboard, Mohsine's check-in and Nassim's shared UI kit when their standalone checks pass. Their PRs may mark integrated checks pending. Merge El Mahdi's tested engine and Hamza's real integration after the engine signature, fixture, UI kit and feature exports are available. Hamza reviews the engine PR. Fadoua runs the final acceptance checks against the merged build.
 4. A contract change has one PR from El Mahdi with updated examples and the impacted owners listed. Those owners update from that commit. To review a feature PR, check changed paths, runnable verification, reported blockers and any source claims. Final demo claims and feature freeze use the verified integrated build.
 
 ### 6. Two-day checkpoints
@@ -411,7 +416,7 @@ El Mahdi writes these into the shared contract. Hamza confirms the API and compo
 |---|---|---|
 | **Day 1 · Kickoff** | El Mahdi and Hamza commit the contract, two examples and stub paths. Each teammate starts with their named brief and one acceptance check. | Publish the example JSON first. Amine and Mohsine can start with local props and fake callbacks. |
 | **Day 1 · First integrated check** | The dashboard renders both states from the examples. The RadLab adapter reads the real file and the engine can produce the stale state. | Use fixed checkpoints at 23:12:25, 23:20:00 and 23:30:00. |
-| **Day 1 · Before stopping** | RadLab replay works end to end. Hajar’s crew fixture passes its arithmetic checks. The crew screen renders the missing-input state. | Land the missing and seeded sample states before the live task. |
+| **Day 1 · Before stopping** | RadLab replay works end to end. Fadoua’s crew fixture passes its arithmetic checks. The crew screen renders the missing-input state. | Land the missing and seeded sample states before the live task. |
 | **Day 2 · First integrated check** | Both scenarios run through the local API. Verify the crew check-in, unavailable-resource path, incident recovery and reset. | Preserve the seeded behavioral walkthrough. Defer chart polish, continuous playback and local AI. |
 | **Day 2 · Before the team’s submission checkpoint** | Freeze features. Run the offline acceptance checks, record a backup, fix blockers and verify submission. | Keep the last passing build and recording. |
 
@@ -420,12 +425,12 @@ El Mahdi writes these into the shared contract. Hamza confirms the API and compo
 | ID | Owner(s) | Check |
 |---|---|---|
 | A01 | Hamza, Fadoua | Raw CSV SHA-256 matches the checksum below. Import 84 DosTel1 and 96 DosTel2 records. No astronaut subject is assigned to either detector. |
-| A02 | Hamza, El Mahdi | At `23:12:25` both sources are current. At `23:17:25` DosTel1 is current at exactly 300 s. One second later it is stale. |
+| A02 | El Mahdi, Hamza | At `23:12:25` both sources are current. At `23:17:25` DosTel1 is current at exactly 300 s. One second later it is stale. |
 | A03 | El Mahdi, Amine | At `23:20:00`, ages are 455 s and 0 s. Why shows both observation IDs or source/time/value details. Advancing inside the gap shows one open incident. |
 | A04 | Hamza, El Mahdi, Amine | At `23:30:00`, both are current. One resolved DosTel1 incident remains. Seek to before recovery and verify that no future reading or closure is shown. |
 | B01 | El Mahdi, Mohsine, Amine | At Jan 10 `09:00:00Z`, the result is insufficient data. Why shows 380, 370 and 420 min against 450 min. Mood/fatigue/stress can be blank. |
-| B02 | El Mahdi, Hajar, Fadoua | At `09:01:00Z`, the seeded 310 ms sample is 24% above the 250 ms baseline. Both required conditions are true. Why shows the baseline and observed values. |
-| B03 | El Mahdi, Hajar, Mohsine | Replace the sample in a test fixture with a comparable 270 ms result. Expect `observed`. Remove one required sleep night or make the current reaction test incomparable. Expect `insufficient_data`. |
+| B02 | El Mahdi, Fadoua | At `09:01:00Z`, the seeded 310 ms sample is 24% above the 250 ms baseline. Both required conditions are true. Why shows the baseline and observed values. |
+| B03 | El Mahdi, Fadoua, Mohsine | Replace the sample in a test fixture with a comparable 270 ms result. Expect `observed`. Remove one required sleep night or make the current reaction test incomparable. Expect `insufficient_data`. |
 | B04 | El Mahdi, Mohsine, Amine | Disable the task resource. Show a reason and the available input-review action. Assessment stays pending. |
 | B05 | El Mahdi, Hamza, Mohsine | Submit the same check-in twice with one submission ID. Same IDs return and one batch is stored. Changed payload with the same ID returns 409. New run has only its own seeded records. |
 | X01 | Hamza, Amine, Fadoua | Switch off Wi-Fi before launching the prepared build. Both scenarios, evidence drawers, local inputs and reset work. Repeat the two demos from a fresh launch. |
