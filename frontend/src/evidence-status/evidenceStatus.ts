@@ -284,8 +284,18 @@ function meaningFor(assessment: Assessment, state: StateEnvelope): string {
       if (reactionMissing) {
         return 'A comparable reaction result is needed before this comparison can be completed.'
       }
-      if (assessment.missing_inputs.some((input) => input.startsWith('sleep_'))) {
-        return 'A required sleep input is missing, so the comparison cannot be completed.'
+      const sleep = sourceForMetric(state, 'sleep_duration')
+      const sleepInvalid =
+        sleep?.state === 'invalid' || sleep?.reason_code === 'invalid_observation'
+      if (sleepInvalid) {
+        // A present invalid observation is not an absent one (review P2).
+        return 'A returned sleep reading is invalid, so the comparison cannot be completed.'
+      }
+      if (assessment.missing_inputs.includes('sleep_baseline')) {
+        return 'The sleep baseline is incomplete, so the comparison cannot be completed.'
+      }
+      if (assessment.missing_inputs.includes('sleep_duration')) {
+        return 'A required sleep log is missing, so the comparison cannot be completed.'
       }
       const returned = assessment.supporting_evidence.find(
         (item) => item.code === 'sleep_inputs_incomplete',

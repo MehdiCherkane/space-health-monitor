@@ -32,6 +32,276 @@ const OBSERVED_B = fixture('state-10')
 const INCOMPARABLE_B = fixture('state-11')
 const UNAVAILABLE = fixture('state-12')
 
+// Actual engine output captured for this regression. It was produced with
+// backend.engine.evaluate("sleep_vigilance", "review-invalid-sleep", "2026-01-10T09:01:00Z",
+// rows, resources, policy) where rows are fixtures/crew/sleep-vigilance.json with
+// sleep-09 value set to -1, resources = rules/demo-v1.json resources, and policy =
+// rules/demo-v1.json. No field is hand-edited below.
+const INVALID_SLEEP_ENGINE_OUTPUT: StateEnvelope = {
+  "schema_version": 1,
+  "run_id": "review-invalid-sleep",
+  "scenario_id": "sleep_vigilance",
+  "as_of": "2026-01-10T09:01:00Z",
+  "sources": [
+    {
+      "source_id": "crew_sleep_log",
+      "metric": "sleep_duration",
+      "state": "invalid",
+      "last_observation_id": "sleep-09",
+      "age_seconds": 93660,
+      "reason_code": "invalid_observation"
+    },
+    {
+      "source_id": "reaction_task",
+      "metric": "reaction_time",
+      "state": "current",
+      "last_observation_id": "reaction-10",
+      "age_seconds": 0,
+      "reason_code": "scheduled_input_received"
+    }
+  ],
+  "observations": [
+    {
+      "id": "base-sleep-1",
+      "subject_id": "crew-demo-1",
+      "metric": "sleep_duration",
+      "value": 450,
+      "unit": "min",
+      "observed_at": "2026-01-01T07:00:00Z",
+      "source_id": "crew_sleep_log",
+      "provenance": "SYNTHETIC"
+    },
+    {
+      "id": "base-reaction-1",
+      "subject_id": "crew-demo-1",
+      "metric": "reaction_time",
+      "value": 245,
+      "unit": "ms",
+      "observed_at": "2026-01-01T09:00:00Z",
+      "source_id": "reaction_task",
+      "provenance": "SYNTHETIC",
+      "metadata": {
+        "task_version": "demo-rt-v1",
+        "input_profile": "seeded-demo",
+        "trial_count": 5,
+        "false_starts": 0,
+        "completed": true
+      }
+    },
+    {
+      "id": "base-sleep-2",
+      "subject_id": "crew-demo-1",
+      "metric": "sleep_duration",
+      "value": 440,
+      "unit": "min",
+      "observed_at": "2026-01-02T07:00:00Z",
+      "source_id": "crew_sleep_log",
+      "provenance": "SYNTHETIC"
+    },
+    {
+      "id": "base-reaction-2",
+      "subject_id": "crew-demo-1",
+      "metric": "reaction_time",
+      "value": 250,
+      "unit": "ms",
+      "observed_at": "2026-01-02T09:00:00Z",
+      "source_id": "reaction_task",
+      "provenance": "SYNTHETIC",
+      "metadata": {
+        "task_version": "demo-rt-v1",
+        "input_profile": "seeded-demo",
+        "trial_count": 5,
+        "false_starts": 0,
+        "completed": true
+      }
+    },
+    {
+      "id": "base-sleep-3",
+      "subject_id": "crew-demo-1",
+      "metric": "sleep_duration",
+      "value": 450,
+      "unit": "min",
+      "observed_at": "2026-01-03T07:00:00Z",
+      "source_id": "crew_sleep_log",
+      "provenance": "SYNTHETIC"
+    },
+    {
+      "id": "base-reaction-3",
+      "subject_id": "crew-demo-1",
+      "metric": "reaction_time",
+      "value": 255,
+      "unit": "ms",
+      "observed_at": "2026-01-03T09:00:00Z",
+      "source_id": "reaction_task",
+      "provenance": "SYNTHETIC",
+      "metadata": {
+        "task_version": "demo-rt-v1",
+        "input_profile": "seeded-demo",
+        "trial_count": 5,
+        "false_starts": 0,
+        "completed": true
+      }
+    },
+    {
+      "id": "base-sleep-4",
+      "subject_id": "crew-demo-1",
+      "metric": "sleep_duration",
+      "value": 460,
+      "unit": "min",
+      "observed_at": "2026-01-04T07:00:00Z",
+      "source_id": "crew_sleep_log",
+      "provenance": "SYNTHETIC"
+    },
+    {
+      "id": "base-reaction-4",
+      "subject_id": "crew-demo-1",
+      "metric": "reaction_time",
+      "value": 248,
+      "unit": "ms",
+      "observed_at": "2026-01-04T09:00:00Z",
+      "source_id": "reaction_task",
+      "provenance": "SYNTHETIC",
+      "metadata": {
+        "task_version": "demo-rt-v1",
+        "input_profile": "seeded-demo",
+        "trial_count": 5,
+        "false_starts": 0,
+        "completed": true
+      }
+    },
+    {
+      "id": "base-sleep-5",
+      "subject_id": "crew-demo-1",
+      "metric": "sleep_duration",
+      "value": 445,
+      "unit": "min",
+      "observed_at": "2026-01-05T07:00:00Z",
+      "source_id": "crew_sleep_log",
+      "provenance": "SYNTHETIC"
+    },
+    {
+      "id": "base-reaction-5",
+      "subject_id": "crew-demo-1",
+      "metric": "reaction_time",
+      "value": 252,
+      "unit": "ms",
+      "observed_at": "2026-01-05T09:00:00Z",
+      "source_id": "reaction_task",
+      "provenance": "SYNTHETIC",
+      "metadata": {
+        "task_version": "demo-rt-v1",
+        "input_profile": "seeded-demo",
+        "trial_count": 5,
+        "false_starts": 0,
+        "completed": true
+      }
+    },
+    {
+      "id": "sleep-08",
+      "subject_id": "crew-demo-1",
+      "metric": "sleep_duration",
+      "value": 380,
+      "unit": "min",
+      "observed_at": "2026-01-08T07:00:00Z",
+      "source_id": "crew_sleep_log",
+      "provenance": "SYNTHETIC"
+    },
+    {
+      "id": "sleep-09",
+      "subject_id": "crew-demo-1",
+      "metric": "sleep_duration",
+      "value": -1,
+      "unit": "min",
+      "observed_at": "2026-01-09T07:00:00Z",
+      "source_id": "crew_sleep_log",
+      "provenance": "SYNTHETIC"
+    },
+    {
+      "id": "sleep-10",
+      "subject_id": "crew-demo-1",
+      "metric": "sleep_duration",
+      "value": 420,
+      "unit": "min",
+      "observed_at": "2026-01-10T07:00:00Z",
+      "source_id": "crew_sleep_log",
+      "provenance": "SYNTHETIC"
+    },
+    {
+      "id": "reaction-10",
+      "subject_id": "crew-demo-1",
+      "metric": "reaction_time",
+      "value": 310,
+      "unit": "ms",
+      "observed_at": "2026-01-10T09:01:00Z",
+      "source_id": "reaction_task",
+      "provenance": "SYNTHETIC",
+      "metadata": {
+        "task_version": "demo-rt-v1",
+        "input_profile": "seeded-demo",
+        "trial_count": 5,
+        "false_starts": 0,
+        "completed": true
+      }
+    }
+  ],
+  "assessments": [
+    {
+      "id": "demo-sleep-vigilance",
+      "rule_id": "SLEEP_VIGILANCE",
+      "rule_version": 1,
+      "state": "insufficient_data",
+      "title": "Comparison incomplete",
+      "supporting_evidence": [
+        {
+          "code": "sleep_inputs_incomplete",
+          "observation_ids": [
+            "sleep-08",
+            "sleep-10",
+            "sleep-09",
+            "base-sleep-1",
+            "base-sleep-2",
+            "base-sleep-3",
+            "base-sleep-4",
+            "base-sleep-5"
+          ],
+          "detail": "Required sleep slots or baseline inputs are missing or invalid.",
+          "baseline_id": "crew-demo-sleep-v1"
+        },
+        {
+          "code": "slower_reaction",
+          "observation_ids": [
+            "reaction-10",
+            "base-reaction-1",
+            "base-reaction-2",
+            "base-reaction-3",
+            "base-reaction-4",
+            "base-reaction-5"
+          ],
+          "detail": "Current reaction time is 310 ms against the 250 ms demo baseline (+24.0%).",
+          "baseline_id": "crew-demo-reaction-v1"
+        }
+      ],
+      "conflicting_evidence": [],
+      "missing_inputs": [
+        "sleep_duration"
+      ],
+      "action_ids": [
+        "review_available_inputs"
+      ]
+    }
+  ],
+  "actions": [
+    {
+      "id": "review_available_inputs",
+      "label": "Review available inputs",
+      "required_resource_ids": [],
+      "available": true,
+      "unavailable_reason": null
+    }
+  ],
+  "incidents": []
+}
+
 function props(overrides: Partial<EvidenceStatusPanelProps> = {}): EvidenceStatusPanelProps {
   return {
     state: EXAMPLE_A,
@@ -152,7 +422,7 @@ describe('canonical crew states', () => {
 
     view = await render(<EvidenceStatusPanel {...props({ state: missingNight })} />)
     expect(text(view.container)).toContain('A required sleep log is missing.')
-    expect(text(view.container)).toContain('A required sleep input is missing')
+    expect(text(view.container)).toContain('A required sleep log is missing, so the comparison cannot be completed.')
 
     await view.rerender(
       <EvidenceStatusPanel
@@ -187,6 +457,30 @@ describe('canonical crew states', () => {
     // The invalid reading is returned in observations, so no invented absence is shown.
     expect(view.container.querySelector('.evidence-status__row[data-kind="invalid"]')).not.toBeNull()
   })
+  it('describes an invalid sleep reading without calling it absent (actual engine output)', async () => {
+    view = await render(<EvidenceStatusPanel {...props({ state: INVALID_SLEEP_ENGINE_OUTPUT })} />)
+
+    const content = text(view.container)
+    expect(content).toContain('Comparison incomplete')
+    expect(content).toContain('insufficient data')
+    // A present but invalid sleep observation is reported as invalid, not absent.
+    expect(content).toContain('A required sleep log is invalid.')
+    expect(content).toContain('sleep-09')
+    expect(content).toContain('-1 min')
+    expect(view.container.querySelector('.evidence-status__row[data-kind="invalid"]')).not.toBeNull()
+    expect(
+      view.container.querySelector('.evidence-status__row[data-source-state="invalid"]'),
+    ).not.toBeNull()
+    // The meaning must not contradict the invalid requirement by calling it missing.
+    expect(content).toContain(
+      'A returned sleep reading is invalid, so the comparison cannot be completed.',
+    )
+    expect(content).not.toContain('A required sleep input is missing')
+    expect(content).not.toContain('A required sleep log is missing.')
+    expect(content).not.toContain('Reaction result missing.')
+
+  })
+
 })
 
 describe('radlab freshness and replay', () => {

@@ -19,7 +19,7 @@ limitation). It adds no model, calibrated probability or clinical confidence fie
 |---|---|
 | `evidenceStatus.ts` | Pure presenter: requirements, source rows, actions, meaning, limits. |
 | `EvidenceStatusPanel.tsx` | The exported component and small internal row components. |
-| `EvidenceStatusPanel.test.tsx` | 21 Vitest/jsdom regression tests using canonical gallery states. |
+| `EvidenceStatusPanel.test.tsx` | 22 Vitest/jsdom regression tests using canonical gallery states and one actual engine response. |
 | `evidence-status.css` | Scoped `.evidence-status-*` styles built on the current semantic tokens. |
 | `index.ts` | Barrel export for the module. |
 
@@ -165,14 +165,13 @@ are never treated as a conflict here.
 
 ## Verification
 
-Run on the implementation commit `9ec8f6d` (2026-11-14, UTC), Node 24.22.1,
-npm 11.19.1, Python 3.14.9. The same suites were re-run on the final PR head after
-documentation and copy-only polish; the counts below are unchanged:
+Run at PR head `9ef4390` and re-run on the review-amendment head (2026-11-14, UTC),
+Node 24.22.1, npm 11.19.1, Python 3.14.9. See the PR for the exact amendment SHA:
 
 | Command | Result |
 |---|---|
-| `cd frontend && npx vitest run src/evidence-status/EvidenceStatusPanel.test.tsx` | **21 passed** (1 file) |
-| `npm --prefix frontend test` | **82 Vitest passed** in 8 files, plus **41 Node tests passed** (baseline was 61 Vitest + 41 Node; this change adds 21 Vitest tests) |
+| `cd frontend && npx vitest run src/evidence-status/EvidenceStatusPanel.test.tsx` | **22 passed** (1 file) |
+| `npm --prefix frontend test` | **83 Vitest passed** in 8 files, plus **41 Node tests passed** (baseline was 61 Vitest + 41 Node; this change adds 22 Vitest tests) |
 | `npm --prefix frontend run build` | **passed**: `tsc --noEmit` + Vite, 45 modules |
 | `python3 -m unittest discover -s tests/engine -q` | **43 passed** (engine untouched) |
 
@@ -180,8 +179,25 @@ The tests import the canonical gallery states read-only: Example B missing react
 (state-8), 09:01 watch (state-9), observed 270 ms (state-10), incomparable browser-keyboard
 (state-11), disabled reaction resource (state-12), RadLab stale (state-1), recovery (state-4),
 missing/invalid detector readings (state-5/6) and the hand-edited conflict edge fixture
-(state-7). Edge variants used for unknown identifiers and sleep-baseline gaps are explicit
-clones inside the test file; canonical fixture bytes are unchanged.
+(state-7). The review amendment adds one actual engine response for an invalid sleep
+reading (canonical fixture with `sleep-09` value `-1`, evaluated at `2026-01-10T09:01:00Z`).
+Edge variants used for unknown identifiers and sleep-baseline gaps are explicit clones
+inside the test file; canonical fixture bytes are unchanged.
+
+### Review amendment (PR #17 review at `9ef4390`)
+
+- **P2 fixed:** an invalid sleep observation is no longer summarised as absent. The
+  meaning now reads the returned `crew_sleep_log` invalid state/reason and says
+  "A returned sleep reading is invalid, so the comparison cannot be completed."; the
+  requirement row still says "A required sleep log is invalid." Genuinely missing nights
+  and incomplete baselines keep their own messages. The new DOM regression embeds the
+  actual engine response and fails on the pre-amendment presenter.
+- **P3 fixed:** Fadoua's live walkthrough now captures the keyboard result at mission
+  `09:00` and shows the incomparable state there; seeking `09:01` is labelled as the
+  separate canonical synthetic watch story. Gallery state-11 is explicitly a rendering
+  fixture. No evaluator change was needed.
+- No backend, rules, canonical fixtures, API types, dashboard or other shared files were
+  changed by the amendment.
 
 Not done here: integration into the dashboard (Claude owns that commit), a real API/browser
 acceptance run for this panel, and the full X01 offline rehearsal. The module was not
@@ -189,28 +205,42 @@ mounted in the app during verification; the component tests above are the execut
 
 ## Fadoua: three key states to demonstrate
 
-The panel is not visible in the app until Claude integrates it. These are the exact
-returned states and the copy the panel shows; after integration, the dashboard replay
-controls make each state selectable.
+The panel is not visible in the app until Claude integrates it. Gallery states state-8,
+state-9 and state-11 are **component/rendering fixtures**, not checkpoint instructions.
+For the live walkthrough, use a fresh seeded crew run and keep the replay clock at
+mission `09:00` for the measured result:
 
-1. **Missing evidence** — crew `09:00` (canonical Example B; gallery state-8).
-   Select scenario "Sleep and vigilance", checkpoint `09:00`.
+1. **Missing evidence** — start a **Fresh run** in "Sleep and vigilance". The initial
+   checkpoint is `09:00` (same returned state as canonical Example B / gallery state-8).
    Expected: **Vigilance data missing** / **insufficient data**; requirement
    **"Reaction result missing."**; action **Run reaction check**. The sleep evidence is
    shown as a separate returned row; the baseline reactions are not claimed as a current
    result. With `local_reaction_task` disabled, **Run reaction check** stays visible but
    disabled with **"Reaction check unavailable"**, and the returned fallback
    **Review available inputs** remains available.
-2. **Matched demo rule** — crew `09:01` with the seeded 310 ms sample (gallery state-9).
-   Expected: **Sleep and vigilance change** / **watch**; meaning "The configured sleep and
-   reaction conditions matched. The cause is not established."; returned evidence
-   "Current reaction time is 310 ms against the 250 ms demo baseline (+24.0%)"; no
-   diagnosis, probability or confidence label.
-3. **Recorded but not comparable** — crew `09:01` after a browser-keyboard result
-   (gallery state-11). Expected: **Comparison incomplete** / **insufficient data**;
-   requirement **"Reaction result recorded; comparison with the demo baseline is
-   unavailable."**; if the recorded observation is shown, its real value/provenance/ID
-   (for example "320 ms", "Recorded on this device", `browser-1`) are preserved.
+2. **Recorded but not comparable (live keyboard result)** — stay at mission `09:00` and
+   complete the keyboard reaction check from the check-in form. The submission stores
+   `observed_at` `2026-01-10T09:00:00Z` with `metadata.captured_at` kept separately.
+   When the state reloads at `09:00`, the latest current-session result is the
+   browser-keyboard observation (`input_profile: "browser-keyboard"`), whose source is
+   `current` with reason `incomparable_reaction_result`.
+   Expected: **Comparison incomplete** / **insufficient data**; requirement
+   **"Reaction result recorded; comparison with the demo baseline is unavailable."**;
+   the recorded value/provenance/ID (for example "320 ms", "Recorded on this device",
+   `browser-1`) stay visible.
+3. **Seeded watch story at `09:01` (optional, separate)** — after the keyboard result,
+   seek to `09:01`. The canonical seeded synthetic `reaction-10` (310 ms) is the later
+   current-session result, so the state becomes **Sleep and vigilance change** /
+   **watch**. Meaning: "The configured sleep and reaction conditions matched. The cause is
+   not established."; returned evidence: "Current reaction time is 310 ms against the
+   250 ms demo baseline (+24.0%)". The engine's action list at this checkpoint is
+   **Review available inputs**; it does not offer starting a new reaction check. Return to
+   `09:00` to show the recorded-but-incomparable browser result again.
+
+With an actual live browser result, the incomparable state appears at mission `09:00`;
+seeking `09:01` selects the later canonical synthetic sample instead. Gallery state-11
+(`09:01 · Current but incomparable browser result`) is a rendering fixture produced by
+running the engine on a browser-keyboard input, not a live capture instruction.
 
 Useful extras: RadLab `23:20` shows **DosTel1 stale** with
 "Last reading 7 min 35 s ago." beside **DosTel2 current** and the limitation "A detector
