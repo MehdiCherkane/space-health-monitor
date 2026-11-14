@@ -1,9 +1,9 @@
-import { useMemo, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { CheckInForm } from "./CheckInForm.tsx";
 import { ReactionResultPanel } from "./ReactionResultPanel.tsx";
 import { ReactionTask } from "./ReactionTask.tsx";
+import { ReactionUnavailable } from "./ReactionUnavailable.tsx";
 import {
-  REACTION_UNAVAILABLE_TEXT,
   REVIEW_AVAILABLE_INPUTS_ACTION_ID,
   REVIEW_AVAILABLE_INPUTS_LABEL,
 } from "./constants.ts";
@@ -78,6 +78,24 @@ export function CrewCheckIn(props: CheckInProps) {
   const { values, errors } = useMemo(() => validateCheckInForm(raw), [raw]);
   const availability = useMemo(() => reactionAvailability(actions), [actions]);
 
+  // Keep the newest availability reachable from callbacks. React events normally use the
+  // latest handler, but a retained/stale button must still be rejected at the callback
+  // boundary rather than relying only on the button's disabled state.
+  const availabilityRef = useRef(availability);
+  availabilityRef.current = availability;
+
+  // If the engine withdraws the resource during a measurement, unmount ReactionTask. Its
+  // effects clear the stimulus timer and key listener, and the interrupted run submits
+  // nothing. A later available action starts a fresh instructed task.
+  useEffect(() => {
+    if (reactionView === "task" && !availability.available) {
+      reactionSessionRef.current?.reset();
+      setReactionView("form");
+      setReactionResult(null);
+      setReactionStatus({ kind: "idle" });
+    }
+  }, [reactionView, availability.available]);
+
   if (!checkInSupported(scenarioId)) {
     return <CheckInUnsupported />;
   }
@@ -134,6 +152,11 @@ export function CrewCheckIn(props: CheckInProps) {
   };
 
   const startReaction = () => {
+    // Authoritative gate: availability is re-read from the newest props even when this
+    // callback was captured by an older result view.
+    if (!availabilityRef.current.available) {
+      return;
+    }
     reactionSessionRef.current?.reset();
     setReactionResult(null);
     setReactionStatus({ kind: "idle" });
@@ -167,7 +190,7 @@ export function CrewCheckIn(props: CheckInProps) {
         </p>
       </header>
 
-      {reactionView === "task" ? (
+      {reactionView === "task" && availability.available ? (
         <ReactionTask onCompleted={handleReactionCompleted} onCancel={handleReactionCancel} />
       ) : (
         <>
@@ -190,17 +213,25 @@ export function CrewCheckIn(props: CheckInProps) {
           <section className="crew-checkin__reaction" aria-labelledby="reaction-title">
             <h3 id="reaction-title">Reaction check</h3>
             {reactionResult !== null ? (
-              <ReactionResultPanel
-                result={reactionResult}
-                status={reactionStatus}
-                onRetry={() => {
-                  void submitReactionResult(reactionResult);
-                }}
-                onRunAgain={startReaction}
-              />
-            ) : availability.action === null ? (
-              <p className="crew-checkin__hint">No reaction check is offered for this view.</p>
-            ) : availability.available ? (
+              <>
+                <ReactionResultPanel
+                  result={reactionResult}
+                  status={reactionStatus}
+                  onRetry={() => {
+                    void submitReactionResult(reactionResult);
+                  }}
+                  onRunAgain={startReaction}
+                  actionAvailable={availability.available}
+                />
+                {!availability.available && (
+                  <ReactionUnavailable
+                    reason={unavailableReason}
+                    reviewInputsLabel={reviewInputsLabel}
+                    onReviewInputs={reviewInputs}
+                  />
+                )}
+              </>
+            ) : availability.available && availability.action !== null ? (
               <div className="crew-checkin__actions">
                 <button
                   className="crew-checkin__button"
@@ -215,19 +246,11 @@ export function CrewCheckIn(props: CheckInProps) {
                 </p>
               </div>
             ) : (
-              <div className="crew-checkin__unavailable" role="status">
-                <p className="crew-checkin__unavailable-title">{REACTION_UNAVAILABLE_TEXT}</p>
-                {unavailableReason !== null && unavailableReason !== REACTION_UNAVAILABLE_TEXT && (
-                  <p className="crew-checkin__hint">{unavailableReason}</p>
-                )}
-                <button
-                  className="crew-checkin__button crew-checkin__button--secondary"
-                  type="button"
-                  onClick={reviewInputs}
-                >
-                  {reviewInputsLabel}
-                </button>
-              </div>
+              <ReactionUnavailable
+                reason={unavailableReason}
+                reviewInputsLabel={reviewInputsLabel}
+                onReviewInputs={reviewInputs}
+              />
             )}
           </section>
         </>

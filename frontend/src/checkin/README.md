@@ -22,11 +22,12 @@ starts with an empty form, no reaction task and no pending retry payload.
 - A completed reaction check is **submitted automatically, exactly once**, so a completed
   result is never silently discarded. A failed submission shows the error with a
   **Retry submission** action that reuses the payload and id; **Run reaction check again** is
-  disabled while that retry is outstanding.
-- Unavailable state: when the engine marks `start_reaction_check` unavailable, the fixed
-  title **Reaction check unavailable** is shown with the engine's reason text (when it differs)
-  and the `review_available_inputs` fallback. Sleep or self-reports are never offered as a
-  substitute for the missing reaction result.
+  disabled while that retry is outstanding or while the engine no longer offers the task.
+  The measured result, device badge and trial metadata stay visible in that state.
+- Unavailable state: when the engine marks `start_reaction_check` unavailable **or omits
+  it**, the fixed title **Reaction check unavailable** is shown with the engine's reason text
+  (when it differs) and the `review_available_inputs` fallback. Sleep or self-reports are
+  never offered as a substitute for the missing reaction result.
 
 Everything the UI shows about availability, labels and reasons comes from props; the
 component does not compute statuses and never calls the API itself.
@@ -120,7 +121,14 @@ mission time in `observed_at`:
 - On completion the result is submitted automatically exactly once. A rejection keeps the
   completed result and offers **Retry submission**; **Run reaction check again** is disabled
   while the submission is pending or failed, so a completed result cannot be discarded
-  silently.
+  silently. Retrying the submission reuses the original payload, submission id and mission
+  timestamp; it never starts another measurement or mints a new id.
+- If availability is withdrawn after completion, the result stays visible but restart is
+  disabled and the reason/fallback notice is shown. A callback retained from an earlier
+  available render is rejected at the callback boundary, not just by the disabled button.
+- If availability is withdrawn during an active measurement, the task unmounts immediately.
+  Its stimulus timer and key listener are cleaned up and no result is submitted. If the
+  action becomes available again, **Run reaction check** starts a fresh instructed task.
 - A live `browser-keyboard` result is visible in history but is **not comparable** with the
   seeded `seeded-demo` baseline; the engine reports that as insufficient data. The
   component does not decide comparability.
@@ -157,17 +165,17 @@ callback for every behavioral state.
 
 ## Verification
 
-### Committed, dependency-free tests (reproducible on this branch)
+### Committed tests (frontend workspace)
 
-From `frontend/src/checkin/`:
+From `frontend/`:
 
 ```bash
-node --test
+npm test
 ```
 
-Result: **Pass — 41 tests** on Node v24.21.0 (Node's built-in runner with TypeScript type
-stripping; the repo has no frontend toolchain yet — D10, owned by Hamza). No dependencies
-were added and no manifests changed. Coverage:
+The command runs `vitest run` and then `node --test "src/checkin/*.test.mjs"`. Result on
+2026-11-14 after rebasing on the merged dashboard tests: **Pass — Vitest 7 files / 61
+tests; Node 41 tests**. Coverage:
 
 - `validation.test.mjs` — blanks, sleep range, 0–10 integers, messages, zero kept, snapshots.
 - `payload.test.mjs` — blanks omitted, zero kept, source/metric/unit ids, exactly
@@ -180,33 +188,16 @@ were added and no manifests changed. Coverage:
   produces no result.
 - `viewModel.test.mjs` — action lookup, unavailable reason passed through exactly, fallback
   action, missing actions, scenario scope.
+- `CrewCheckIn.test.tsx` — actual jsdom component regressions: completed result kept while
+  `start_reaction_check` becomes unavailable or absent; retained callback rejected at the
+  callback boundary; unavailable-to-available starts a fresh instructed task; active task
+  interrupted with no submission; failed completed-result retry keeps id/payload/mission
+  time; one pending form request; blank omitted/zero kept; invalid input blocked; 422 shown;
+  changed input gets a new id; measured trials exclude practice, count false starts, ignore
+  held repeats and submit once; cancel/unmount submit nothing.
 
-### Local harness evidence (NOT reproducible from this branch yet)
-
-The shared Vite/Vitest toolchain now exists on `build/replay-api` but is not on this
-standalone branch, so a temporary Vite/Vitest project outside the repository (installed under
-the OS temp folder, importing this folder with a `react` alias) was used while building it:
-
-| Check | Result |
-|---|---|
-| Strict `tsc --noEmit` (Vite-style: `strict`, `verbatimModuleSyntax`, `erasableSyntaxOnly`, `noUnusedLocals`, `allowImportingTsExtensions`, `jsx: react-jsx`) | Pass (local only) |
-| `vite build` of the fixture-preview harness (component + CSS + preview) | Pass (local only) |
-| DOM tests (Vitest + jsdom + Testing Library) | Pass — 13/13 (local only) |
-| Real headless Chrome render of the built fixture preview | Rendered as expected (local only) |
-
-DOM checks exercised: blank omitted + zero kept through the real form; invalid input blocked
-before submit; empty form cannot submit and the hint only appears after editing; duplicate
-click while pending sends once; retry reuses id and mission timestamp; changed input → new
-id; server-message display; unavailable title/reason + fallback callback; available reaction
-entry; cancel after starting practice submits nothing; full 3 practice + 12 measured flow
-auto-submits exactly once with contract metadata; failed automatic submission retried with
-the same id and payload; unmount mid-task clears timers and submits nothing; RadLab scenario
-does not render the form.
-
-**This is recorded for transparency, not claimed as a Pass in the repo.** It is not
-reproducible from this standalone branch because the shell toolchain and manifests live on
-Hamza's branch. After the shell merges, port these DOM tests into this folder and run them
-with the shared Vitest runner.
+The earlier external temporary harness is superseded by this committed Vitest file and is no
+longer claimed as evidence.
 
 ### Engine regression (unchanged by this branch)
 
@@ -216,34 +207,34 @@ python -m unittest discover -s tests/engine
 
 Result: **Pass — 43 tests** (Python 3.12.10 in this checkout).
 
-## Checks recorded at the `build/checkin` handoff
+## Checks recorded for this finish
 
-Historical record; rows marked Blocked for the shell/toolchain are superseded by the
-integrated tests above. Rule used below: **Pass** needs a command reproducible on this branch; **Blocked** means the
-check needs the shared shell/toolchain or API that is not in this checkout (plan §1.6).
+Rule used below: **Pass** needs a command or browser path actually executed on the
+candidate; **Not run** means this component session did not execute it. The shell/API rows
+were rechecked against the merged seeded runtime, not the older standalone branch.
 
 | Check | Status | Evidence |
 |---|---|---|
 | MO-01 inspect branch/contract, prop types | **Pass** | Contract and plan read; props now come from the shared `src/api/types.ts`. |
 | MO-02 component export and preview-harness source | **Pass** | `CrewCheckIn` export from `index.ts`; `preview/FixturePreview.tsx` committed. |
-| MO-02 preview runs in a shell | **Blocked** | Shell is published on `build/replay-api`, not merged into this standalone branch; local harness evidence only. |
+| MO-02 preview runs in a shell | **Not run** | The dev-only fixture preview was not re-rendered in this session; the integrated shell was exercised instead. |
 | MO-03/04/05 client validation, payload, server-message display (pure logic) | **Pass** | `validation.test.mjs`, `payload.test.mjs`; message/retry code inspected. |
-| MO-03/04/05 rendered form behavior | **Blocked** | Needs HZ-03 toolchain; local DOM evidence only. |
+| MO-03/04/05 rendered form behavior | **Pass** | `CrewCheckIn.test.tsx` (committed Vitest + jsdom). |
 | MO-06 payload builders as pure functions | **Pass** | `payload.test.mjs`. |
 | MO-07 submission session logic (stable id/retry/duplicate guard) | **Pass** | `submission.test.mjs`. |
-| MO-07 rendered submit/retry states | **Blocked** | Needs HZ-03 toolchain; local DOM evidence only. |
+| MO-07 rendered submit/retry states | **Pass** | `CrewCheckIn.test.tsx` pending/retry/new-id cases. |
 | MO-08/09/11 reaction machine (phases, timing, false starts, median, cancel/empty) | **Pass** | `reactionMachine.test.mjs`. |
-| MO-08/11 rendered reaction screens, timers, unmount cleanup | **Blocked** | Needs HZ-03 toolchain; local DOM evidence only. |
+| MO-08/11 rendered reaction screens, timers, unmount cleanup | **Pass** | `CrewCheckIn.test.tsx` completion, cancel, interruption and unmount cases. |
 | MO-10 reaction payload + `captured_at` | **Pass** | `payload.test.mjs`; contract D4 resolved. |
 | MO-12 availability logic + engine reason + fallback data | **Pass** | `viewModel.test.mjs`. |
-| MO-12 rendered fallback click | **Blocked** | Needs shell wiring/onAction; local DOM evidence only. |
+| MO-12 rendered fallback click | **Pass** | `CrewCheckIn.test.tsx` missing/disabled action fallback cases. |
 | MO-13 committed spy checks (blanks absent, zero kept, retry id, duplicate in-flight, changed input new id) | **Pass** | `submission.test.mjs` + `payload.test.mjs`. |
-| MO-13 component-level spy checks (cancel zero calls, one completed task submits once, available/unavailable rendering) | **Blocked** | Local harness 13/13, not reproducible from this branch until the shell toolchain merges. |
-| MO-14 integrated verification B01/B04/B05 | **Blocked** | No shell/API or merged build in this checkout. |
+| MO-13 component-level spy checks (cancel zero calls, one completed task submits once, available/unavailable rendering) | **Pass** | `CrewCheckIn.test.tsx` committed DOM regressions. |
+| MO-14 integrated verification B01/B04/B05 | **Pass** | Seeded API + headless Chromium: B01 09:00 `insufficient_data`, B04 resource-off unavailable/fallback, B05 abort-then-retry and fresh-run isolation. Exact run IDs and values are in the PR handoff. |
 | MO-15 PR handoff | **Pass** | This README + PR text below. |
-| B01 insufficient-data view at 09:00Z | **Blocked** | Needs Hamza shell + Fadoua seeded run. |
-| B04 unavailable reaction path, assessment pending | **Blocked** | Component fallback source complete; integrated assessment is shell/dashboard wiring. |
-| B05 submission retry/409/run isolation | **Blocked** | Server behavior is HZ-12; client retry/id semantics verified in `submission.test.mjs`. |
+| B01 insufficient-data view at 09:00Z | **Pass** | Seeded run at 09:00: `Vigilance data missing`, missing `reaction_time`, no live reaction row. |
+| B04 unavailable reaction path, assessment pending | **Pass** | Resource-off launch: action `available:false` with `Reaction check unavailable`, fallback opened the Why? drawer with missing `reaction_time`. |
+| B05 submission retry/409/run isolation | **Pass** | Browser aborted the first POST, retry sent the identical payload/id/mission time and stored one `LIVE_MEASURED` row; fresh run stored no live rows. |
 
 ## Open items and smallest decisions needed
 
@@ -257,17 +248,17 @@ rendered behaviour (submit/retry, fresh-run reset, fallback routing) is covered 
    confirm or request wording changes.
 6. **Automatic reaction submission — El Mahdi/Hamza.** The plan's Part A says "a complete
    check calls the stub once", so the completed result is auto-submitted exactly once;
-   failures are retryable and "Run again" is disabled while pending/failed. Confirm this
-   matches the intended integrated flow.
+   failures are retryable and "Run again" is disabled while pending/failed or unavailable.
+   Confirm this matches the intended integrated flow.
 7. **Sleep requiredness — El Mahdi.** The contract says self-reports are optional and MO-06
    omits blank fields; the current form also allows a self-report-only batch when sleep is
    blank. Confirm whether a sleep value must be present for a check-in.
 8. **Reaction trial settings — El Mahdi/Mohsine.** 3 practice + 12 measured trials and
    1.5–3 s waits are a recorded prototype choice (the plan does not fix them); no clinical
    cutoff is implied.
-9. **Empty-action view wording.** When the engine returns no `start_reaction_check` action,
-   the component shows "No reaction check is offered for this view." Confirm with Amine/
-   Fadoua or hide the section.
+9. **Empty-action view wording — resolved.** A missing `start_reaction_check` action is now
+   treated as unavailable and shows the fixed title, engine reason when present, and the
+   `review_available_inputs` fallback.
 
 ## Files in this feature
 
@@ -286,9 +277,11 @@ frontend/src/checkin/
   CheckInForm.tsx            sample sleep + optional self-report form
   ReactionTask.tsx           instructions, practice, measured trials, cancel, focus handling
   ReactionResultPanel.tsx    completion result, automatic-submission state and retry
+  ReactionUnavailable.tsx    fixed unavailable title, engine reason and review fallback
   checkin.css                scoped feature styles
   preview/FixturePreview.tsx fixture-preview harness with fake callbacks
   preview/fixtures.ts        preview props (engine-shaped actions)
+  CrewCheckIn.test.tsx       committed Vitest/jsdom component regressions
   *.test.mjs                 committed dependency-free tests
 ```
 
