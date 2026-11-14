@@ -8,7 +8,12 @@
  * cancelled or interrupted task produces no result. This file holds no timers and no DOM.
  */
 
-import { MEASURED_TRIAL_COUNT, PRACTICE_TRIAL_COUNT } from "./constants.ts";
+import {
+  MEASURED_TRIAL_COUNT,
+  PRACTICE_TRIAL_COUNT,
+  STIMULUS_DELAY_MAX_MS,
+  STIMULUS_DELAY_MIN_MS,
+} from "./constants.ts";
 
 export type ReactionPhase = "instructions" | "practice" | "measured" | "complete" | "cancelled";
 
@@ -54,6 +59,16 @@ export type ReactionEvent =
   | { type: "stimulus"; shownAt: number }
   | { type: "press"; at: number; repeat: boolean; capturedAt: string }
   | { type: "cancel" };
+
+/** Randomized wait before a stimulus; exported so the component and tests share one rule. */
+export function nextStimulusDelay(random: () => number): number {
+  const raw = random();
+  const fraction = Number.isFinite(raw) ? Math.min(Math.max(raw, 0), 0.999999) : 0;
+  return (
+    STIMULUS_DELAY_MIN_MS +
+    Math.floor(fraction * (STIMULUS_DELAY_MAX_MS - STIMULUS_DELAY_MIN_MS + 1))
+  );
+}
 
 /** Median of finite positive numbers; null for an empty (or unusable) set. */
 export function medianOf(values: number[]): number | null {
@@ -135,6 +150,10 @@ export function reduceReaction(state: ReactionState, event: ReactionEvent): Reac
         return state;
       }
       if (state.phase !== "practice" && state.phase !== "measured") {
+        return state;
+      }
+      if (state.phase === "practice" && state.practiceTimes.length >= PRACTICE_TRIAL_COUNT) {
+        // The practice-complete screen has no stimulus; a stray press is not a false start.
         return state;
       }
       if (state.stimulusShownAt === null) {

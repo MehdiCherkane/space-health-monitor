@@ -14,6 +14,8 @@ export interface CheckInFormProps {
   values: CheckInFormValues;
   disabled: boolean;
   status: RequestStatus;
+  /** Reveal the "at least one value" hint only after the user has edited the form. */
+  showEmptyHint: boolean;
   onChange: (field: CheckInField, value: string) => void;
   onSubmit: () => void;
   onRetry: () => void;
@@ -34,7 +36,8 @@ function FieldHint({ id, children }: { id?: string; children: string }) {
 }
 
 export function CheckInForm(props: CheckInFormProps) {
-  const { raw, errors, values, disabled, status, onChange, onSubmit, onRetry } = props;
+  const { raw, errors, values, disabled, status, showEmptyHint, onChange, onSubmit, onRetry } =
+    props;
   const pending = status.kind === "pending";
   const success = status.kind === "success";
   const invalid = Object.keys(errors).length > 0;
@@ -73,7 +76,9 @@ export function CheckInForm(props: CheckInFormProps) {
           value={raw.sleep}
           disabled={inputsDisabled}
           aria-invalid={errors.sleep ? true : undefined}
-          aria-describedby={errors.sleep ? "checkin-sleep-error" : "checkin-sleep-hint"}
+          aria-describedby={
+            errors.sleep ? "checkin-sleep-hint checkin-sleep-error" : "checkin-sleep-hint"
+          }
           onChange={(event) => onChange("sleep", event.target.value)}
         />
         <FieldHint id="checkin-sleep-hint">Sample entry — stored as synthetic.</FieldHint>
@@ -86,7 +91,7 @@ export function CheckInForm(props: CheckInFormProps) {
 
       <fieldset className="crew-checkin__field-group" disabled={inputsDisabled}>
         <legend className="crew-checkin__label">{SAMPLE_ENTRY_BADGE} — optional self-reports</legend>
-        <p className="crew-checkin__hint">
+        <p id="checkin-self-report-hint" className="crew-checkin__hint">
           Whole numbers 0–10. Leave a field blank to omit it; 0 is a real value and is sent.
         </p>
         {SELF_REPORT_METRICS.map((metric) => (
@@ -105,7 +110,11 @@ export function CheckInForm(props: CheckInFormProps) {
               step={1}
               value={raw[metric]}
               aria-invalid={errors[metric] ? true : undefined}
-              aria-describedby={errors[metric] ? `checkin-${metric}-error` : undefined}
+              aria-describedby={
+                errors[metric]
+                  ? `checkin-self-report-hint checkin-${metric}-error`
+                  : "checkin-self-report-hint"
+              }
               onChange={(event) => onChange(metric, event.target.value)}
             />
             {errors[metric] && (
@@ -121,7 +130,9 @@ export function CheckInForm(props: CheckInFormProps) {
         <button className="crew-checkin__button" type="submit" disabled={submitDisabled}>
           Submit check-in
         </button>
-        {empty && !success && <p className="crew-checkin__hint">{NO_ENTRIES_MESSAGE}</p>}
+        {empty && showEmptyHint && !success && (
+          <p className="crew-checkin__hint">{NO_ENTRIES_MESSAGE}</p>
+        )}
       </div>
 
       <div className="crew-checkin__status" role="status" aria-live="polite">

@@ -47,6 +47,7 @@ function CheckInUnsupported() {
 export function CrewCheckIn(props: CrewCheckInProps) {
   const { scenarioId, asOf, actions, onSubmit, onAction } = props;
   const [raw, setRaw] = useState<RawCheckInForm>(EMPTY_FORM);
+  const [hasEdited, setHasEdited] = useState(false);
   const [status, setStatus] = useState<RequestStatus>({ kind: "idle" });
   const [reactionStatus, setReactionStatus] = useState<RequestStatus>({ kind: "idle" });
   const [reactionView, setReactionView] = useState<"form" | "task">("form");
@@ -81,10 +82,12 @@ export function CrewCheckIn(props: CrewCheckInProps) {
     return <CheckInUnsupported />;
   }
 
-  const disabled = status.kind === "pending";
+  const formPending = status.kind === "pending";
+  const reactionPending = reactionStatus.kind === "pending";
 
   const handleChange = (field: CheckInField, value: string) => {
     setRaw((previous) => ({ ...previous, [field]: value }));
+    setHasEdited(true);
     formSessionRef.current?.reset();
     setStatus((previous) => (previous.kind === "idle" ? previous : { kind: "idle" }));
   };
@@ -97,10 +100,7 @@ export function CrewCheckIn(props: CrewCheckInProps) {
       return;
     }
     setStatus({ kind: "pending" });
-    const outcome = await formSessionRef.current!.submit(
-      { values, observedAt: asOf },
-      onSubmit,
-    );
+    const outcome = await formSessionRef.current!.submit({ values, observedAt: asOf }, onSubmit);
     if (outcome.status === "submitted") {
       setStatus({ kind: "success" });
     } else if (outcome.status === "rejected") {
@@ -110,30 +110,10 @@ export function CrewCheckIn(props: CrewCheckInProps) {
     }
   };
 
-  const startReaction = () => {
-    reactionSessionRef.current?.reset();
-    setReactionResult(null);
-    setReactionStatus({ kind: "idle" });
-    setReactionView("task");
-  };
-
-  const handleReactionCompleted = (result: ReactionResult) => {
-    setReactionResult(result);
-    setReactionStatus({ kind: "idle" });
-    setReactionView("form");
-  };
-
-  const handleReactionCancel = () => {
-    setReactionView("form");
-  };
-
-  const submitReaction = async () => {
-    if (reactionResult === null || reactionStatus.kind === "pending") {
-      return;
-    }
+  const submitReactionResult = async (result: ReactionResult) => {
     setReactionStatus({ kind: "pending" });
     const outcome = await reactionSessionRef.current!.submit(
-      { result: reactionResult, observedAt: asOf },
+      { result, observedAt: asOf },
       onSubmit,
     );
     if (outcome.status === "submitted") {
@@ -145,18 +125,37 @@ export function CrewCheckIn(props: CrewCheckInProps) {
     }
   };
 
+  const startReaction = () => {
+    reactionSessionRef.current?.reset();
+    setReactionResult(null);
+    setReactionStatus({ kind: "idle" });
+    setReactionView("task");
+  };
+
+  // A completed check submits its result automatically, exactly once (ReactionTask reports
+  // completion once and the submission session ignores duplicate in-flight calls).
+  const handleReactionCompleted = (result: ReactionResult) => {
+    setReactionResult(result);
+    setReactionView("form");
+    void submitReactionResult(result);
+  };
+
+  const handleReactionCancel = () => {
+    setReactionView("form");
+  };
+
   const reviewInputsLabel = availability.reviewAction?.label ?? REVIEW_AVAILABLE_INPUTS_LABEL;
   const reviewInputs = () => {
-    onAction?.(REVIEW_AVAILABLE_INPUTS_ACTION_ID);
+    onAction(REVIEW_AVAILABLE_INPUTS_ACTION_ID);
   };
+  const unavailableReason = availability.unavailableReason;
 
   return (
     <section className="crew-checkin" aria-labelledby="crew-checkin-title">
       <header className="crew-checkin__header">
         <h2 id="crew-checkin-title">Crew check-in</h2>
         <p className="crew-checkin__mission">
-          Mission time{" "}
-          <time dateTime={asOf}>{asOf}</time>
+          Mission time <time dateTime={asOf}>{asOf}</time>
         </p>
       </header>
 
@@ -168,8 +167,9 @@ export function CrewCheckIn(props: CrewCheckInProps) {
             raw={raw}
             errors={errors}
             values={values}
-            disabled={disabled}
+            disabled={formPending}
             status={status}
+            showEmptyHint={hasEdited}
             onChange={handleChange}
             onSubmit={() => {
               void submitForm();
@@ -185,11 +185,8 @@ export function CrewCheckIn(props: CrewCheckInProps) {
               <ReactionResultPanel
                 result={reactionResult}
                 status={reactionStatus}
-                onSubmit={() => {
-                  void submitReaction();
-                }}
                 onRetry={() => {
-                  void submitReaction();
+                  void submitReactionResult(reactionResult);
                 }}
                 onRunAgain={startReaction}
               />
@@ -201,7 +198,7 @@ export function CrewCheckIn(props: CrewCheckInProps) {
                   className="crew-checkin__button"
                   type="button"
                   onClick={startReaction}
-                  disabled={disabled}
+                  disabled={formPending || reactionPending}
                 >
                   {availability.action.label}
                 </button>
@@ -211,12 +208,14 @@ export function CrewCheckIn(props: CrewCheckInProps) {
               </div>
             ) : (
               <div className="crew-checkin__unavailable" role="status">
-                <p>{availability.unavailableReason ?? REACTION_UNAVAILABLE_TEXT}</p>
+                <p className="crew-checkin__unavailable-title">{REACTION_UNAVAILABLE_TEXT}</p>
+                {unavailableReason !== null && unavailableReason !== REACTION_UNAVAILABLE_TEXT && (
+                  <p className="crew-checkin__hint">{unavailableReason}</p>
+                )}
                 <button
                   className="crew-checkin__button crew-checkin__button--secondary"
                   type="button"
                   onClick={reviewInputs}
-                  disabled={onAction === undefined}
                 >
                   {reviewInputsLabel}
                 </button>

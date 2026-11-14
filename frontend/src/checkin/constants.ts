@@ -27,7 +27,6 @@ export const SELF_REPORT_MAXIMUM_SCORE = 10;
 export const REACTION_SOURCE_ID = "reaction_task";
 export const REACTION_METRIC = "reaction_time";
 export const REACTION_UNIT = "ms";
-export const REACTION_RESOURCE_ID = "local_reaction_task";
 
 // Fixed reaction metadata values from contracts/v1.md ("D4", "Reaction metadata").
 export const REACTION_TASK_VERSION = "demo-rt-v1";

@@ -67,6 +67,9 @@ export interface CrewCheckInProps {
    * (for example a 422 validation message).
    */
   onSubmit: (payload: ObservationSubmission) => Promise<void>;
-  /** Shell-owned action router, e.g. `review_available_inputs` opens the evidence drawer. */
-  onAction?: (actionId: string) => void;
+  /**
+   * Shell-owned action router, e.g. `review_available_inputs` opens the evidence drawer.
+   * Required so the unavailable-reaction fallback is always clickable (B04).
+   */
+  onAction: (actionId: string) => void;
 }

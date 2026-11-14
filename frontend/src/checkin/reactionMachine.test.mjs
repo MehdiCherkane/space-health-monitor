@@ -4,6 +4,7 @@ import {
   INITIAL_REACTION_STATE,
   buildReactionResult,
   medianOf,
+  nextStimulusDelay,
   practiceComplete,
   reduceReaction,
 } from "./reactionMachine.ts";
@@ -52,6 +53,14 @@ test("medianOf handles odd and even counts and rejects bad input", () => {
   assert.equal(medianOf([100, -5]), null);
 });
 
+test("stimulus delay stays inside the configured 1.5-3 second window", () => {
+  assert.equal(nextStimulusDelay(() => 0), 1500);
+  assert.equal(nextStimulusDelay(() => 0.5), 2250);
+  assert.equal(nextStimulusDelay(() => 0.999999), 3000);
+  assert.equal(nextStimulusDelay(() => -1), 1500);
+  assert.equal(nextStimulusDelay(() => Number.NaN), 1500);
+});
+
 test("buildReactionResult rounds the median and counts valid trials", () => {
   const result = buildReactionResult([300, 301, 302, 303, 304, 305], 2, CAPTURED_AT);
   assert.deepEqual(result, {
@@ -78,6 +87,13 @@ test("practice runs three trials before measured trials unlock", () => {
 test("start_measured is ignored until practice is complete", () => {
   const state = reduceReaction(INITIAL_REACTION_STATE, { type: "start_measured" });
   assert.equal(state.phase, "instructions");
+});
+
+test("a stray press on the practice-complete screen is not a false start", () => {
+  let state = completePractice();
+  const unchanged = press(state, 50000);
+  assert.equal(unchanged, state);
+  assert.equal(state.falseStarts, 0);
 });
 
 test("an early key press is a false start, not a trial", () => {

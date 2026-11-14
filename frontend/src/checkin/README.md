@@ -3,10 +3,10 @@
 Behavioral-demo feature for the `sleep_vigilance` scenario, on branch `build/checkin`.
 Owner: Mohsine. Write scope: `frontend/src/checkin/` (tests colocated here).
 
-**Status at this handoff:** the standalone feature is built and verified without the shared
-shell. Integrated checks **B01, B04 and B05 are Blocked** until Hamza's shell and API land
-(HZ-03/HZ-04/HZ-12/HZ-13). No shared entry point, dependency manifest, lockfile or file
-outside this folder was changed.
+**Status at this handoff:** the standalone feature source is complete and its pure logic is
+covered by committed tests. **Integrated checks B01, B04 and B05 are Blocked** until Hamza's
+shell and API land (HZ-03/HZ-04/HZ-12/HZ-13). No shared entry point, dependency manifest,
+lockfile or file outside this folder was changed.
 
 Base commit: `fd1da9690a5d3b28af5c7353a87114be977a6589` (main after the engine merge).
 Contract base: `contracts/v1.md` (kickoff PR #1, `533309242e58985dfa919225b9c2d515c7585872`).
@@ -22,9 +22,14 @@ Contract base: `contracts/v1.md` (kickoff PR #1, `533309242e58985dfa919225b9c2d5
 - Short local reaction check: instructions, a practice step, 12 measured trials, a visible
   completion state and Cancel throughout. Early presses are false starts, held-key repeats
   are ignored, and the result is the median of completed valid measured trials.
-- Unavailable state: when the engine marks `start_reaction_check` unavailable, the engine's
-  reason text is shown with the `review_available_inputs` fallback. Sleep or self-reports
-  are never offered as a substitute for the missing reaction result.
+- A completed reaction check is **submitted automatically, exactly once**, so a completed
+  result is never silently discarded. A failed submission shows the error with a
+  **Retry submission** action that reuses the payload and id; **Run reaction check again** is
+  disabled while that retry is outstanding.
+- Unavailable state: when the engine marks `start_reaction_check` unavailable, the fixed
+  title **Reaction check unavailable** is shown with the engine's reason text (when it differs)
+  and the `review_available_inputs` fallback. Sleep or self-reports are never offered as a
+  substitute for the missing reaction result.
 
 Everything the UI shows about availability, labels and reasons comes from props; the
 component does not compute statuses and never calls the API itself.
@@ -59,7 +64,7 @@ component exposes `review_available_inputs` through `onAction`.
 | `asOf` | `string` | Current mission clock, UTC ISO whole-second; used as `observed_at`. |
 | `actions` | `CheckInAction[] \| undefined` | Engine actions. The component reads `start_reaction_check` and `review_available_inputs`; missing `actions` means no reaction check is offered. |
 | `onSubmit` | `(payload) => Promise<void>` | Wired by Hamza to `POST /api/v1/runs/{run_id}/observations`. Resolve on 200/201; reject with an `Error` whose message is safe to display (server `422` text passes through). |
-| `onAction` | `(actionId: string) => void` *(optional)* | Shell-owned action routing (evidence drawer for `review_available_inputs`). |
+| `onAction` | `(actionId: string) => void` | Shell-owned action routing (evidence drawer for `review_available_inputs`). **Required** so the unavailable-reaction fallback is always clickable (B04). |
 
 These names and the rejection contract are a **local, labeled stub**; replace them when the
 shell publishes its types. Report any difference to Hamza.
@@ -126,12 +131,17 @@ mission time in `observed_at`:
   With 1.5–3 s waits the run takes roughly 40–60 seconds; the plan fixes no trial count, so
   this setting is recorded here for the PR and is a prototype choice, not a clinical cutoff.
 - Single response key: space bar. A press before the green prompt is a **false start**
-  (counted, not a valid trial); held-key repeats are ignored.
+  (counted, not a valid trial); held-key repeats are ignored. A stray press on the
+  practice-complete screen is ignored and not counted.
 - Timing uses the caller-injected monotonic clock, which defaults to `performance.now()`.
 - Result = median of completed valid measured trials, rounded to whole milliseconds, plus
   `trial_count` and `false_starts`. An empty valid-trial set produces no result.
 - Cancel at any point (or unmounting/navigating away) clears timers and listeners and
   submits nothing. An interrupted task creates no completed result.
+- On completion the result is submitted automatically exactly once. A rejection keeps the
+  completed result and offers **Retry submission**; **Run reaction check again** is disabled
+  while the submission is pending or failed, so a completed result cannot be discarded
+  silently.
 - A live `browser-keyboard` result is visible in history but is **not comparable** with the
   seeded `seeded-demo` baseline; the engine reports that as insufficient data. The
   component does not decide comparability.
@@ -148,12 +158,12 @@ mission time in `observed_at`:
 | Failure | server/error message + **Retry submission** |
 | Success | **Check-in submitted. Edit a field to start a new check-in.** |
 | Reaction entry | engine action label: **Run reaction check** |
-| Reaction unavailable | engine reason text: **Reaction check unavailable**; fallback action label: **Review available inputs** |
+| Reaction unavailable | title **Reaction check unavailable**, engine reason text when different; fallback action label: **Review available inputs** |
 | Reaction instructions | **Local reaction check**; **Start practice**; **Cancel reaction check** |
 | Practice done | **Practice complete**; **Start measured trials** |
 | Trials | **Practice trial N of 3**, **Measured trial N of 12**, **Wait for the green prompt…**, **Press the space bar now!**, **False start — wait for the green prompt.** |
-| Result | **Reaction check complete**, **Recorded on this device**, **Median response time**, **Valid trials**, **False starts**; **Submit reaction result**; **Run reaction check again** |
-| Reaction success | **Reaction result submitted.** |
+| Result | **Reaction check complete**, **Recorded on this device**, **Median response time**, **Valid trials**, **False starts**; **Run reaction check again** |
+| Automatic submission | **Submitting reaction result…** then **Reaction result submitted.**; on failure the error message + **Retry submission** |
 
 ## Fixture preview harness
 
@@ -164,12 +174,11 @@ It shows a **Fixture preview — fake callback, synthetic sample entries, not an
 run** badge and a callback log. It is dev-only; the app shell should not import it.
 
 It needs Hamza's shell/Vite toolchain to run. Once that exists, mount it as the shell's dev
-preview route. (The feature was also type-checked, built and DOM-tested with a temporary
-toolchain outside the repository; see below.)
+preview route.
 
 ## Verification
 
-### Committed, dependency-free tests (run today)
+### Committed, dependency-free tests (reproducible on this branch)
 
 From `frontend/src/checkin/`:
 
@@ -177,7 +186,7 @@ From `frontend/src/checkin/`:
 node --test
 ```
 
-Result: **Pass — 39 tests** on Node v24.21.0 (Node's built-in runner with TypeScript type
+Result: **Pass — 41 tests** on Node v24.21.0 (Node's built-in runner with TypeScript type
 stripping; the repo has no frontend toolchain yet — D10, owned by Hamza). No dependencies
 were added and no manifests changed. Coverage:
 
@@ -187,31 +196,37 @@ were added and no manifests changed. Coverage:
 - `submission.test.mjs` — in-flight duplicate ignored, retry reuses id/payload/mission
   timestamp, changed input gets a new id, rejection message kept, id uniqueness/format.
 - `reactionMachine.test.mjs` — median odd/even/invalid, practice excluded, 3 practice
-  trials, false starts, held-key repeats, duplicate stimulus, 12-trial completion,
-  empty/invalid timing, cancel produces no result.
+  trials, false starts, held-key repeats, duplicate stimulus, stimulus-delay window,
+  12-trial completion, practice-complete stray press ignored, empty/invalid timing, cancel
+  produces no result.
 - `viewModel.test.mjs` — action lookup, unavailable reason passed through exactly, fallback
   action, missing actions, scenario scope.
 
-### Local type/build/behaviour verification (temporary toolchain outside the repo)
+### Local harness evidence (NOT reproducible from this branch yet)
 
-Because the shared frontend toolchain does not exist in this checkout, the feature was
-additionally verified with a temporary Vite/Vitest project under the OS temp folder that
-imported this folder and aliased `react`. Nothing from that project is committed and the
-repo has no new dependency entries.
+A temporary Vite/Vitest project outside the repository (installed under the OS temp folder,
+importing this folder with a `react` alias) was used while building the feature:
 
 | Check | Result |
 |---|---|
-| Strict `tsc --noEmit` (Vite-style: `strict`, `verbatimModuleSyntax`, `erasableSyntaxOnly`, `noUnusedLocals`, `allowImportingTsExtensions`, `jsx: react-jsx`) | **Pass** |
-| `vite build` of the fixture-preview harness (component + CSS + preview) | **Pass** |
-| 12 DOM tests (Vitest + jsdom + Testing Library) | **Pass — 12/12** |
+| Strict `tsc --noEmit` (Vite-style: `strict`, `verbatimModuleSyntax`, `erasableSyntaxOnly`, `noUnusedLocals`, `allowImportingTsExtensions`, `jsx: react-jsx`) | Pass (local only) |
+| `vite build` of the fixture-preview harness (component + CSS + preview) | Pass (local only) |
+| DOM tests (Vitest + jsdom + Testing Library) | Pass — 13/13 (local only) |
+| Real headless Chrome render of the built fixture preview | Rendered as expected (local only) |
 
-DOM coverage: blank omitted + zero kept through the real form; invalid input blocked before
-submit; empty form cannot submit; duplicate click while pending sends once; retry reuses id
-and mission timestamp; changed input → new id; server-message display; unavailable reason +
-fallback callback; available reaction entry; cancel after starting practice submits nothing;
-full 3 practice + 12 measured reaction flow submits once with contract metadata and the
-median/timeout behavior; unmount mid-task clears timers and submits nothing; RadLab scenario
+DOM checks exercised: blank omitted + zero kept through the real form; invalid input blocked
+before submit; empty form cannot submit and the hint only appears after editing; duplicate
+click while pending sends once; retry reuses id and mission timestamp; changed input → new
+id; server-message display; unavailable title/reason + fallback callback; available reaction
+entry; cancel after starting practice submits nothing; full 3 practice + 12 measured flow
+auto-submits exactly once with contract metadata; failed automatic submission retried with
+the same id and payload; unmount mid-task clears timers and submits nothing; RadLab scenario
 does not render the form.
+
+**This is recorded for transparency, not claimed as a Pass in the repo.** It is not
+reproducible from the branch because the shared toolchain, test runner and dependency
+manifests do not exist yet (D10/HZ-03 are Hamza's). Once they land, port these DOM tests into
+this folder and run them with the shared runner.
 
 ### Engine regression (unchanged by this branch)
 
@@ -219,55 +234,69 @@ does not render the form.
 python -m unittest discover -s tests/engine
 ```
 
-Result: **Pass — 43 tests** (run on Python 3.12.10 in this checkout).
+Result: **Pass — 43 tests** (Python 3.12.10 in this checkout).
 
 ## Checks for the PR
+
+Rule used below: **Pass** needs a command reproducible on this branch; **Blocked** means the
+check needs the shared shell/toolchain or API that is not in this checkout (plan §1.6).
 
 | Check | Status | Evidence |
 |---|---|---|
 | MO-01 inspect branch/contract, local prop stub | **Pass** | Branch `build/checkin`; contract and plan read; stub labeled in `types.ts`. |
-| MO-02 component export and fixture preview | **Pass** (code) / preview run **Blocked** | `CrewCheckIn` export; `preview/FixturePreview.tsx`; temporary harness build/vet passed. |
-| MO-03 sleep input, sample label, reject invalid | **Pass** | Committed validation/payload tests + temporary DOM tests. |
-| MO-04 optional self-reports, blank omitted, zero sent | **Pass** | Committed payload tests + temporary DOM test. |
-| MO-05 validation before submit, display 422 message | **Pass** (fake rejection) / real 422 **Blocked** | Message display and retry exercised with the fake callback; API not present. |
-| MO-06 payload builder as a pure function | **Pass** | `payload.test.mjs`. |
-| MO-07 submit states, stable retry, duplicate guard | **Pass** | `submission.test.mjs` + temporary DOM tests. |
-| MO-08 reaction screens (instructions/practice/trials/completion/cancel) | **Pass** | Committed reducer tests + temporary DOM flow. |
-| MO-09 performance.now timing, false starts, median | **Pass** | `reactionMachine.ts` + tests; DOM flow. |
-| MO-10 reaction submission payload + `captured_at` | **Pass** | `payload.test.mjs`; contract D4 resolved. |
-| MO-11 cancel/interruption/empty result | **Pass** | Reducer test; DOM cancel + unmount cleanup test. |
-| MO-12 unavailable reason + `review_available_inputs` fallback | **Pass** | `viewModel.test.mjs` + temporary DOM test. |
-| MO-13 spy-callback checks | **Pass** | Committed session/payload tests (blanks absent, zero kept, retry id, duplicate in-flight, changed input new id) + temporary DOM tests (render/cancel/unavailable). |
-| MO-14 integrated verification B01/B04/B05 | **Blocked** | No shell or API in the repo yet; no endpoint to call. |
-| MO-15 PR handoff | **Pass** (draft below) | This README. |
-| B01 insufficient-data view at 09:00Z | **Blocked** | Needs Hamza's shell and Hajar's seeded run. |
-| B04 unavailable reaction path, assessment pending | **Blocked** | Component path verified with fixture props; integrated assessment is Amine/Hamza wiring. |
-| B05 submission retry/409/run isolation | **Blocked** | Server behavior is HZ-12; retry/id semantics verified client-side. |
+| MO-02 component export and preview-harness source | **Pass** | `CrewCheckIn` export from `index.ts`; `preview/FixturePreview.tsx` committed. |
+| MO-02 preview runs in a shell | **Blocked** | No frontend shell/toolchain in the repo (HZ-03); local harness evidence only. |
+| MO-03/04/05 client validation, payload, server-message display (pure logic) | **Pass** | `validation.test.mjs`, `payload.test.mjs`; message/retry code inspected. |
+| MO-03/04/05 rendered form behavior | **Blocked** | Needs HZ-03 toolchain; local DOM evidence only. |
+| MO-06 payload builders as pure functions | **Pass** | `payload.test.mjs`. |
+| MO-07 submission session logic (stable id/retry/duplicate guard) | **Pass** | `submission.test.mjs`. |
+| MO-07 rendered submit/retry states | **Blocked** | Needs HZ-03 toolchain; local DOM evidence only. |
+| MO-08/09/11 reaction machine (phases, timing, false starts, median, cancel/empty) | **Pass** | `reactionMachine.test.mjs`. |
+| MO-08/11 rendered reaction screens, timers, unmount cleanup | **Blocked** | Needs HZ-03 toolchain; local DOM evidence only. |
+| MO-10 reaction payload + `captured_at` | **Pass** | `payload.test.mjs`; contract D4 resolved. |
+| MO-12 availability logic + engine reason + fallback data | **Pass** | `viewModel.test.mjs`. |
+| MO-12 rendered fallback click | **Blocked** | Needs shell wiring/onAction; local DOM evidence only. |
+| MO-13 committed spy checks (blanks absent, zero kept, retry id, duplicate in-flight, changed input new id) | **Pass** | `submission.test.mjs` + `payload.test.mjs`. |
+| MO-13 component-level spy checks (cancel zero calls, one completed task submits once, available/unavailable rendering) | **Blocked** | Local harness 13/13, not reproducible from branch until HZ-03. |
+| MO-14 integrated verification B01/B04/B05 | **Blocked** | No shell/API or merged build in this checkout. |
+| MO-15 PR handoff | **Pass** | This README + PR text below. |
+| B01 insufficient-data view at 09:00Z | **Blocked** | Needs Hamza shell + Hajar seeded run. |
+| B04 unavailable reaction path, assessment pending | **Blocked** | Component fallback source complete; integrated assessment is shell/dashboard wiring. |
+| B05 submission retry/409/run isolation | **Blocked** | Server behavior is HZ-12; client retry/id semantics verified in `submission.test.mjs`. |
 
 ## Open items and smallest decisions needed
 
-1. **Props/types (HZ-03) — Hamza.** Publish the exact prop names, actions prop shape and
-   submit-callback rejection contract; this folder currently uses the labeled local stub in
-   `types.ts`. Smallest decision: confirm the six props above and that a rejected promise
+1. **Props/types (HZ-03) — Hamza.** Publish the exact prop names, `actions` shape and
+   submit-callback rejection contract; this folder uses the labeled local stub in
+   `types.ts`. `onAction` is required by the stub so B04's fallback cannot silently be
+   disabled. Smallest decision: confirm the six props above and that a rejected promise
    carries a displayable message.
 2. **Frontend shell/toolchain (HZ-03/HZ-04, D10) — Hamza.** No manifests, Vite config or
    test runner exist in this checkout. Smallest decision: publish the shared runner and
-   tsconfig; confirm `.ts`-extension imports (Vite-style `allowImportingTsExtensions`) and
-   that a feature can import its own CSS.
-3. **API endpoints (HZ-04/HZ-12/HZ-13) — Hamza.** Needed to run B01/B04/B05 end to end;
-   the component ready-to-mount.
+   tsconfig; confirm `.ts`-extension imports (Vite-style `allowImportingTsExtensions`),
+   that a feature may import its own CSS, and whether the DOM harness from the temporary
+   verification should be committed under this folder.
+3. **API endpoints (HZ-04/HZ-12/HZ-13) — Hamza.** Needed to run B01/B04/B05 end to end; the
+   component is ready to mount.
 4. **Submission id format (D8) — Hamza.** Client uses a non-empty opaque id
    (`crypto.randomUUID()`, with a fallback). Confirm any extra validation.
 5. **Labels (D11) — Fadoua/Amine.** The table above is the published click-path vocabulary;
    confirm or request wording changes.
-6. **Reaction trial settings — El Mahdi/Mohsine.** 3 practice + 12 measured trials and
-   1.5–3 s waits are a recorded prototype choice (plan does not fix them); no clinical
+6. **Automatic reaction submission — El Mahdi/Hamza.** The plan's Part A says "a complete
+   check calls the stub once", so the completed result is auto-submitted exactly once;
+   failures are retryable and "Run again" is disabled while pending/failed. Confirm this
+   matches the intended integrated flow.
+7. **Sleep requiredness — El Mahdi.** The contract says self-reports are optional and MO-06
+   omits blank fields; the current form also allows a self-report-only batch when sleep is
+   blank. Confirm whether a sleep value must be present for a check-in.
+8. **Reaction trial settings — El Mahdi/Mohsine.** 3 practice + 12 measured trials and
+   1.5–3 s waits are a recorded prototype choice (the plan does not fix them); no clinical
    cutoff is implied.
-7. **Empty-action view wording.** When the engine returns no `start_reaction_check` action,
+9. **Empty-action view wording.** When the engine returns no `start_reaction_check` action,
    the component shows "No reaction check is offered for this view." Confirm with Amine/
    Fadoua or hide the section.
-8. **D4 resolved by contract:** `metadata.captured_at` (UTC ISO text) is implemented.
-   D2/D3 belong to the fixture owner and do not affect this component.
+10. **`env.d.ts` cleanup.** Remove the local `*.css` wildcard declaration once the shared
+    Vite toolchain declares it (HZ-03), to avoid duplicate declarations.
 
 ## Files in this feature
 
@@ -280,13 +309,13 @@ frontend/src/checkin/
   validation.ts              client-side field validation
   payload.ts                 pure submission payload builders
   submission.ts              stable-id submission lifecycle (retry/reuse/new-id)
-  reactionMachine.ts         pure reaction state machine, median/result arithmetic
+  reactionMachine.ts         pure reaction state machine, delay window, median/result arithmetic
   viewModel.ts               action lookup / reaction availability / scenario scope
   status.ts                  request status type
   CrewCheckIn.tsx            main named export
   CheckInForm.tsx            sample sleep + optional self-report form
-  ReactionTask.tsx           instructions, practice, measured trials, cancel
-  ReactionResultPanel.tsx    completion result and submit/retry
+  ReactionTask.tsx           instructions, practice, measured trials, cancel, focus handling
+  ReactionResultPanel.tsx    completion result, automatic-submission state and retry
   checkin.css                scoped feature styles
   env.d.ts                   local CSS-module type declaration
   preview/FixturePreview.tsx fixture-preview harness with fake callbacks
@@ -301,14 +330,20 @@ Branch: build/checkin
 Base (kickoff commit SHA): fd1da9690a5d3b28af5c7353a87114be977a6589
 Changed files: frontend/src/checkin/** (all files above; nothing outside the folder)
 How to verify (exact command or click path):
-  cd frontend/src/checkin && node --test         (39 tests, Node v24.21.0)
+  cd frontend/src/checkin && node --test         (41 tests, Node v24.21.0)
   python -m unittest discover -s tests/engine    (43 tests, unchanged regression)
   Preview harness: mount preview/FixturePreview.tsx once the shell exists; toggle
   available/unavailable reaction resource and the resolve/reject/slow fake callback.
 Checks (ID — status — exact command — observed result):
-  MO-01..MO-13 — Pass — see the checks table above
-  MO-14 / B01 / B04 / B05 — Blocked — waiting on Hamza's shell and API (HZ-03/04/12/13)
-Preview vs integrated: local temporary harness only (12/12 DOM tests); no integrated run yet.
+  MO-01, MO-02 (source), MO-03..MO-06 (logic), MO-07 (logic), MO-08/09/11 (machine),
+  MO-10, MO-12 (logic), MO-13 (committed spy checks), MO-15 — Pass — see the table above.
+  MO-02 (preview run), MO-03..MO-05 (rendered), MO-07 (rendered), MO-08/11 (rendered),
+  MO-12 (fallback click), MO-13 (component-level), MO-14, B01, B04, B05 — Blocked —
+  waiting on the shared shell/toolchain/API (HZ-03/HZ-04/HZ-12/HZ-13).
+Preview vs integrated: component behaviour was exercised in a temporary local Vite/Vitest
+  harness (13/13 DOM checks, strict tsc, Vite build, headless-Chrome render); that harness
+  is not reproducible from this branch until the shared toolchain lands, so no integrated
+  run is claimed.
 Open questions / blockers (owner + smallest decision needed): see the list above.
 Shared-file changes requested: none.
 ```

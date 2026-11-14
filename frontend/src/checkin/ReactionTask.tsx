@@ -4,22 +4,14 @@ import {
   PRACTICE_TRIAL_COUNT,
   RESPONSE_FEEDBACK_MS,
   RESPONSE_KEY_CODE,
-  STIMULUS_DELAY_MAX_MS,
-  STIMULUS_DELAY_MIN_MS,
 } from "./constants.ts";
 import {
   INITIAL_REACTION_STATE,
+  nextStimulusDelay,
   practiceComplete,
   reduceReaction,
 } from "./reactionMachine.ts";
 import type { ReactionResult } from "./reactionMachine.ts";
-
-/** Delay before the next stimulus; exported for tests through reactionMachine when needed. */
-function nextStimulusDelay(random: () => number): number {
-  const raw = random();
-  const fraction = Number.isFinite(raw) ? Math.min(Math.max(raw, 0), 0.999999) : 0;
-  return STIMULUS_DELAY_MIN_MS + Math.floor(fraction * (STIMULUS_DELAY_MAX_MS - STIMULUS_DELAY_MIN_MS + 1));
-}
 
 export interface ReactionTaskProps {
   onCompleted: (result: ReactionResult) => void;
@@ -40,11 +32,17 @@ export function ReactionTask(props: ReactionTaskProps) {
   const [state, dispatch] = useReducer(reduceReaction, INITIAL_REACTION_STATE);
   const timerRef = useRef<number | null>(null);
   const reportedRef = useRef(false);
+  const headingRef = useRef<HTMLHeadingElement>(null);
 
   const inTrialPhase = state.phase === "practice" || state.phase === "measured";
   const practiceDone = practiceComplete(state);
 
-  // Report a completed result exactly once.
+  // Move keyboard/screen-reader focus to the new screen heading after each phase change.
+  useEffect(() => {
+    headingRef.current?.focus();
+  }, [state.phase, practiceDone]);
+
+  // Report a completed result exactly once; the parent submits it automatically.
   useEffect(() => {
     if (state.phase === "complete" && state.result !== null && !reportedRef.current) {
       reportedRef.current = true;
@@ -86,9 +84,10 @@ export function ReactionTask(props: ReactionTaskProps) {
     random,
   ]);
 
-  // Single-key response. Held-key repeats are ignored by the reducer.
+  // Single-key response. Held-key repeats are ignored by the reducer, and the listener is
+  // removed once the practice step is complete so no false start can be counted off-screen.
   useEffect(() => {
-    if (!inTrialPhase) {
+    if (!inTrialPhase || (state.phase === "practice" && practiceDone)) {
       return undefined;
     }
     const handleKeyDown = (event: KeyboardEvent) => {
@@ -109,7 +108,7 @@ export function ReactionTask(props: ReactionTaskProps) {
     };
     window.addEventListener("keydown", handleKeyDown);
     return () => window.removeEventListener("keydown", handleKeyDown);
-  }, [inTrialPhase, now]);
+  }, [inTrialPhase, practiceDone, state.phase, now]);
 
   const cancel = () => {
     dispatch({ type: "cancel" });
@@ -119,7 +118,9 @@ export function ReactionTask(props: ReactionTaskProps) {
   if (state.phase === "instructions") {
     return (
       <section className="crew-checkin__reaction-task" aria-labelledby="reaction-task-title">
-        <h3 id="reaction-task-title">Local reaction check</h3>
+        <h3 id="reaction-task-title" ref={headingRef} tabIndex={-1}>
+          Local reaction check
+        </h3>
         <p>
           This short check measures how quickly you press a key after a prompt turns green.
           It takes about 30–60 seconds. Practice trials are not recorded.
@@ -156,7 +157,9 @@ export function ReactionTask(props: ReactionTaskProps) {
   if (state.phase === "practice" && practiceDone) {
     return (
       <section className="crew-checkin__reaction-task" aria-labelledby="reaction-practice-done">
-        <h3 id="reaction-practice-done">Practice complete</h3>
+        <h3 id="reaction-practice-done" ref={headingRef} tabIndex={-1}>
+          Practice complete
+        </h3>
         <p>The measured trials start next. Press the space bar only when the prompt turns green.</p>
         <div className="crew-checkin__actions">
           <button
@@ -184,14 +187,14 @@ export function ReactionTask(props: ReactionTaskProps) {
 
   return (
     <section className="crew-checkin__reaction-task" aria-labelledby="reaction-trial-title">
-      <h3 id="reaction-trial-title">
+      <h3 id="reaction-trial-title" ref={headingRef} tabIndex={-1}>
         {state.phase === "practice" ? "Practice trial" : "Measured trial"} {trialNumber} of {totalTrials}
       </h3>
       <p className="crew-checkin__hint">False starts so far: {state.falseStarts}</p>
       <div
         className={`crew-checkin__stimulus ${stimulusVisible ? "crew-checkin__stimulus--go" : ""}`}
-        role="status"
         aria-live="assertive"
+        aria-atomic="true"
       >
         {stimulusVisible ? "Press the space bar now!" : "Wait for the green prompt…"}
       </div>
