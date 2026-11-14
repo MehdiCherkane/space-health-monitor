@@ -138,12 +138,46 @@ def test_non_loopback_host_is_refused(paths, started, capsys):
     assert "loopback-only" in capsys.readouterr().err
 
 
-def test_check_archive_reports_blocked_and_exits_nonzero(paths, started, capsys):
+def test_check_archive_reports_blocked_and_exits_nonzero(paths, started, monkeypatch, capsys):
+    # Independent of whether this checkout happens to contain the pinned archive.
+    monkeypatch.setattr(
+        run,
+        "verify_radlab_archive",
+        lambda *args, **kwargs: {
+            "status": "Blocked",
+            "check": "A01",
+            "path": "fixtures/radlab/missing.csv",
+            "reason": "RadLab CSV archive not found",
+            "expected_sha256": "0" * 64,
+            "observed_sha256": None,
+        },
+    )
     assert run.main(["--check-archive"]) == 2
     assert started == []
     out = capsys.readouterr().out
     assert "RadLab archive (A01): Blocked" in out
     assert "A02-A04" in out
+
+
+def test_check_archive_passes_only_with_a_verified_archive(paths, started, monkeypatch, capsys):
+    monkeypatch.setattr(
+        run,
+        "verify_radlab_archive",
+        lambda *args, **kwargs: {
+            "status": "Pass",
+            "check": "A01",
+            "path": "fixtures/radlab/verified.csv",
+            "expected_sha256": "0" * 64,
+            "observed_sha256": "0" * 64,
+            "dostel1_count": 84,
+            "dostel2_count": 96,
+        },
+    )
+    assert run.main(["--check-archive"]) == 0
+    assert started == []
+    out = capsys.readouterr().out
+    assert "RadLab archive (A01): Pass" in out
+    assert "DosTel1=84" in out
 
 
 def test_invalid_crew_fixture_stops_the_launcher(paths, started, monkeypatch, capsys):
