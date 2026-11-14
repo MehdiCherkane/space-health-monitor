@@ -16,5 +16,5 @@ Verification from the repo root used the script in [Kickoff handoff → Verifica
 | Blocked check | Exact dependency | Owner | Needed to proceed |
 | --- | --- | --- | --- |
 | A01 and archive-backed A02–A04 | The linked `iss-radlab-dostel-2022-04-01.csv` returns file not found. It is absent from the reviewed tree. | Hamza | Provide the pinned raw CSV and importer verification. Use the file to derive the actual recovery time. |
-| Integrated B02 | `fixtures/crew/sleep-vigilance.json` is absent from the reviewed tree. The current engine test uses test-only reaction rows. | Hajar + Hamza | Publish and load the canonical 14-row crew fixture. |
+| Integrated B02 | `fixtures/crew/sleep-vigilance.json` is absent from the reviewed tree. The current engine test uses test-only reaction rows. | Fadoua + Hamza | D2 is settled: Fadoua writes the canonical 14-row fixture, Hamza loads it (HZ-11). |
 | Exact click paths, wording, B05 and X01 | The reviewed tree contains the evaluator and policy. The app launch command, API/persistence and integrated dashboard and check-in are pending. | Hamza, Amine and Mohsine | Provide the merged app, launch command and control labels. |

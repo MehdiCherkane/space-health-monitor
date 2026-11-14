@@ -53,7 +53,7 @@ and that pipeline's dependencies are not installed in this checkout.
 | B03 | Pass | 270 ms observed, missing night/baseline and incomparable task/profile insufficient |
 | B04 | Pass | Disabled/missing resource, unavailable reason and available input-review fallback |
 | A01 | Blocked | Real RadLab CSV is absent; Hamza owns acquisition, checksum/count verification and import |
-| A02–A04 / B01–B04 integrated | Blocked | API/UI wiring and Hajar's canonical crew fixture remain external dependencies |
+| A02–A04 / B01–B04 integrated | Blocked | API/UI wiring and Fadoua's canonical crew fixture remain external dependencies |
 | B05 / X01 | Blocked | Persistence, local app build and offline walkthrough belong to the integration phase |
 
 Additional checks cover input/output isolation, input permutation, timestamp/ID
@@ -61,10 +61,14 @@ selection, nonfinite data rejection, empty input, wrong units/subject, fixed bas
 inclusive session limits, incomplete tasks, invalid trial metadata, latest-result
 selection and policy changes. Both contract example files remain unchanged.
 
-## Fadoua can start now
+## Fadoua: fixture first, then evidence/demo work
 
-Use `plans/06-fadoua-evidence-demo-acceptance.md` on branch `build/demo-qa` from the
-merged kickoff. Stay within `evidence/`, `acceptance/` and `demo/`.
+Follow the [team update](../plans/team-update.md). Use both
+`plans/05-fadoua-synthetic-fixture.md` and `plans/06-fadoua-evidence-demo-acceptance.md`
+on `build/demo-qa`. D2 and D3 are settled in `contracts/v1.md`; write the canonical
+14-row fixture to that shape and checks; El Mahdi independently verifies the engine results. You now own
+`fixtures/crew/`, `tests/fixtures/`, `evidence/`, `acceptance/` and `demo/`.
+Then continue the evidence/demo tasks below.
 
 1. Cross-check examples and demo arithmetic (FD-02).
 2. Build the claim/source table and verify `EVID_SLEEP_003` / `EVID_COG_001` against
@@ -80,11 +84,13 @@ as historical archive verification or a passing end-to-end demo.
 
 ## Remaining handoffs
 
-- Hajar and Hamza finalize reaction row IDs and the canonical seed shape (D2).
-  `tests/engine/` uses explicitly test-only IDs; the production fixture was not created.
+- Fadoua writes the canonical fixture to the settled D2 shape; Hamza loads it in HZ-11.
+  `tests/engine/` still uses explicitly test-only IDs until the loader lands.
+- Nassim owns the shared frontend UI kit and visual QA; see
+  `plans/07-nassim-frontend-ui-ux.md`.
 - Hamza owns shell/API/storage/launch wiring and the shared toolchain. UI/history and
   submission ID details D7/D8 remain with their owners.
-- Amine/Mohsine publish control names for Fadoua (D11).
+- Hamza/Mohsine publish control names for Fadoua (D11).
 - Hamza reviews this engine change before merge. El Mahdi owns merges and later
   submission-build approval; no final acceptance or teammate review is claimed here.
 - See `rules/README.md` for calculations reproducible by hand.
