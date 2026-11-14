@@ -97,7 +97,7 @@ const INPUT_NAMES: Record<string, string> = {
   reaction_baseline: 'Reaction baseline',
 }
 
-/** Friendly age words. The exact second count is still shown in the source age row. */
+/** Friendly words derived from the returned age_seconds; null never becomes zero. */
 export function describeAge(seconds: number): string {
   if (seconds < 60) return `${seconds} s`
   const minutes = Math.floor(seconds / 60)
