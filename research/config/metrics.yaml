@@ -1,0 +1,127 @@
+# Units are configuration conventions, not inferred source units. No danger thresholds.
+heart_rate:
+  unit: "bpm"
+  kind: continuous
+  directionality: context_dependent
+  meaningful_change: both
+systolic_bp:
+  unit: "mmHg"
+  kind: continuous
+  directionality: context_dependent
+  meaningful_change: both
+diastolic_bp:
+  unit: "mmHg"
+  kind: continuous
+  directionality: context_dependent
+  meaningful_change: both
+spo2:
+  unit: "%"
+  kind: continuous
+  directionality: context_dependent
+  meaningful_change: both
+body_temperature:
+  unit: "degC"
+  kind: continuous
+  directionality: context_dependent
+  meaningful_change: both
+hrv:
+  unit: "ms"
+  kind: continuous
+  directionality: context_dependent
+  meaningful_change: both
+sleep_duration:
+  unit: "h"
+  kind: continuous
+  directionality: context_dependent
+  meaningful_change: both
+sleep_efficiency:
+  unit: "%"
+  kind: continuous
+  directionality: context_dependent
+  meaningful_change: both
+sleep_quality:
+  unit: "score"
+  kind: ordinal
+  directionality: context_dependent
+  meaningful_change: both
+reaction_time:
+  unit: "ms"
+  kind: continuous
+  directionality: context_dependent
+  meaningful_change: both
+reaction_lapses:
+  unit: "count"
+  kind: discrete
+  directionality: context_dependent
+  meaningful_change: both
+fatigue:
+  unit: "score"
+  kind: ordinal
+  directionality: context_dependent
+  meaningful_change: both
+mental_fatigue:
+  unit: "score"
+  kind: ordinal
+  directionality: context_dependent
+  meaningful_change: both
+physical_fatigue:
+  unit: "score"
+  kind: ordinal
+  directionality: context_dependent
+  meaningful_change: both
+stress:
+  unit: "score"
+  kind: ordinal
+  directionality: context_dependent
+  meaningful_change: both
+mood:
+  unit: "score"
+  kind: ordinal
+  directionality: context_dependent
+  meaningful_change: both
+workload:
+  unit: "score"
+  kind: ordinal
+  directionality: context_dependent
+  meaningful_change: both
+activity_level:
+  unit: "score"
+  kind: ordinal
+  directionality: context_dependent
+  meaningful_change: both
+exercise_duration:
+  unit: "min"
+  kind: continuous
+  directionality: context_dependent
+  meaningful_change: both
+cabin_co2:
+  unit: "ppm"
+  kind: continuous
+  directionality: context_dependent
+  meaningful_change: both
+cabin_temperature:
+  unit: "degC"
+  kind: continuous
+  directionality: context_dependent
+  meaningful_change: both
+relative_humidity:
+  unit: "%"
+  kind: continuous
+  directionality: context_dependent
+  meaningful_change: both
+radiation_dose_rate:
+  unit: "uSv/h"
+  kind: continuous
+  directionality: context_dependent
+  meaningful_change: both
+cumulative_radiation_dose:
+  unit: "uSv"
+  kind: continuous
+  directionality: context_dependent
+  meaningful_change: both
+
+absorbed_dose_rate:
+  unit: "µGy/h"
+  kind: continuous
+  directionality: context_dependent
+  meaningful_change: both

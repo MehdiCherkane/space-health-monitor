@@ -1,0 +1,3732 @@
+# NASA Scientific Evidence Registry
+# Scope: autonomous astronaut health monitoring (evidence states, not diagnoses)
+# Generated: 2026-11-14
+# Companion files: hypothesis_evidence_map.yaml, rule_candidates.yaml, mvp_matrix.md,
+#                  source_catalog.md, README.md
+#
+# STRENGTH MODEL
+#   VERY_STRONG  NASA/established medical standard, or multiple strong converging sources;
+#                direct operational requirement or consensus definition.
+#   STRONG       NASA human-spaceflight evidence or repeated high-quality finding;
+#                minor limitations only.
+#   MODERATE     Plausible and supported, but limited sample, indirect analog,
+#                mixed findings, or uncertain generalizability.
+#   WEAK         Suggestive only; single small study or anecdote; not sufficient alone.
+#   INSUFFICIENT Cannot support encoding into production reasoning.
+#
+# RULE: every record separates FACT (what the source establishes), INTERPRETATION
+# (how it may be useful), and PROTOTYPE_RULE_NOTE (what we might implement). None of
+# these records is a diagnosis or a production rule.
+
+schema_version: "1.0"
+generated: "2026-11-14"
+evidence_record_count: 60
+
+records:
+
+  # ===========================================================================
+  # SLEEP AND CIRCADIAN DISRUPTION
+  # ===========================================================================
+
+  - id: EVID_SLEEP_001
+    title: "Historical survey: about 6 h sleep in space versus 7.9 h terrestrially"
+    domain: [sleep, circadian]
+    metrics: [sleep_duration]
+    relationship:
+      type: descriptive_comparison
+      direction:
+        sleep_duration: lower_in_space
+    fact: >
+      A NASA Human Research Program evidence report cites the Santy et al. (1988)
+      survey, which reported that astronauts averaged about 6 hours of sleep per day
+      in space compared with about 7.9 hours terrestrially. The same report states that
+      sleep was most reduced on the first and last mission days (5.6 h and 5.7 h), that
+      many crewmembers reported fewer than 5 h on some nights, and that some slept
+      two hours or less.
+    interpretation: >
+      Supports the possibility that an individual astronaut's sleep duration may fall
+      materially below their terrestrial baseline during a mission. The estimate is old,
+      survey-based, and predates current ISS operations, so it should not be treated as
+      the expected in-flight mean or as an individual threshold.
+    prototype_rule_note: >
+      Use sleep duration only as a trend against the astronaut's own baseline. Do not
+      encode "6 h" as an impairment cutoff.
+    source:
+      organization: NASA
+      title: "Evidence Report: Risk of Performance Decrements and Adverse Health Outcomes Resulting from Sleep Loss, Circadian Desynchronization, and Work Overload"
+      url: "https://humanresearchroadmap.nasa.gov/Evidence/reports/Sleep.pdf"
+      publication_date: "2016-04-11"
+      source_type: NASA_HRP_EVIDENCE_REPORT
+      location: "Sleep Duration section (report p. 7 and figure discussion)"
+    evidence_strength:
+      level: MODERATE
+      rationale: "Historical self-report survey cited by NASA; not a direct actigraphy measurement of current crews."
+    population:
+      context: "US astronauts, Space Shuttle era and earlier"
+      size: "Survey cohort; exact N not stated in the cited passage"
+      duration: "Mission-length exposures"
+    thresholds: []
+    limitations:
+      - "Self-report and survey design"
+      - "Old data; operations and schedules have changed"
+      - "Terrestrial comparison group may not be a true personal baseline"
+      - "Does not establish individual impairment"
+    system_use:
+      candidate_hypotheses: [H01]
+      supports:
+        - "sleep duration can be reduced in spaceflight"
+      weakens:
+        - "population sleep norms are adequate substitutes for personal baseline"
+      must_not_be_used_as:
+        - "standalone diagnosis"
+        - "absolute impairment threshold"
+    status:
+      recommended_for_mvp: true
+      quality_flags: [HISTORICAL, SURVEY_DATA]
+
+  - id: EVID_SLEEP_002
+    title: "Actigraphy: in-flight sleep is modestly shorter than preflight and postflight sleep"
+    domain: [sleep, circadian]
+    metrics: [sleep_duration, sleep_efficiency]
+    relationship:
+      type: observational_comparison
+      direction:
+        sleep_duration: lower_in_flight
+    fact: >
+      Barger et al. (2014), using actigraphy and sleep logs over ten years of Shuttle and
+      ISS operations, found that Shuttle astronauts averaged about 20 minutes less sleep
+      in space than during a two-week preflight period and about 47 minutes less than
+      during the week after landing. ISS astronauts averaged about 19 minutes less sleep
+      in flight than during a two-week pre-mission period and about 52 minutes less than
+      during the first week after landing. The NASA report describes this as the largest
+      sleep study in space.
+    interpretation: >
+      On a group-average basis, in-flight sleep is only modestly shorter than preflight
+      sleep, but the average conceals nights with much shorter sleep. A population mean
+      of about 6 h is not a valid individual threshold, and a small group difference does
+      not mean an individual is rested.
+    prototype_rule_note: >
+      Compare each night to the astronaut's rolling personal baseline and flag
+      sustained downward trends, not a single night below a population number.
+    source:
+      organization: NASA
+      title: "Evidence Report: Risk of Performance Decrements and Adverse Health Outcomes Resulting from Sleep Loss, Circadian Desynchronization, and Work Overload (citing Barger et al. 2014)"
+      url: "https://humanresearchroadmap.nasa.gov/Evidence/reports/Sleep.pdf"
+      publication_date: "2016-04-11"
+      source_type: NASA_HRP_EVIDENCE_REPORT
+      location: "Sleep Duration section"
+    evidence_strength:
+      level: STRONG
+      rationale: "Large multi-year actigraphy dataset in astronauts, peer-reviewed and cited by NASA; group-level finding."
+    population:
+      context: "Space Shuttle and ISS astronauts"
+      size: "Ten years of actigraphy and sleep logs; exact N not stated in the cited passage"
+      duration: "Shuttle missions and ISS expeditions"
+    thresholds: []
+    limitations:
+      - "Actigraphy can misclassify quiet wake as sleep"
+      - "Sleep logs are subjective"
+      - "Preflight training period may not represent a true baseline"
+      - "Group averages do not quantify individual risk"
+    system_use:
+      candidate_hypotheses: [H01]
+      supports:
+        - "in-flight sleep duration is often below terrestrial sleep"
+        - "personal baseline is more informative than a population mean"
+      weakens:
+        - "a fixed 6 h cutoff is a validated individual impairment threshold"
+      must_not_be_used_as:
+        - "standalone diagnosis"
+        - "absolute impairment threshold"
+    status:
+      recommended_for_mvp: true
+      quality_flags: [OBSERVATIONAL, ACTIGRAPHY]
+
+  - id: EVID_SLEEP_003
+    title: "Chronic sleep restriction degrades performance while subjective sleepiness plateaus"
+    domain: [sleep, cognition, fatigue]
+    metrics: [sleep_duration, reaction_time, reaction_lapses, fatigue]
+    relationship:
+      type: experimental_dose_response
+      direction:
+        sleep_duration: decrease
+        reaction_time: worsening
+        reaction_lapses: increase
+    fact: >
+      In controlled laboratory studies cited by the NASA sleep evidence report, healthy
+      adults restricted to 4, 6, or 8 hours of time in bed per night showed steadily
+      degrading performance, while their subjective feeling of sleepiness increased only
+      modestly and then reached a plateau (Belenky et al. 2003; Van Dongen et al. 2003).
+      The report concludes that most people cannot accurately gauge how much sleep loss
+      affects their performance.
+    interpretation: >
+      Subjective fatigue or sleepiness can underestimate objective impairment. An
+      objective reaction-time trend, especially lapses, is more informative than
+      self-report alone when assessing fatigue-related performance degradation.
+    prototype_rule_note: >
+      When sleep is chronically short, require an objective reaction-time check before
+      treating a normal self-report as reassuring. Escalate to human review if the
+      objective trend worsens.
+    source:
+      organization: NASA
+      title: "Evidence Report: Risk of Performance Decrements and Adverse Health Outcomes Resulting from Sleep Loss, Circadian Desynchronization, and Work Overload"
+      url: "https://humanresearchroadmap.nasa.gov/Evidence/reports/Sleep.pdf"
+      publication_date: "2016-04-11"
+      source_type: NASA_HRP_EVIDENCE_REPORT
+      location: "Chronic Sleep Loss section, report p. 7"
+    evidence_strength:
+      level: STRONG
+      rationale: "Converging controlled laboratory dose-response studies cited by NASA; not specific to astronauts."
+    population:
+      context: "Healthy adult laboratory volunteers"
+      size: "Multiple studies; exact combined N not stated in the cited passage"
+      duration: "Days to weeks of restricted sleep"
+    thresholds: []
+    limitations:
+      - "Terrestrial laboratory setting"
+      - "Sleep restriction schedules may not match mission schedules"
+      - "Individual vulnerability varies"
+      - "Performance tests differ across studies"
+    system_use:
+      candidate_hypotheses: [H01]
+      supports:
+        - "sleep deficit may increase concern"
+        - "reaction-time degradation strengthens concern"
+        - "normal self-reported sleepiness does not exclude impairment"
+      weakens:
+        - "self-reported fatigue is sufficient to rule out fatigue-related degradation"
+      must_not_be_used_as:
+        - "standalone diagnosis"
+        - "absolute impairment threshold"
+    status:
+      recommended_for_mvp: true
+      quality_flags: [EXPERIMENTAL, TERRESTRIAL]
+
+  - id: EVID_SLEEP_004
+    title: "Extended wakefulness produces reaction-time decrements equivalent to alcohol intoxication"
+    domain: [sleep, cognition, fatigue]
+    metrics: [sleep_duration, reaction_time, reaction_lapses]
+    context_features: [time_since_wake]
+    relationship:
+      type: experimental_dose_response
+      direction:
+        time_since_wake: increase
+        reaction_time: worsening
+    fact: >
+      The NASA sleep evidence report states that sustained wakefulness of only 19 hours
+      can produce performance decrements equivalent to a blood alcohol concentration of
+      0.05%, and that 24 hours of wakefulness can produce decrements on a simple reaction
+      time task equivalent to a blood alcohol concentration of 0.10% (Dawson and Reid
+      1997, as cited).
+    interpretation: >
+      Time since wake is a meaningful fatigue exposure. It can contextualize a reaction-time
+      result even when measured sleep duration looks adequate.
+    prototype_rule_note: >
+      Add time-since-wake to the context of every reaction-time assessment. Do not turn the
+      19 h or 24 h figures into an impairment diagnosis.
+    source:
+      organization: NASA
+      title: "Evidence Report: Risk of Performance Decrements and Adverse Health Outcomes Resulting from Sleep Loss, Circadian Desynchronization, and Work Overload"
+      url: "https://humanresearchroadmap.nasa.gov/Evidence/reports/Sleep.pdf"
+      publication_date: "2016-04-11"
+      source_type: NASA_HRP_EVIDENCE_REPORT
+      location: "Acute Sleep Loss section, report p. 7"
+    evidence_strength:
+      level: STRONG
+      rationale: "Classic controlled study of extended wakefulness, cited by NASA; converging with broader fatigue literature."
+    population:
+      context: "Healthy adult laboratory volunteers"
+      size: "Controlled study; exact N not stated in the cited passage"
+      duration: "19-24 hours of sustained wakefulness"
+    thresholds: []
+    limitations:
+      - "Blood-alcohol equivalence is an analogy, not a clinical diagnosis"
+      - "Simple reaction-time task"
+      - "Individual tolerance varies"
+    system_use:
+      candidate_hypotheses: [H01]
+      supports:
+        - "extended wakefulness is a fatigue exposure"
+        - "time since wake should be recorded with cognitive tests"
+      weakens:
+        - "reaction-time change can be interpreted without wake-time context"
+      must_not_be_used_as:
+        - "standalone diagnosis"
+        - "legal or fitness-for-duty determination"
+    status:
+      recommended_for_mvp: true
+      quality_flags: [EXPERIMENTAL, TERRESTRIAL]
+
+  - id: EVID_SLEEP_005
+    title: "Circadian phase and misalignment affect alertness and cognitive performance"
+    domain: [sleep, circadian, cognition]
+    metrics: [sleep_duration, reaction_time, fatigue]
+    context_features: [circadian_phase, schedule_shift]
+    relationship:
+      type: physiological_association
+      direction:
+        circadian_misalignment: increase
+        reaction_time: worsening
+    fact: >
+      The NASA sleep evidence report states that alertness and performance fluctuate with
+      a circadian rhythm, with performance worst when the circadian drive to sleep is
+      strongest. It defines circadian misalignment as attempting sleep and wakefulness at
+      times opposed by the circadian system, notes that jet lag is a common example, and
+      states that engaging in activities during adverse circadian phases significantly
+      impairs cognitive performance. Non-24-hour operations during spaceflight have also
+      been associated with sleep problems.
+    interpretation: >
+      Time of day and recent schedule shifts are required context for interpreting sleep
+      and reaction time. A poor reaction-time result at 04:00 may reflect circadian phase
+      rather than a new medical problem.
+    prototype_rule_note: >
+      Record mission time, sleep/wake schedule, and recent shifts with every assessment.
+      Prefer change-from-personal-baseline at the same circadian phase.
+    source:
+      organization: NASA
+      title: "Evidence Report: Risk of Performance Decrements and Adverse Health Outcomes Resulting from Sleep Loss, Circadian Desynchronization, and Work Overload"
+      url: "https://humanresearchroadmap.nasa.gov/Evidence/reports/Sleep.pdf"
+      publication_date: "2016-04-11"
+      source_type: NASA_HRP_EVIDENCE_REPORT
+      location: "Circadian Phase section, report p. 7; non-24-hour operations section"
+    evidence_strength:
+      level: MODERATE
+      rationale: "Strong terrestrial circadian physiology; spaceflight-specific evidence is limited and largely observational."
+    population:
+      context: "Laboratory volunteers and astronauts"
+      size: "Multiple studies; exact N not stated in the cited passage"
+      duration: "Circadian-cycle and mission-duration exposures"
+    thresholds: []
+    limitations:
+      - "Circadian phase was not directly measured by the monitoring system"
+      - "Spaceflight-specific evidence is limited"
+      - "Individual chronotype varies"
+    system_use:
+      candidate_hypotheses: [H01]
+      supports:
+        - "circadian timing is a confounder for sleep and performance"
+        - "schedule shifts may increase fatigue concern"
+      weakens:
+        - "a single reaction-time result can be interpreted without time-of-day context"
+      must_not_be_used_as:
+        - "standalone diagnosis"
+    status:
+      recommended_for_mvp: true
+      quality_flags: [OBSERVATIONAL, TERRESTRIAL]
+
+  - id: EVID_SLEEP_006
+    title: "Sleep-promoting medication use is common during spaceflight"
+    domain: [sleep, pharmacology]
+    metrics: [sleep_duration, sleep_quality]
+    context_features: [sleep_medication_use]
+    relationship:
+      type: prevalence
+      direction:
+        sleep_medication_use: common
+    fact: >
+      The NASA sleep evidence report states that about three-quarters of both Shuttle and
+      ISS astronauts reported using sleep medications during their missions, including on
+      52% of nights aboard the Shuttle (Barger et al. 2014). Sleep medication use was
+      associated with faster sleep latency but not with longer sleep duration.
+    interpretation: >
+      Medication use is common and is a confounder for sleep duration, sleep quality, and
+      next-day performance. It should be captured as context, not treated as evidence of a
+      sleep disorder.
+    prototype_rule_note: >
+      Ask about sleep-medication use when sleep or next-day performance changes. Do not
+      infer a disorder from use alone.
+    source:
+      organization: NASA
+      title: "Evidence Report: Risk of Performance Decrements and Adverse Health Outcomes Resulting from Sleep Loss, Circadian Desynchronization, and Work Overload"
+      url: "https://humanresearchroadmap.nasa.gov/Evidence/reports/Sleep.pdf"
+      publication_date: "2016-04-11"
+      source_type: NASA_HRP_EVIDENCE_REPORT
+      location: "Pharmacological Countermeasures section"
+    evidence_strength:
+      level: STRONG
+      rationale: "Large actigraphy/sleep-log cohort; prevalence finding is robust, performance effect is not."
+    population:
+      context: "Space Shuttle and ISS astronauts"
+      size: "Ten-year cohort; exact N not stated in the cited passage"
+      duration: "Mission-length exposure"
+    thresholds: []
+    limitations:
+      - "Self-report of medication use"
+      - "Indication bias"
+      - "Does not establish causation for performance changes"
+    system_use:
+      candidate_hypotheses: [H01, H05]
+      supports:
+        - "medication use is a sleep/performance confounder"
+      weakens:
+        - "sleep duration can be interpreted without medication context"
+      must_not_be_used_as:
+        - "evidence of a sleep disorder"
+        - "standalone diagnosis"
+    status:
+      recommended_for_mvp: true
+      quality_flags: [OBSERVATIONAL, SELF_REPORT]
+
+  - id: EVID_SLEEP_007
+    title: "Sleep inertia transiently impairs performance after waking"
+    domain: [sleep, cognition]
+    metrics: [reaction_time, reaction_lapses, sleep_duration]
+    context_features: [time_since_wake]
+    relationship:
+      type: physiological_association
+      direction:
+        time_since_wake: short
+        reaction_time: worsening
+    fact: >
+      The NASA sleep evidence report states that sleep inertia is an impairment in alertness
+      and performance that dissipates asymptotically until approximately two to four hours
+      after waking. Its effects are enhanced by prior sleep history, the sleep stage from
+      which one is awoken, and circadian phase. The report states that sleep inertia has not
+      been evaluated during spaceflight, although astronaut journal reports suggest it occurs.
+    interpretation: >
+      A test taken shortly after waking may be transiently worse without indicating a
+      persistent problem. Repeat testing after the inertia window is more informative.
+    prototype_rule_note: >
+      Record time since waking. If a post-wake reaction-time result is poor, request a repeat
+      after the astronaut has been awake longer before raising concern.
+    source:
+      organization: NASA
+      title: "Evidence Report: Risk of Performance Decrements and Adverse Health Outcomes Resulting from Sleep Loss, Circadian Desynchronization, and Work Overload"
+      url: "https://humanresearchroadmap.nasa.gov/Evidence/reports/Sleep.pdf"
+      publication_date: "2016-04-11"
+      source_type: NASA_HRP_EVIDENCE_REPORT
+      location: "Sleep Inertia section, report p. 7; spaceflight sleep-inertia gap section"
+    evidence_strength:
+      level: MODERATE
+      rationale: "Well-described terrestrial phenomenon; spaceflight evidence is anecdotal and the report calls it an evidence gap."
+    population:
+      context: "Laboratory volunteers; astronaut journal reports"
+      size: "Multiple terrestrial studies; spaceflight evidence anecdotal"
+      duration: "Minutes to hours after waking"
+    thresholds: []
+    limitations:
+      - "Not systematically studied in spaceflight"
+      - "Sleep stage and prior sleep history are usually unknown"
+      - "Individual variability"
+    system_use:
+      candidate_hypotheses: [H01]
+      supports:
+        - "time since wake is a confounder for cognitive testing"
+      weakens:
+        - "a single post-wake test is sufficient to establish degradation"
+      must_not_be_used_as:
+        - "standalone diagnosis"
+    status:
+      recommended_for_mvp: true
+      quality_flags: [TERRESTRIAL, EVIDENCE_GAP]
+
+  # ===========================================================================
+  # COGNITIVE PERFORMANCE / REACTION TIME
+  # ===========================================================================
+
+  - id: EVID_COG_001
+    title: "PVT is the dominant sensitive measure of sleep-loss effects on vigilance"
+    domain: [cognition, sleep, fatigue]
+    metrics: [reaction_time, reaction_lapses]
+    context_features: [false_starts, response_variability]
+    relationship:
+      type: measurement_validity
+      direction:
+        sleep_loss: increase
+        reaction_time: worsening
+        reaction_lapses: increase
+    fact: >
+      The NASA sleep evidence report states that vigilance is the component of cognition
+      most consistently and significantly affected by sleep loss, and that the Psychomotor
+      Vigilance Task (PVT) has emerged as the dominant means of evaluation. The PVT has been
+      used in hundreds of studies and is sensitive and reliable for sleepiness arising from
+      sleep loss and circadian desynchrony. It captures mean reaction time, lapses (errors of
+      omission), and false starts (errors of commission).
+    interpretation: >
+      A PVT-style test can provide objective evidence of fatigue-related performance change.
+      Lapses and false starts are more specific to vigilance instability than mean reaction
+      time alone.
+    prototype_rule_note: >
+      Use a short PVT as one evidence source, not as a diagnosis. Require a trend and
+      corroborating sleep/workload context before escalating.
+    source:
+      organization: NASA
+      title: "Evidence Report: Risk of Performance Decrements and Adverse Health Outcomes Resulting from Sleep Loss, Circadian Desynchronization, and Work Overload"
+      url: "https://humanresearchroadmap.nasa.gov/Evidence/reports/Sleep.pdf"
+      publication_date: "2016-04-11"
+      source_type: NASA_HRP_EVIDENCE_REPORT
+      location: "Measuring the impact of sleep loss using the psychomotor vigilance task; Laboratory evaluations section"
+    evidence_strength:
+      level: STRONG
+      rationale: "Extensive validation literature summarized by NASA; consistent across laboratory and field studies."
+    population:
+      context: "Laboratory volunteers and astronauts"
+      size: "Hundreds of studies; exact N not stated in the cited passage"
+      duration: "Acute and chronic sleep-loss exposures"
+    thresholds: []
+    limitations:
+      - "Gold-standard versions are 10-20 minutes, longer than a short operational test"
+      - "Short versions are less sensitive"
+      - "Motivation and test environment affect results"
+    system_use:
+      candidate_hypotheses: [H01]
+      supports:
+        - "reaction-time degradation strengthens fatigue concern"
+        - "lapses and false starts are meaningful objective signals"
+      weakens:
+        - "subjective fatigue alone is sufficient to exclude fatigue-related degradation"
+      must_not_be_used_as:
+        - "standalone diagnosis"
+        - "absolute impairment threshold"
+    status:
+      recommended_for_mvp: true
+      quality_flags: [VALIDATED_INSTRUMENT]
+
+  - id: EVID_COG_002
+    title: "Short PVT versions trade sensitivity for operational feasibility"
+    domain: [cognition, sleep]
+    metrics: [reaction_time, reaction_lapses]
+    relationship:
+      type: measurement_comparison
+      direction:
+        test_duration: decrease
+        sensitivity: decrease
+    fact: >
+      The NASA sleep evidence report describes a 3-minute PVT-B that discriminated alert from
+      sleep-deprived individuals, but with an effect attenuated relative to the 10-minute PVT.
+      An adaptive-duration PVT-A showed reliable agreement with the 10-minute PVT; its average
+      duration was 6.5 minutes, indicating that some individuals may not show impairment until
+      several minutes into the test. The report concludes that a longer version is preferable,
+      but the PVT-A may be sufficient to capture sleep-loss-related impairment.
+    interpretation: >
+      A very short reaction-time test is feasible but can miss impairment. A negative short
+      test is weaker evidence of fitness than a negative longer test.
+    prototype_rule_note: >
+      Use the short test for frequent sampling and trend detection. Escalate to a longer
+      repeat when the short test is borderline or when other fatigue evidence is present.
+    source:
+      organization: NASA
+      title: "Evidence Report: Risk of Performance Decrements and Adverse Health Outcomes Resulting from Sleep Loss, Circadian Desynchronization, and Work Overload"
+      url: "https://humanresearchroadmap.nasa.gov/Evidence/reports/Sleep.pdf"
+      publication_date: "2016-04-11"
+      source_type: NASA_HRP_EVIDENCE_REPORT
+      location: "Measuring the impact of sleep loss using the psychomotor vigilance task"
+    evidence_strength:
+      level: STRONG
+      rationale: "Multiple validation comparisons summarized by NASA; consistent direction of effect."
+    population:
+      context: "Laboratory volunteers"
+      size: "Multiple validation studies; exact N not stated in the cited passage"
+      duration: "Total and partial sleep deprivation protocols"
+    thresholds: []
+    limitations:
+      - "Laboratory validation; limited operational flight validation"
+      - "Test duration and inter-stimulus interval differ across versions"
+      - "Individual differences in optimal test duration"
+    system_use:
+      candidate_hypotheses: [H01]
+      supports:
+        - "short-test results should be interpreted with a sensitivity caveat"
+        - "repeat testing improves confidence"
+      weakens:
+        - "one short negative test is sufficient to exclude impairment"
+      must_not_be_used_as:
+        - "standalone diagnosis"
+    status:
+      recommended_for_mvp: true
+      quality_flags: [VALIDATED_INSTRUMENT, METHODOLOGICAL]
+
+  - id: EVID_COG_003
+    title: "NASA Reaction Self Test: operational precedent for brief repeated PVT on ISS"
+    domain: [cognition, sleep, fatigue]
+    metrics: [reaction_time, reaction_lapses]
+    context_features: [false_starts, time_since_wake, work_hours, eva]
+    relationship:
+      type: operational_precedent
+      direction:
+        fatigue_exposure: increase
+        reaction_time: worsening
+    fact: >
+      NASA's Reaction Self Test (RST) used a 3-minute PVT plus 2 minutes of activity questions,
+      administered twice daily on ISS Expeditions 21 and 22, with feedback on a 0-100% scale
+      relative to astronaut norms. The project description lists study hypotheses that RST
+      performance would decline after wake durations >16 hours, sleep restricted to <6 hours
+      per day for 3 or more days, sleep shifts, work periods >12 hours per day, more than 6
+      work days without a rest day, and EVAs. The source is a project description/poster, not a
+      results paper; the hypotheses are not reported outcomes.
+    interpretation: >
+      Provides an operational precedent for a brief, repeated, self-administered PVT and for
+      collecting sleep/workload context alongside it. The numeric triggers are study hypotheses
+      and must not be presented as validated thresholds.
+    prototype_rule_note: >
+      Adopt the pattern (brief test + context questions + personal trend), not the unverified
+      numeric triggers.
+    source:
+      organization: NASA
+      title: "Psychomotor Vigilance Self Test on ISS (Reaction Self Test on Expeditions 21 & 22)"
+      url: "https://ntrs.nasa.gov/api/citations/20090029851/downloads/20090029851.pdf"
+      publication_date: "2009"
+      source_type: NASA_TECHNICAL_REPORT
+      location: "Objectives and Hypotheses; Measurements"
+    evidence_strength:
+      level: MODERATE
+      rationale: "Operational deployment is documented, but the available source describes hypotheses and methods, not published outcomes."
+    population:
+      context: "ISS astronauts, Expeditions 21 and 22"
+      size: "Small expedition crew; exact N not stated in the source"
+      duration: "Up to 180 mission days, twice daily"
+    thresholds: []
+    limitations:
+      - "Study hypotheses, not confirmed findings"
+      - "Small crew"
+      - "Source is a project description/poster"
+    system_use:
+      candidate_hypotheses: [H01]
+      supports:
+        - "brief repeated PVT is operationally feasible in spaceflight"
+        - "sleep and workload context should accompany reaction-time testing"
+      weakens:
+        - "the listed numeric triggers are validated alarm thresholds"
+      must_not_be_used_as:
+        - "standalone diagnosis"
+        - "validated threshold source"
+    status:
+      recommended_for_mvp: true
+      quality_flags: [OPERATIONAL_PRECEDENT, HYPOTHESIS_ONLY]
+
+  - id: EVID_COG_004
+    title: "In-flight cognitive findings are inconsistent and operationally ambiguous"
+    domain: [cognition, sleep, fatigue]
+    metrics: [reaction_time, reaction_lapses]
+    relationship:
+      type: mixed_evidence
+      direction:
+        spaceflight: uncertain
+        cognition: mixed
+    fact: >
+      The NASA sleep evidence report states that the most comprehensive study of sleep,
+      circadian rhythms, and performance (five astronauts, two Shuttle flights) found only a
+      non-significant trend toward worse in-flight performance, with most participants showing
+      decline in the last pre-launch week, further decline in flight, and slow post-flight
+      recovery. Another study of four astronauts found slightly altered performance on the digit
+      symbol substitution and number recognition tasks. The report concludes that limited
+      participants and diverse measures make it difficult to evaluate how sleep loss, fatigue,
+      circadian desynchronization, and workload translate into performance decrements, and that
+      the relationship of these measures to operational performance and errors is unclear.
+      In a survey, 57% of interviewed astronauts did not perceive any fatigue impact during
+      their mission.
+    interpretation: >
+      In-flight cognitive degradation is not uniform. Absence of measured degradation does not
+      prove the astronaut is rested; presence of degradation does not establish operational
+      impairment. Cognitive evidence should be treated as probabilistic and context-dependent.
+    prototype_rule_note: >
+      Never raise a fatigue concern from a single cognitive result. Require converging sleep,
+      workload, and subjective evidence, and prefer personal trend over group comparison.
+    source:
+      organization: NASA
+      title: "Evidence Report: Risk of Performance Decrements and Adverse Health Outcomes Resulting from Sleep Loss, Circadian Desynchronization, and Work Overload"
+      url: "https://humanresearchroadmap.nasa.gov/Evidence/reports/Sleep.pdf"
+      publication_date: "2016-04-11"
+      source_type: NASA_HRP_EVIDENCE_REPORT
+      location: "In-flight performance studies section, report pp. 21-22"
+    evidence_strength:
+      level: MODERATE
+      rationale: "Small in-flight samples and heterogeneous measures; the report itself emphasizes uncertainty."
+    population:
+      context: "Space Shuttle astronauts"
+      size: "5 astronauts in one study; 4 in another; survey interviews"
+      duration: "Shuttle missions"
+    thresholds: []
+    limitations:
+      - "Very small samples"
+      - "Heterogeneous cognitive measures"
+      - "Operational relevance unclear"
+      - "Self-report may underrecognize fatigue"
+    system_use:
+      candidate_hypotheses: [H01]
+      supports:
+        - "cognitive evidence is not deterministic"
+        - "converging evidence is required"
+      weakens:
+        - "a single cognitive test can establish performance degradation"
+        - "in-flight cognitive impairment is universal"
+      must_not_be_used_as:
+        - "standalone diagnosis"
+        - "proof of fitness"
+    status:
+      recommended_for_mvp: true
+      quality_flags: [MIXED_EVIDENCE, SMALL_SAMPLE]
+
+  # ===========================================================================
+  # FATIGUE AND WORKLOAD
+  # ===========================================================================
+
+  - id: EVID_FATIGUE_001
+    title: "Fatigue risk is framed as sleep loss, circadian disruption, and work overload combined"
+    domain: [fatigue, sleep, workload]
+    metrics: [sleep_duration, fatigue, workload]
+    context_features: [circadian_phase, work_hours, days_since_rest]
+    relationship:
+      type: risk_framing
+      direction:
+        sleep_loss: increase
+        circadian_disruption: increase
+        workload: increase
+        performance: worsening
+    fact: >
+      NASA's Human Research Program frames the relevant risk as performance decrements and
+      adverse health outcomes resulting from sleep loss, circadian desynchronization, and work
+      overload. The evidence report treats these as interacting exposures rather than as
+      independent causes.
+    interpretation: >
+      A fatigue assessment should combine sleep, circadian timing, and workload. Relying on any
+      one of them alone will miss cases and generate false alarms.
+    prototype_rule_note: >
+      Represent each exposure separately in the evidence graph, then combine only at the
+      hypothesis level. Do not collapse them into a single score.
+    source:
+      organization: NASA
+      title: "Evidence Report: Risk of Performance Decrements and Adverse Health Outcomes Resulting from Sleep Loss, Circadian Desynchronization, and Work Overload"
+      url: "https://humanresearchroadmap.nasa.gov/Evidence/reports/Sleep.pdf"
+      publication_date: "2016-04-11"
+      source_type: NASA_HRP_EVIDENCE_REPORT
+      location: "Title and Executive Summary"
+    evidence_strength:
+      level: STRONG
+      rationale: "NASA's own risk framing, supported by the report's reviewed literature."
+    population:
+      context: "Astronauts"
+      size: "Not applicable (risk framing)"
+      duration: "Mission-length exposure"
+    thresholds: []
+    limitations:
+      - "Risk framing is not a quantitative model"
+      - "Relative contributions vary by mission and individual"
+    system_use:
+      candidate_hypotheses: [H01]
+      supports:
+        - "fatigue is multifactorial"
+        - "sleep, circadian, and workload evidence should be evaluated together"
+      weakens:
+        - "sleep duration alone is sufficient to assess fatigue"
+      must_not_be_used_as:
+        - "standalone diagnosis"
+    status:
+      recommended_for_mvp: true
+      quality_flags: [RISK_FRAMING]
+
+  - id: EVID_FATIGUE_002
+    title: "Fatigue disrupts vigilant attention through prefrontal, occipital, and thalamic mechanisms"
+    domain: [fatigue, cognition]
+    metrics: [reaction_time, reaction_lapses]
+    relationship:
+      type: mechanistic
+      direction:
+        fatigue: increase
+        vigilant_attention: unstable
+    fact: >
+      The NASA Reaction Self Test source states that neuroimaging studies have documented that
+      fatigue affects vigilant attention by causing unpredictable reductions in neural activity
+      in distributed brain regions including cognitive control areas in the prefrontal cortex,
+      visual processing areas in the occipital lobe, and the thalamus.
+    interpretation: >
+      Lapses reflect state instability rather than a stable loss of capability. This supports
+      repeated sampling: a single good or bad test can misrepresent the underlying state.
+    prototype_rule_note: >
+      Prefer multiple short samples across a duty period over one test. Treat high variability
+      as a signal worth reviewing.
+    source:
+      organization: NASA
+      title: "Psychomotor Vigilance Self Test on ISS (Reaction Self Test on Expeditions 21 & 22)"
+      url: "https://ntrs.nasa.gov/api/citations/20090029851/downloads/20090029851.pdf"
+      publication_date: "2009"
+      source_type: NASA_TECHNICAL_REPORT
+      location: "Reaction Self Test reveals the psychomotor slowing..."
+    evidence_strength:
+      level: STRONG
+      rationale: "Neuroimaging evidence summarized in a NASA source; convergent with the broader fatigue literature."
+    population:
+      context: "Laboratory neuroimaging studies"
+      size: "Multiple studies; exact N not stated in the source"
+      duration: "Fatigue/sleep-loss exposures"
+    thresholds: []
+    limitations:
+      - "Mechanistic evidence, not an operational rule"
+      - "Indirect measurement in the monitoring setting"
+    system_use:
+      candidate_hypotheses: [H01]
+      supports:
+        - "response variability is meaningful"
+        - "repeated sampling is preferable to a single test"
+      weakens:
+        - "a single test is sufficient to characterize fatigue state"
+      must_not_be_used_as:
+        - "standalone diagnosis"
+    status:
+      recommended_for_mvp: true
+      quality_flags: [MECHANISTIC]
+
+  - id: EVID_WORKLOAD_001
+    title: "Work overload contributes to sleep loss, but perceived fatigue impact varies"
+    domain: [workload, sleep, fatigue]
+    metrics: [workload, sleep_duration, fatigue]
+    context_features: [work_hours, days_since_rest]
+    relationship:
+      type: association
+      direction:
+        workload: increase
+        sleep_duration: decrease
+    fact: >
+      The NASA sleep evidence report identifies work overload as one factor leading to reduced
+      sleep duration in spaceflight. It also reports that in a survey/interview study, 57% of
+      participating astronauts did not perceive any impact from fatigue during their mission,
+      while a minority acknowledged mistakes in attention and short-term memory and noticed
+      differences in crew-ground interactions when fatigued.
+    interpretation: >
+      Workload is a plausible contributor to sleep loss, but perceived impact is variable and
+      cannot be used as a reliable indicator of actual impairment.
+    prototype_rule_note: >
+      Record work hours and days since rest as context. Do not treat "no perceived fatigue" as
+      evidence of no risk.
+    source:
+      organization: NASA
+      title: "Evidence Report: Risk of Performance Decrements and Adverse Health Outcomes Resulting from Sleep Loss, Circadian Desynchronization, and Work Overload"
+      url: "https://humanresearchroadmap.nasa.gov/Evidence/reports/Sleep.pdf"
+      publication_date: "2016-04-11"
+      source_type: NASA_HRP_EVIDENCE_REPORT
+      location: "Sleep Duration section; in-flight performance and fatigue survey section"
+    evidence_strength:
+      level: MODERATE
+      rationale: "Observational and self-report evidence; workload-sleep relationship is plausible but not quantified for individuals."
+    population:
+      context: "Space Shuttle and ISS astronauts"
+      size: "Survey/interview cohort; exact N not stated in the cited passage"
+      duration: "Mission-length exposure"
+    thresholds: []
+    limitations:
+      - "Self-report"
+      - "Workload not standardized across studies"
+      - "Individual differences in fatigue perception"
+    system_use:
+      candidate_hypotheses: [H01]
+      supports:
+        - "high workload is context for sleep loss and fatigue"
+      weakens:
+        - "absence of perceived fatigue excludes risk"
+      must_not_be_used_as:
+        - "standalone diagnosis"
+        - "absolute workload threshold"
+    status:
+      recommended_for_mvp: true
+      quality_flags: [OBSERVATIONAL, SELF_REPORT]
+
+  # ===========================================================================
+  # STRESS / MOOD / BEHAVIORAL HEALTH
+  # ===========================================================================
+
+  - id: EVID_BMED_001
+    title: "NASA separates adverse behavioral change from psychiatric disorder"
+    domain: [behavioral_health, mood, cognition]
+    metrics: [mood, fatigue, workload]
+    context_features: [functional_impact, interpersonal_interaction]
+    relationship:
+      type: definitional
+      direction:
+        behavioral_change: functional_decrement
+    fact: >
+      NASA differentiates an adverse behavioral change from a psychiatric disorder as follows:
+      a behavioral change is any decrement in mood, cognition, morale, or interpersonal
+      interaction that adversely affects operational readiness or performance; a psychiatric
+      disorder is one that meets DSM criteria for diagnosis. The NASA BMed evidence report uses
+      this distinction explicitly.
+    interpretation: >
+      Monitoring should target observable functional decrements and performance changes, not
+      diagnostic labels. This is the correct level of abstraction for a safety-oriented
+      monitoring system.
+    prototype_rule_note: >
+      Hypotheses must be phrased as "behavioral health concern" or "performance change," never
+      as depression, anxiety disorder, PTSD, or psychiatric disorder.
+    source:
+      organization: NASA
+      title: "Evidence Report: Risk of Adverse Cognitive or Behavioral Changes and Psychiatric Disorders Leading to In-Mission Health and Performance and Long-Term Health Effects"
+      url: "https://humanresearchroadmap.nasa.gov/Evidence/reports/HRP-ER-BMED-HFBP-20250210.pdf"
+      publication_date: "2025-02-10"
+      source_type: NASA_HRP_EVIDENCE_REPORT
+      location: "Definition of behavioral change vs psychiatric disorder, report p. 19"
+    evidence_strength:
+      level: VERY_STRONG
+      rationale: "NASA operational definition; directly applicable to system scope and terminology."
+    population:
+      context: "Astronauts"
+      size: "Not applicable (definitional)"
+      duration: "Not applicable"
+    thresholds: []
+    limitations:
+      - "Definitional, not a screening instrument"
+      - "Requires operational context to judge functional impact"
+    system_use:
+      candidate_hypotheses: [H05]
+      supports:
+        - "monitoring should detect concerns and performance changes, not diagnoses"
+      weakens:
+        - "diagnostic labels are appropriate system outputs"
+      must_not_be_used_as:
+        - "standalone diagnosis"
+        - "psychiatric screening"
+    status:
+      recommended_for_mvp: true
+      quality_flags: [DEFINITIONAL, SCOPE_CRITICAL]
+
+  - id: EVID_BMED_002
+    title: "Behavioral emergencies are rare in LEO; subclinical mood and anxiety disturbances occur"
+    domain: [behavioral_health, mood, stress]
+    metrics: [mood, stress, fatigue]
+    relationship:
+      type: epidemiology
+      direction:
+        mission_duration: increase
+        behavioral_health_risk: increase
+    fact: >
+      The NASA BMed evidence report states that the average incidence rate of an adverse
+      behavioral health event during a space mission is relatively low for current missions of
+      up to 6 months in low Earth orbit. Although subclinical mood and anxiety disturbances have
+      occurred, no behavioral emergencies have been reported to date. The report also states
+      that as of 2016 the IMM indicated no astronaut had been officially diagnosed with anxiety
+      or depression during flight.
+    interpretation: >
+      Base rates are low, so a positive behavioral signal is more likely to reflect a
+      subclinical, transient, or contextual state than a psychiatric emergency. Conversely, low
+      base rates make false positives costly and demand careful confirmation.
+    prototype_rule_note: >
+      Keep behavioral health hypotheses at "concern" level. Require repeated observations,
+      functional impact, and human review before escalation.
+    source:
+      organization: NASA
+      title: "Evidence Report: Risk of Adverse Cognitive or Behavioral Changes and Psychiatric Disorders Leading to In-Mission Health and Performance and Long-Term Health Effects"
+      url: "https://humanresearchroadmap.nasa.gov/Evidence/reports/HRP-ER-BMED-HFBP-20250210.pdf"
+      publication_date: "2025-02-10"
+      source_type: NASA_HRP_EVIDENCE_REPORT
+      location: "Executive Summary / Occurrences of Behavioral Health Signs and Symptoms; Mood and Mood Disorders"
+    evidence_strength:
+      level: STRONG
+      rationale: "NASA human-spaceflight epidemiology and clinical surveillance; low base rate is consistently reported."
+    population:
+      context: "US astronauts on Shuttle and ISS missions up to about 6 months"
+      size: "Multiple cohorts; see EVID_BMED_003 for counts"
+      duration: "Up to 6 months LEO"
+    thresholds: []
+    limitations:
+      - "Low base rate limits statistical power"
+      - "Surveillance and reporting practices vary"
+      - "Long-duration and exploration missions may differ"
+      - "Absence of reported emergencies does not prove absence of risk"
+    system_use:
+      candidate_hypotheses: [H05]
+      supports:
+        - "behavioral health concern should be a low-frequency, high-scrutiny hypothesis"
+        - "subclinical changes are plausible"
+      weakens:
+        - "a single mood change indicates a psychiatric emergency"
+      must_not_be_used_as:
+        - "standalone diagnosis"
+        - "psychiatric risk prediction"
+    status:
+      recommended_for_mvp: true
+      quality_flags: [EPIDEMIOLOGY, LOW_BASE_RATE]
+
+  - id: EVID_BMED_003
+    title: "Reported behavioral health event rates are low but heterogeneous across eras"
+    domain: [behavioral_health, epidemiology]
+    metrics: [mood, stress]
+    relationship:
+      type: epidemiology
+      direction:
+        mission_exposure: increase
+        behavioral_health_event: increase
+    fact: >
+      The NASA BMed evidence report states that during the Space Shuttle program, 34 behavioral
+      health signs and symptoms were reported among 208 crewmembers who flew on 89 missions
+      between 1981 and 1989 (4,442.8 person-days in space), an incidence rate of 0.11 per 14-day
+      mission, or approximately one per 2.87 person-years. Across ISS Expeditions 1 through 40,
+      9 instances of behavioral health signs and symptoms were included in flight surgeon
+      records, an incidence rate of 0.62 per person-year. The report notes that the ISS estimate
+      is limited because it is a retrospective review and the symptom types were not captured.
+    interpretation: >
+      Event rates differ by era, recording method, and mission duration. They are useful as
+      context for base rates, not as an individual risk calculator.
+    prototype_rule_note: >
+      Do not encode these rates as probabilities for an individual. Use them only to justify a
+      conservative, low-frequency hypothesis.
+    source:
+      organization: NASA
+      title: "Evidence Report: Risk of Adverse Cognitive or Behavioral Changes and Psychiatric Disorders Leading to In-Mission Health and Performance and Long-Term Health Effects"
+      url: "https://humanresearchroadmap.nasa.gov/Evidence/reports/HRP-ER-BMED-HFBP-20250210.pdf"
+      publication_date: "2025-02-10"
+      source_type: NASA_HRP_EVIDENCE_REPORT
+      location: "Occurrences of Behavioral Health Signs and Symptoms, report pp. 19-20"
+    evidence_strength:
+      level: MODERATE
+      rationale: "Retrospective, era-specific, and inconsistently captured; rates are not directly comparable."
+    population:
+      context: "US Space Shuttle astronauts (1981-1989) and ISS astronauts (Expeditions 1-40)"
+      size: "208 Shuttle crewmembers; 45 astronauts on first 41 ISS expeditions (per report)"
+      duration: "Shuttle missions; ISS expeditions up to about 6 months"
+    thresholds: []
+    limitations:
+      - "Retrospective review"
+      - "Symptom types not captured in the ISS estimate"
+      - "Changing surveillance and reporting practices"
+      - "Not generalizable to exploration missions"
+    system_use:
+      candidate_hypotheses: [H05]
+      supports:
+        - "behavioral health events are uncommon but non-zero"
+      weakens:
+        - "event rates can be treated as stable individual probabilities"
+      must_not_be_used_as:
+        - "standalone diagnosis"
+        - "individual risk prediction"
+    status:
+      recommended_for_mvp: false
+      quality_flags: [RETROSPECTIVE, HETEROGENEOUS]
+
+  - id: EVID_BMED_004
+    title: "LSAH provides longitudinal occupational surveillance, but BHP data are not consistently available"
+    domain: [behavioral_health, longitudinal_baseline]
+    metrics: [mood, fatigue]
+    context_features: [clinical_surveillance]
+    relationship:
+      type: surveillance_program
+      direction:
+        longitudinal_surveillance: enabled
+    fact: >
+      NASA's Lifetime Surveillance of Astronaut Health (LSAH) screens and monitors astronauts for
+      occupationally related injury or disease, examines acute and chronic morbidity and
+      mortality, and designs individually tailored medical examinations and surveillance. The
+      NASA BMed evidence report notes that LSAH captures information from flight surgeon or crew
+      surgeon notes taken during weekly private medical conferences, but that behavioral health
+      vulnerabilities or concerns are not available for consistent release.
+    interpretation: >
+      Supports the principle of longitudinal, individually tailored monitoring. It also shows
+      that behavioral health data access is a real constraint, so the system should not assume
+      it can rely on clinical surveillance data.
+    prototype_rule_note: >
+      Use personal baseline where data are available. Where they are not, request a new
+      measurement rather than inferring from population norms.
+    source:
+      organization: NASA
+      title: "Lifetime Surveillance of Astronaut Health (LSAH) program page; NASA BMed evidence report"
+      url: "https://www.nasa.gov/directorates/esdmd/hhp/lifetime-surveillance-of-astronaut-health-lsah/"
+      additional_urls:
+        - "https://humanresearchroadmap.nasa.gov/Evidence/reports/HRP-ER-BMED-HFBP-20250210.pdf"
+      publication_date: "2023-03-16 (page); 2025-02-10 (report)"
+      source_type: NASA_PROGRAM_PAGE
+      location: "LSAH program description; BMed report section on LSAH"
+    evidence_strength:
+      level: MODERATE
+      rationale: "Program description plus a report statement about data availability; not a quantitative study."
+    population:
+      context: "NASA astronauts"
+      size: "Career-long surveillance"
+      duration: "Career-long"
+    thresholds: []
+    limitations:
+      - "Program description, not a dataset"
+      - "Behavioral health data not consistently releasable"
+      - "Access controls limit independent verification"
+    system_use:
+      candidate_hypotheses: [H05, H09]
+      supports:
+        - "longitudinal personal baseline is an established NASA practice"
+        - "data availability is a real constraint"
+      weakens:
+        - "population norms are a sufficient substitute for personal history"
+      must_not_be_used_as:
+        - "standalone diagnosis"
+    status:
+      recommended_for_mvp: true
+      quality_flags: [PROGRAM_DESCRIPTION, DATA_ACCESS_LIMITED]
+
+  - id: EVID_BMED_005
+    title: "Clinical depression is associated with cognitive decrements, but the construct is diagnostic"
+    domain: [behavioral_health, mood, cognition]
+    metrics: [mood, reaction_time]
+    relationship:
+      type: clinical_association
+      direction:
+        mood: decline
+        cognition: worsening
+    fact: >
+      The NASA BMed evidence report states that cognitive decrements are widely associated with
+      depression, and describes major depressive disorder as the most common clinical mood
+      disorder associated with persistent negative affective states in DSM-5. The report also
+      notes that clinical disorders such as anxiety, post-traumatic stress, and sleep
+      loss/insomnia can affect mood and performance.
+    interpretation: >
+      Mood decline and cognitive change can co-occur, but the co-occurrence does not establish a
+      depressive disorder. For monitoring, the observable target is the functional change, not
+      the diagnostic category.
+    prototype_rule_note: >
+      If mood and cognition both worsen, raise a behavioral health concern and request
+      human review. Do not output a depression or anxiety label.
+    source:
+      organization: NASA
+      title: "Evidence Report: Risk of Adverse Cognitive or Behavioral Changes and Psychiatric Disorders Leading to In-Mission Health and Performance and Long-Term Health Effects"
+      url: "https://humanresearchroadmap.nasa.gov/Evidence/reports/HRP-ER-BMED-HFBP-20250210.pdf"
+      publication_date: "2025-02-10"
+      source_type: NASA_HRP_EVIDENCE_REPORT
+      location: "Mood and Mood Disorders section"
+    evidence_strength:
+      level: MODERATE
+      rationale: "Well-established clinical association; not specific to astronauts and not usable as a diagnostic rule."
+    population:
+      context: "General clinical populations; astronaut relevance is contextual"
+      size: "Not applicable (review)"
+      duration: "Variable"
+    thresholds: []
+    limitations:
+      - "Diagnostic construct"
+      - "Not specific to spaceflight"
+      - "Cannot be inferred from wearable or self-report data alone"
+    system_use:
+      candidate_hypotheses: [H05]
+      supports:
+        - "mood and cognitive changes may co-occur"
+      weakens:
+        - "co-occurring mood and cognitive change establishes a mood disorder"
+      must_not_be_used_as:
+        - "standalone diagnosis"
+        - "depression screening"
+    status:
+      recommended_for_mvp: false
+      quality_flags: [CLINICAL, NOT_DIAGNOSTIC_FOR_SYSTEM]
+
+  - id: EVID_MOOD_001
+    title: "A mood change alone is nonspecific and cannot distinguish among explanations"
+    domain: [mood, behavioral_health]
+    metrics: [mood, stress, fatigue]
+    context_features: [sleep_duration, workload, team_context]
+    relationship:
+      type: nonspecific_signal
+      direction:
+        mood: decline
+        behavioral_health_concern: uncertain
+    fact: >
+      The NASA BMed evidence report states that subclinical mood and anxiety disturbances have
+      occurred in spaceflight, that anxiety and annoyance were the most reported behavioral symptoms
+      in the Shuttle medical-event review, and that the IMM's reliance on diagnostic criteria poses a
+      higher threshold relative to the symptoms and signs recorded in surveillance. The report also
+      describes mood as interacting with sleep loss, workload, and interpersonal context.
+    interpretation: >
+      A mood change alone is consistent with normal adjustment, sleep loss, workload, team conflict,
+      or a behavioral health concern. It cannot distinguish among them and is therefore weak evidence
+      on its own.
+    prototype_rule_note: >
+      Never raise H05 from a mood change alone. Require a sustained change, functional impact, and at
+      least one corroborating domain such as sleep, performance, or team context.
+    source:
+      organization: NASA
+      title: "Evidence Report: Risk of Adverse Cognitive or Behavioral Changes and Psychiatric Disorders Leading to In-Mission Health and Performance and Long-Term Health Effects"
+      url: "https://humanresearchroadmap.nasa.gov/Evidence/reports/HRP-ER-BMED-HFBP-20250210.pdf"
+      publication_date: "2025-02-10"
+      source_type: NASA_HRP_EVIDENCE_REPORT
+      location: "Occurrences of Behavioral Health Signs and Symptoms; LSAH and IMM discussion; Mood and Mood Disorders"
+    evidence_strength:
+      level: WEAK
+      rationale: "Nonspecific self-report signal with multiple competing explanations; not sufficient alone."
+    population:
+      context: "US astronauts"
+      size: "Multiple cohorts; see EVID_BMED_003"
+      duration: "Mission-length exposure"
+    thresholds: []
+    limitations:
+      - "Self-report"
+      - "Nonspecific"
+      - "Confounded by sleep, workload, and team context"
+      - "Low base rate of clinical events"
+    system_use:
+      candidate_hypotheses: [H05]
+      supports:
+        - "mood is a contextual signal"
+      weakens:
+        - "mood decline alone establishes a behavioral health concern"
+      must_not_be_used_as:
+        - "standalone diagnosis"
+        - "depression or anxiety screening"
+    status:
+      recommended_for_mvp: false
+      quality_flags: [NONSPECIFIC, WEAK_SIGNAL]
+
+  - id: EVID_STRESS_001
+    title: "Isolation and confinement are primary hazards for behavioral and team risk"
+    domain: [stress, isolation, team]
+    metrics: [stress, mood, workload]
+    context_features: [isolation_level, confinement, communication_delay]
+    relationship:
+      type: risk_factor
+      direction:
+        isolation_confinement: increase
+        behavioral_team_risk: increase
+    fact: >
+      The NASA Team evidence report states that isolation and confinement is the primary hazard
+      affecting the Team Risk, with distance from Earth and the hostile, closed environment as
+      related hazards. It identifies challenges for long-duration exploration missions including
+      social isolation, physical confinement, a small and diverse crew, communication delays
+      between crew and ground, and limited habitable volume.
+    interpretation: >
+      Isolation and confinement are mission-context risk factors. They should raise the level of
+      scrutiny applied to behavioral and team signals, but they do not imply pathology.
+    prototype_rule_note: >
+      Use mission phase, crew size, communication delay, and confinement as context modifiers.
+      Do not treat isolation exposure as a diagnosis.
+    source:
+      organization: NASA
+      title: "Evidence Report: Risk of Inadequate Team Performance and Functioning (Team Risk)"
+      url: "https://humanresearchroadmap.nasa.gov/Evidence/reports/Team%202022%20-Evidence%20Report%20FINAL_5-9-2024.pdf"
+      publication_date: "2024-05-09"
+      source_type: NASA_HRP_EVIDENCE_REPORT
+      location: "Executive Summary; Team Risk hazard discussion"
+    evidence_strength:
+      level: STRONG
+      rationale: "NASA risk framing with convergent evidence from analog and spaceflight settings."
+    population:
+      context: "Astronauts and spaceflight analog crews"
+      size: "Multiple studies; exact N not stated in the cited passage"
+      duration: "Mission-length and analog exposures"
+    thresholds: []
+    limitations:
+      - "Risk-factor evidence, not a quantitative individual model"
+      - "Isolation exposure varies by mission architecture"
+      - "Individual and team resilience vary"
+    system_use:
+      candidate_hypotheses: [H05]
+      supports:
+        - "isolation and confinement raise behavioral/team scrutiny"
+      weakens:
+        - "isolation exposure alone indicates a behavioral health problem"
+      must_not_be_used_as:
+        - "standalone diagnosis"
+    status:
+      recommended_for_mvp: true
+      quality_flags: [RISK_FRAMING]
+
+  - id: EVID_TEAM_001
+    title: "Team cohesion, communication, and conflict are relevant but not validated as individual health rules"
+    domain: [team, behavioral_health]
+    metrics: [stress, mood, workload]
+    context_features: [team_cohesion, communication_frequency, conflict_events]
+    relationship:
+      type: team_process_association
+      direction:
+        cohesion: decrease
+        team_performance: worsening
+    fact: >
+      The NASA Team evidence report describes team performance as dependent on coordination,
+      communication, cooperation, cohesion, trust, and shared cognition. It defines team cohesion
+      as a two-factor variable consisting of task cohesion and social cohesion, and states that
+      unobtrusive measures related to team cohesion are being developed to help operations
+      personnel monitor aspects of team cohesion during spaceflight.
+    interpretation: >
+      Team-level signals are relevant to mission performance and may contextualize an individual
+      behavioral concern, but they are not validated individual health rules.
+    prototype_rule_note: >
+      If team data are available, use them only as context for a human review. Do not infer an
+      individual diagnosis from team conflict.
+    source:
+      organization: NASA
+      title: "Evidence Report: Risk of Inadequate Team Performance and Functioning (Team Risk)"
+      url: "https://humanresearchroadmap.nasa.gov/Evidence/reports/Team%202022%20-Evidence%20Report%20FINAL_5-9-2024.pdf"
+      publication_date: "2024-05-09"
+      source_type: NASA_HRP_EVIDENCE_REPORT
+      location: "Team definitions and monitoring discussion"
+    evidence_strength:
+      level: MODERATE
+      rationale: "Team constructs are well described, but monitoring measures are still under development and not validated as individual rules."
+    population:
+      context: "Astronaut crews and analog teams"
+      size: "Multiple studies; exact N not stated in the cited passage"
+      duration: "Mission-length and analog exposures"
+    thresholds: []
+    limitations:
+      - "Team constructs are multi-level"
+      - "Monitoring tools are under development"
+      - "Not an individual health measure"
+    system_use:
+      candidate_hypotheses: [H05]
+      supports:
+        - "team context may strengthen or weaken a behavioral concern"
+      weakens:
+        - "team conflict is an individual diagnosis"
+      must_not_be_used_as:
+        - "standalone diagnosis"
+        - "individual performance rating"
+    status:
+      recommended_for_mvp: false
+      quality_flags: [TEAM_LEVEL, UNDER_DEVELOPMENT]
+
+  # ===========================================================================
+  # HEART RATE, BLOOD PRESSURE, HRV
+  # ===========================================================================
+
+  - id: EVID_HR_001
+    title: "Heart rate and blood pressure are context-dependent across flight phases"
+    domain: [cardiovascular, heart_rate, blood_pressure]
+    metrics: [heart_rate, systolic_bp, diastolic_bp]
+    context_features: [posture, flight_phase, activity_level]
+    relationship:
+      type: physiological_adaptation
+      direction:
+        flight_phase: context_dependent
+        heart_rate: context_dependent
+        blood_pressure: context_dependent
+    fact: >
+      The NASA cardiovascular evidence report describes Shuttle studies in which inflight heart
+      rate and systolic and diastolic blood pressure were decreased compared with preflight values.
+      On re-entry, these values increased past their preflight baseline, reaching maximal values at
+      peak gravity. After landing, standing produced significant decreases in systolic and
+      diastolic pressure relative to seated values. Systolic pressure and heart rate returned to
+      preflight values within an hour of landing, while most other cardiovascular changes reversed
+      within a week.
+    interpretation: >
+      A heart rate or blood pressure value cannot be interpreted without flight phase, posture, and
+      activity context. A value that would be abnormal at rest may be expected during re-entry or
+      exercise, and a value that looks normal at rest may mask orthostatic intolerance on standing.
+    prototype_rule_note: >
+      Tag every cardiovascular observation with flight phase, posture, and activity. Compare with
+      the astronaut's own values in the same context. Do not use a single context-free threshold.
+    source:
+      organization: NASA
+      title: "Evidence Report: Risk of Cardiovascular Adaptations Contributing to Cardiovascular Disease or Events (Cardio Risk EB 2022)"
+      url: "https://humanresearchroadmap.nasa.gov/Evidence/reports/Cardio%20Risk%20EB%202022%20FINAL_4-3-2023.pdf"
+      publication_date: "2023-04-03"
+      source_type: NASA_HRP_EVIDENCE_REPORT
+      location: "Extended Duration Orbiter Medical Project section, report p. 15"
+    evidence_strength:
+      level: STRONG
+      rationale: "NASA human-spaceflight evidence with repeated measurements across flight phases; group-level findings."
+    population:
+      context: "US Space Shuttle astronauts"
+      size: "EDOMP cohort; exact N not stated in the cited passage"
+      duration: "Shuttle missions"
+    thresholds: []
+    limitations:
+      - "Group-level data; individual variation"
+      - "Measurement conditions differ across phases"
+      - "Countermeasures and G-suits affect responses"
+    system_use:
+      candidate_hypotheses: [H04]
+      supports:
+        - "heart rate and blood pressure require context tagging"
+        - "postflight orthostatic change is expected"
+      weakens:
+        - "a universal context-free heart-rate or blood-pressure threshold is valid"
+      must_not_be_used_as:
+        - "standalone diagnosis"
+    status:
+      recommended_for_mvp: true
+      quality_flags: [OBSERVATIONAL, CONTEXT_DEPENDENT]
+
+  - id: EVID_HR_002
+    title: "No validated astronaut-specific resting-HR alarm threshold; exercise HR differs from resting HR"
+    domain: [cardiovascular, heart_rate, exercise]
+    metrics: [heart_rate, activity_level, exercise_duration]
+    context_features: [posture, exercise_intensity, flight_phase]
+    relationship:
+      type: interpretation_constraint
+      direction:
+        activity_level: increase
+        heart_rate: increase
+    fact: >
+      The NASA cardiovascular and fitness evidence reports quantify heart-rate changes during
+      spaceflight, re-entry, standing, and exercise testing, but neither report establishes a
+      single resting-heart-rate cutoff for clinical concern applicable to astronauts. The reports
+      describe heart rate as a response to posture, gravity, fluid status, and exercise workload,
+      and they evaluate exercise capacity using VO2peak, ventilatory threshold, and submaximal
+      exercise responses rather than a resting-HR alarm.
+    interpretation: >
+      A high heart rate during exercise is not equivalent to persistent high heart rate at rest.
+      Monitoring should distinguish the two by activity context and require persistence at rest
+      before raising a cardiovascular concern.
+    prototype_rule_note: >
+      Only evaluate a resting-HR concern when activity level is low or unknown-but-stable, the
+      elevation persists across repeated measurements, and it is a change from the astronaut's
+      personal baseline. Never convert an exercise HR into a resting alarm.
+    source:
+      organization: NASA
+      title: "Cardio Risk Evidence Report 2022; Risk of Impaired Performance Due to Reduced Muscle Mass, Strength & Endurance (Muscle) and Aerobic Capacity"
+      url: "https://humanresearchroadmap.nasa.gov/Evidence/reports/Cardio%20Risk%20EB%202022%20FINAL_4-3-2023.pdf"
+      additional_urls:
+        - "https://humanresearchroadmap.nasa.gov/Evidence/reports/Evidence%20report%20aerobic%20and%20muscle_FINAL%204-3-2024.pdf"
+      publication_date: "2023-04-03; 2024-04-03"
+      source_type: NASA_HRP_EVIDENCE_REPORT
+      location: "Cardio report: heart rate and blood pressure during spaceflight; Fitness report: exercise testing and conclusions"
+    evidence_strength:
+      level: MODERATE
+      rationale: "Explicit constraint derived from two NASA reports; the absence of a threshold is a document-level observation, not a trial result."
+    population:
+      context: "Astronauts"
+      size: "Multiple NASA cohorts"
+      duration: "Shuttle and ISS missions"
+    thresholds: []
+    limitations:
+      - "Absence of a published threshold does not mean any value is safe"
+      - "Clinical judgment still required"
+      - "Exercise intensity is often estimated, not measured"
+    system_use:
+      candidate_hypotheses: [H04]
+      supports:
+        - "activity context is required before interpreting heart rate"
+        - "persistent resting elevation is more concerning than exercise elevation"
+      weakens:
+        - "a single high heart rate is sufficient to raise a cardiovascular concern"
+      must_not_be_used_as:
+        - "standalone diagnosis"
+        - "exercise restriction"
+    status:
+      recommended_for_mvp: true
+      quality_flags: [INTERPRETATION_CONSTRAINT, NO_VALIDATED_THRESHOLD]
+
+  - id: EVID_HR_003
+    title: "Postflight orthostatic intolerance is common after long-duration spaceflight"
+    domain: [cardiovascular, orthostatic, heart_rate, blood_pressure]
+    metrics: [heart_rate, systolic_bp, diastolic_bp]
+    context_features: [posture_change, tilt_test, flight_duration]
+    relationship:
+      type: human_spaceflight_finding
+      direction:
+        flight_duration: increase
+        orthostatic_intolerance: increase
+    fact: >
+      The NASA cardiovascular evidence report states that the incidence of post-spaceflight
+      orthostatic intolerance among US astronauts increased to greater than 80% on landing day
+      following long-duration (4 to 6 month) Mir spaceflights, and five of six astronauts could not
+      complete a 10-minute tilt test after Mir missions. In a later review, 4 of 6 (66%) ISS
+      astronauts were unable to complete a 10-minute 80-degree head-up tilt test on landing day,
+      compared with 13 of 66 (20%) Shuttle astronauts. Rates declined quickly: eight of nine ISS
+      astronauts completed the tilt test on R+1, and by R+3, 13 of 15 (87%) ISS and 19 of 19 (100%)
+      Shuttle astronauts completed the test.
+    interpretation: >
+      Orthostatic intolerance is a common, usually transient postflight response. It is best
+      assessed with a controlled orthostatic test, not with a resting heart rate alone. A normal
+      resting value does not exclude it.
+    prototype_rule_note: >
+      If orthostatic symptom or posture data are available, prompt a controlled repeat measurement
+      and human review. Do not infer orthostatic intolerance from a resting HR trend.
+    source:
+      organization: NASA
+      title: "Evidence Report: Risk of Cardiovascular Adaptations Contributing to Cardiovascular Disease or Events (Cardio Risk EB 2022)"
+      url: "https://humanresearchroadmap.nasa.gov/Evidence/reports/Cardio%20Risk%20EB%202022%20FINAL_4-3-2023.pdf"
+      publication_date: "2023-04-03"
+      source_type: NASA_HRP_EVIDENCE_REPORT
+      location: "Post-flight Risk: Orthostatic Intolerance, report pp. 17-18"
+    evidence_strength:
+      level: STRONG
+      rationale: "Repeated NASA human-spaceflight findings across Mir, ISS, and Shuttle cohorts; small samples but consistent direction."
+    population:
+      context: "US astronauts and Mir crewmembers"
+      size: "6 Mir astronauts; 6 ISS and 66 Shuttle astronauts in the tilt-test review; 9 ISS and 19 Shuttle on R+3"
+      duration: "4-6 month Mir missions; ISS and Shuttle missions"
+    thresholds: []
+    limitations:
+      - "Small samples in some comparisons"
+      - "Tilt-test protocols and countermeasures vary"
+      - "Landing-day testing conditions are not standardized across eras"
+    system_use:
+      candidate_hypotheses: [H04]
+      supports:
+        - "postflight orthostatic concern is plausible and common"
+        - "controlled orthostatic testing is the appropriate confirmation"
+      weakens:
+        - "resting heart rate alone can rule out orthostatic intolerance"
+      must_not_be_used_as:
+        - "standalone diagnosis"
+    status:
+      recommended_for_mvp: true
+      quality_flags: [HUMAN_SPACEFLIGHT, SMALL_SAMPLE]
+
+  - id: EVID_BP_001
+    title: "Consensus definition of orthostatic hypotension"
+    domain: [cardiovascular, blood_pressure]
+    metrics: [systolic_bp, diastolic_bp]
+    context_features: [posture_change, tilt_test]
+    relationship:
+      type: consensus_definition
+      direction:
+        posture_change: standing
+        systolic_bp: decrease
+        diastolic_bp: decrease
+    fact: >
+      The international consensus statement defines orthostatic hypotension as a sustained
+      reduction of systolic blood pressure by at least 20 mmHg or diastolic blood pressure by at
+      least 10 mmHg within 3 minutes of standing or head-up tilt to at least 60 degrees.
+    interpretation: >
+      Provides a measurement-defined event that can be used when a controlled orthostatic test is
+      performed. It is not a spontaneous-monitoring threshold and requires a known posture change
+      and timed readings.
+    prototype_rule_note: >
+      Only apply this definition when posture, timing, and repeated BP readings are available.
+      Otherwise request the missing measurements.
+    source:
+      organization: Clinical Autonomic Research (consensus statement)
+      title: "Consensus statement on the definition of orthostatic hypotension, neurally mediated syncope and the postural tachycardia syndrome"
+      url: "https://doi.org/10.1007/s10286-011-0119-5"
+      publication_date: "2011-04"
+      source_type: PEER_REVIEWED_LITERATURE
+      location: "Definition section; PMID 21431947"
+    evidence_strength:
+      level: VERY_STRONG
+      rationale: "International consensus definition; widely adopted and measurement-specific."
+    population:
+      context: "Adults, clinical autonomic testing"
+      size: "Consensus expert panel"
+      duration: "Within 3 minutes of posture change"
+    thresholds:
+      - metric: systolic_bp
+        value: -20
+        unit: mmHg
+        averaging_window: "within 3 min of standing or head-up tilt >=60 deg"
+        context: "sustained reduction from baseline"
+        population: "adults undergoing orthostatic testing"
+        source: "Freeman et al. 2011, Clin Auton Res"
+      - metric: diastolic_bp
+        value: -10
+        unit: mmHg
+        averaging_window: "within 3 min of standing or head-up tilt >=60 deg"
+        context: "sustained reduction from baseline"
+        population: "adults undergoing orthostatic testing"
+        source: "Freeman et al. 2011, Clin Auton Res"
+    limitations:
+      - "Requires a controlled posture change and timed measurements"
+      - "Not validated for spontaneous wearable monitoring"
+      - "Different thresholds may apply in specific populations"
+    system_use:
+      candidate_hypotheses: [H04]
+      supports:
+        - "a precise orthostatic event definition is available"
+      weakens:
+        - "any BP drop is orthostatic hypotension"
+      must_not_be_used_as:
+        - "standalone diagnosis"
+        - "threshold for unsupervised wearable alerts"
+    status:
+      recommended_for_mvp: true
+      quality_flags: [CONSENSUS_DEFINITION, MEASUREMENT_DEPENDENT]
+
+  - id: EVID_BP_002
+    title: "Presyncopal astronauts differ in baseline blood pressure and vascular resistance"
+    domain: [cardiovascular, blood_pressure]
+    metrics: [systolic_bp, diastolic_bp, heart_rate]
+    context_features: [presyncope, tilt_test]
+    relationship:
+      type: association
+      direction:
+        baseline_bp: lower
+        presyncope: more_likely
+    fact: >
+      The NASA cardiovascular evidence report describes a mechanistic study in which astronauts who
+      did not become presyncopal on landing day had a greater norepinephrine response upon standing
+      and greater peripheral vascular resistance. Analysis of preflight data showed normal
+      cardiovascular measures in both groups, but the presyncopal group was characterized by lower
+      diastolic and systolic blood pressure and peripheral vascular resistance when supine. Plasma
+      volume losses were not significantly different between groups. Increased heart rate, decreased
+      systolic pressure, and reduced stroke volume were observed in 14 astronauts during a
+      post-spaceflight 5-minute stand test.
+    interpretation: >
+      Baseline cardiovascular differences may modulate orthostatic risk, but the finding is
+      group-level and not a stand-alone predictor. It supports using personal baseline and a
+      controlled stand test rather than a population cutoff.
+    prototype_rule_note: >
+      Compare preflight and postflight orthostatic responses when available. Do not use baseline BP
+      alone to predict presyncope.
+    source:
+      organization: NASA
+      title: "Evidence Report: Risk of Cardiovascular Adaptations Contributing to Cardiovascular Disease or Events (Cardio Risk EB 2022)"
+      url: "https://humanresearchroadmap.nasa.gov/Evidence/reports/Cardio%20Risk%20EB%202022%20FINAL_4-3-2023.pdf"
+      publication_date: "2023-04-03"
+      source_type: NASA_HRP_EVIDENCE_REPORT
+      location: "Mechanistic studies of post-spaceflight orthostatic hypotension, report p. 17"
+    evidence_strength:
+      level: MODERATE
+      rationale: "Small mechanistic study; group-level difference; not a validated individual predictor."
+    population:
+      context: "US astronauts"
+      size: "14 astronauts in the stand test; presyncopal vs non-presyncopal groups"
+      duration: "Postflight landing day"
+    thresholds: []
+    limitations:
+      - "Small sample"
+      - "Group-level analysis"
+      - "Plasma volume and countermeasures vary"
+    system_use:
+      candidate_hypotheses: [H04]
+      supports:
+        - "personal baseline and orthostatic testing are informative"
+      weakens:
+        - "baseline BP alone predicts presyncope"
+      must_not_be_used_as:
+        - "standalone diagnosis"
+        - "individual risk prediction"
+    status:
+      recommended_for_mvp: false
+      quality_flags: [SMALL_SAMPLE, GROUP_LEVEL]
+
+  - id: EVID_HRV_001
+    title: "HRV components have different interpretations; LF/HF is controversial"
+    domain: [cardiovascular, hrv]
+    metrics: [hrv, heart_rate]
+    context_features: [posture, respiration, activity_level]
+    relationship:
+      type: measurement_interpretation
+      direction:
+        hrv_component: context_dependent
+    fact: >
+      The NASA cardiovascular evidence report states that the high-frequency component of the R-R
+      interval is an index of parasympathetic modulation, and the low-frequency component of
+      systolic blood pressure approximates sympathetic activity. It states that interpretation of
+      the low-frequency to high-frequency ratio of the R-R interval is more controversial: some
+      studies question the concept and construction of the index, some attribute variation to
+      baroreflex function, and some conclude that spectral HRV is mainly a measure of
+      parasympathetic activity.
+    interpretation: >
+      HRV can provide autonomic context, but LF/HF should not be used as a standalone stress or
+      "sympathovagal balance" index. HRV trends need posture, respiration, activity, and medication
+      context.
+    prototype_rule_note: >
+      If HRV is used, restrict it to trend context and avoid LF/HF-based rules. Never use HRV alone
+      to raise a cardiovascular or stress hypothesis.
+    source:
+      organization: NASA
+      title: "Evidence Report: Risk of Cardiovascular Adaptations Contributing to Cardiovascular Disease or Events (Cardio Risk EB 2022)"
+      url: "https://humanresearchroadmap.nasa.gov/Evidence/reports/Cardio%20Risk%20EB%202022%20FINAL_4-3-2023.pdf"
+      publication_date: "2023-04-03"
+      source_type: NASA_HRP_EVIDENCE_REPORT
+      location: "Heart rate variability section, report p. 22"
+    evidence_strength:
+      level: MODERATE
+      rationale: "Physiological interpretation is well supported for HF, but LF/HF is explicitly contested in the NASA review."
+    population:
+      context: "Adults; spaceflight and terrestrial studies"
+      size: "Review of multiple studies"
+      duration: "Variable"
+    thresholds: []
+    limitations:
+      - "Contested index"
+      - "Confounded by posture, respiration, activity, and medication"
+      - "Not validated as an astronaut alarm"
+    system_use:
+      candidate_hypotheses: [H04]
+      supports:
+        - "HRV interpretation requires context"
+      weakens:
+        - "LF/HF is a reliable standalone stress marker"
+      must_not_be_used_as:
+        - "standalone diagnosis"
+        - "sympathovagal balance score"
+    status:
+      recommended_for_mvp: false
+      quality_flags: [CONTESTED, CONTEXT_DEPENDENT]
+
+  - id: EVID_HRV_002
+    title: "Spaceflight HRV evidence is insufficient for standalone rules"
+    domain: [cardiovascular, hrv]
+    metrics: [hrv]
+    context_features: [posture, activity_level, medication]
+    relationship:
+      type: evidence_gap
+      direction:
+        hrv: uncertain
+    fact: >
+      The NASA cardiovascular evidence report reviews HRV as a noninvasive approximation of
+      autonomic activity but does not establish an astronaut-specific HRV threshold or a validated
+      HRV-based alarm. The report notes that spectral HRV interpretation is affected by
+      baroreflex function and that the LF/HF ratio is contested. Spaceflight HRV studies are
+      limited by small samples and by confounders such as posture, activity, and fluid status.
+    interpretation: >
+      HRV is not sufficient on its own to support a cardiovascular concern in this system. It may
+      be recorded as context, but it should not generate a rule by itself.
+    prototype_rule_note: >
+      Exclude HRV from MVP rule triggers. If retained, use it only as a secondary trend feature
+      with explicit data-quality flags.
+    source:
+      organization: NASA
+      title: "Evidence Report: Risk of Cardiovascular Adaptations Contributing to Cardiovascular Disease or Events (Cardio Risk EB 2022)"
+      url: "https://humanresearchroadmap.nasa.gov/Evidence/reports/Cardio%20Risk%20EB%202022%20FINAL_4-3-2023.pdf"
+      publication_date: "2023-04-03"
+      source_type: NASA_HRP_EVIDENCE_REPORT
+      location: "Heart rate variability section"
+    evidence_strength:
+      level: INSUFFICIENT
+      rationale: "No validated astronaut-specific HRV threshold or rule; the NASA review explicitly notes contested interpretation."
+    population:
+      context: "Astronauts and terrestrial subjects"
+      size: "Small spaceflight studies"
+      duration: "Variable"
+    thresholds: []
+    limitations:
+      - "No validated threshold"
+      - "Small samples"
+      - "Multiple confounders"
+    system_use:
+      candidate_hypotheses: [H04]
+      supports:
+        - "HRV should be context only"
+      weakens:
+        - "HRV can trigger a cardiovascular hypothesis alone"
+      must_not_be_used_as:
+        - "standalone diagnosis"
+        - "production rule trigger"
+    status:
+      recommended_for_mvp: false
+      quality_flags: [EVIDENCE_GAP, DO_NOT_ENCODE]
+
+  # ===========================================================================
+  # FLUID SHIFT / CARDIOVASCULAR ADAPTATION
+  # ===========================================================================
+
+  - id: EVID_FLUID_001
+    title: "Cephalad fluid shift and plasma volume loss drive cardiovascular adaptation"
+    domain: [cardiovascular, fluid_shift]
+    metrics: [heart_rate, systolic_bp, hrv]
+    context_features: [flight_duration, fluid_status]
+    relationship:
+      type: physiological_mechanism
+      direction:
+        weightlessness: increase
+        cephalad_fluid_shift: increase
+        plasma_volume: decrease
+    fact: >
+      The NASA cardiovascular evidence report states that weightlessness produces a headward fluid
+      shift and a reduction in blood and plasma volume. Stroke volume and cardiac output initially
+      increase, then plasma volume decreases. Postflight, astronauts show reduced stroke volume and
+      altered heart rate and blood pressure responses to standing.
+    interpretation: >
+      Fluid status is a mechanism connecting spaceflight exposure to heart rate, blood pressure, and
+      orthostatic responses. It is not directly measured by routine wearable sensors, so it should
+      be treated as context rather than inferred.
+    prototype_rule_note: >
+      Use flight duration and postflight timing as context. Do not infer fluid status from a single
+      heart-rate value.
+    source:
+      organization: NASA
+      title: "Evidence Report: Risk of Cardiovascular Adaptations Contributing to Cardiovascular Disease or Events (Cardio Risk EB 2022)"
+      url: "https://humanresearchroadmap.nasa.gov/Evidence/reports/Cardio%20Risk%20EB%202022%20FINAL_4-3-2023.pdf"
+      publication_date: "2023-04-03"
+      source_type: NASA_HRP_EVIDENCE_REPORT
+      location: "Physiological adaptation sections, report pp. 11-18"
+    evidence_strength:
+      level: STRONG
+      rationale: "Well-established spaceflight physiology with convergent evidence."
+    population:
+      context: "Astronauts"
+      size: "Multiple studies"
+      duration: "Short- and long-duration spaceflight"
+    thresholds: []
+    limitations:
+      - "Mechanistic, not a measured variable in the monitoring system"
+      - "Individual variation"
+      - "Countermeasures affect fluid status"
+    system_use:
+      candidate_hypotheses: [H04]
+      supports:
+        - "cardiovascular changes are expected after spaceflight"
+        - "postflight orthostatic testing is physiologically grounded"
+      weakens:
+        - "a cardiovascular change is necessarily pathological"
+      must_not_be_used_as:
+        - "standalone diagnosis"
+    status:
+      recommended_for_mvp: true
+      quality_flags: [MECHANISTIC, HUMAN_SPACEFLIGHT]
+
+  - id: EVID_FLUID_002
+    title: "SANS signs are common in long-duration crew; clinically significant ODE is less common"
+    domain: [fluid_shift, ocular, sans]
+    metrics: []
+    context_features: [flight_duration, ocular_imaging]
+    relationship:
+      type: prevalence
+      direction:
+        long_duration_spaceflight: increase
+        sans_signs: increase
+    fact: >
+      The NASA SANS evidence report states that about 70% of crewmembers who have participated in
+      long-duration missions show one or more signs of SANS, and about 15% develop clinically
+      significant mild optic disc edema (Frisén grade >= 1). A 2008 Russian study of 16 cosmonauts
+      identified 8 cases of ODE ranging from partial to moderate, with mild and moderate cases in at
+      least 3 of 16 (approximately 19%). The report states that no documented cases of uncorrectable
+      changes in visual acuity and no permanent changes to visual fields have been documented
+      during or after long-duration spaceflight.
+    interpretation: >
+      SANS is common but usually subclinical. The monitoring system does not measure ocular
+      structure, so it cannot detect SANS; this record is population context, not a rule input.
+    prototype_rule_note: >
+      Do not create a SANS rule from wearable data. If ocular symptoms are reported, route to
+      clinical evaluation.
+    source:
+      organization: NASA
+      title: "Evidence Report: Risk of Spaceflight Associated Neuro-ocular Syndrome (SANS)"
+      url: "https://humanresearchroadmap.nasa.gov/Evidence/reports/SANS%20EB%202022%20FINAL_8-15-22.pdf"
+      publication_date: "2022-08-15"
+      source_type: NASA_HRP_EVIDENCE_REPORT
+      location: "Executive Summary; Optic Disc Edema section"
+    evidence_strength:
+      level: STRONG
+      rationale: "NASA human-spaceflight evidence with imaging-based prevalence estimates; some estimates come from small cohorts."
+    population:
+      context: "Long-duration astronauts and cosmonauts"
+      size: "About 70%/15% crew estimates; 16 cosmonauts in the Russian ODE study"
+      duration: "Long-duration spaceflight"
+    thresholds: []
+    limitations:
+      - "Imaging protocols and definitions vary"
+      - "Small cohorts for some estimates"
+      - "Etiology not fully characterized"
+      - "Not measurable with the proposed sensor set"
+    system_use:
+      candidate_hypotheses: [H04]
+      supports:
+        - "long-duration spaceflight has ocular effects"
+        - "symptom reports should route to clinical evaluation"
+      weakens:
+        - "wearable data can detect SANS"
+      must_not_be_used_as:
+        - "standalone diagnosis"
+        - "ocular screening rule"
+    status:
+      recommended_for_mvp: false
+      quality_flags: [HUMAN_SPACEFLIGHT, NOT_SENSOR_DETECTABLE]
+
+  - id: EVID_FLUID_003
+    title: "Internal jugular flow stagnation and thrombosis have been observed in crew"
+    domain: [cardiovascular, fluid_shift, thrombosis]
+    metrics: [heart_rate]
+    context_features: [ultrasound, flight_day]
+    relationship:
+      type: human_spaceflight_finding
+      direction:
+        long_duration_spaceflight: increase
+        jugular_flow_stagnation: increase
+    fact: >
+      The NASA cardiovascular evidence report states that during long-duration spaceflight,
+      alterations in left internal jugular vein blood flow patterns were reported after 50 and 150
+      days, including stagnant and/or retrograde flow in six of eleven crewmembers. Two incidental
+      cases of left internal jugular thrombosis were identified in the study cohort, including one
+      occlusive thrombosis treated with anticoagulants onboard the ISS and one partially occlusive
+      thrombus identified on retrospective review.
+    interpretation: >
+      This is a serious but rare thrombotic concern. It is not detectable with routine wearable
+      sensors; ultrasound surveillance is required. It should not generate a rule from heart rate or
+      SpO2 alone.
+    prototype_rule_note: >
+      Do not encode a thrombosis rule from wearable data. If neck pain, swelling, or unexplained
+      symptoms are reported, escalate to clinical evaluation.
+    source:
+      organization: NASA
+      title: "Evidence Report: Risk of Cardiovascular Adaptations Contributing to Cardiovascular Disease or Events (Cardio Risk EB 2022)"
+      url: "https://humanresearchroadmap.nasa.gov/Evidence/reports/Cardio%20Risk%20EB%202022%20FINAL_4-3-2023.pdf"
+      publication_date: "2023-04-03"
+      source_type: NASA_HRP_EVIDENCE_REPORT
+      location: "Venous thromboembolism section, report p. 12"
+    evidence_strength:
+      level: MODERATE
+      rationale: "Small observational cohort with two thrombotic events; clinically important but not generalizable to a sensor rule."
+    population:
+      context: "ISS astronauts"
+      size: "11 crewmembers in the flow study"
+      duration: "Long-duration spaceflight (about 50-150 days)"
+    thresholds: []
+    limitations:
+      - "Small sample"
+      - "Ultrasound-dependent"
+      - "Incidence uncertain"
+    system_use:
+      candidate_hypotheses: [H04]
+      supports:
+        - "serious cardiovascular events can occur in spaceflight"
+        - "symptom escalation to clinical care is appropriate"
+      weakens:
+        - "wearable heart rate or SpO2 can detect jugular thrombosis"
+      must_not_be_used_as:
+        - "standalone diagnosis"
+        - "thrombosis rule from wearable data"
+    status:
+      recommended_for_mvp: false
+      quality_flags: [SMALL_SAMPLE, CLINICAL_ONLY]
+
+  # ===========================================================================
+  # EXERCISE / ACTIVITY CONTEXT
+  # ===========================================================================
+
+  - id: EVID_EXERCISE_001
+    title: "Aerobic capacity and muscle strength decline in spaceflight; exercise countermeasures are incompletely protective"
+    domain: [exercise, cardiovascular, musculoskeletal]
+    metrics: [exercise_duration, activity_level, heart_rate]
+    context_features: [exercise_intensity, flight_duration]
+    relationship:
+      type: human_spaceflight_finding
+      direction:
+        flight_duration: increase
+        aerobic_capacity: decrease
+        muscle_strength: decrease
+    fact: >
+      The NASA fitness evidence report concludes that aerobic capacity, muscle strength, and muscle
+      endurance decrease following short- and long-duration spaceflight and after bed rest. The
+      losses depend on mission duration and on the exercise countermeasures crew perform in flight.
+      No controlled in-flight studies of exercise countermeasure effectiveness have been conducted;
+      bed-rest studies show protection. Recent ISS data show high interindividual variability, with
+      groups of crew returning to Earth with greater than 10% and greater than 20% loss. The report
+      also states that there are no reports of impaired performance of activities in microgravity,
+      but decreased capacity may affect work efficiency and EVA performance.
+    interpretation: >
+      Exercise is both a countermeasure and a confounder. Exercise duration and intensity are needed
+      to interpret heart rate, fatigue, and activity changes. A decline in exercise capacity is not
+      by itself a clinical event.
+    prototype_rule_note: >
+      Record exercise duration and intensity as context. Do not infer deconditioning from a single
+      activity or heart-rate observation.
+    source:
+      organization: NASA
+      title: "Evidence Report: Risk of Impaired Performance Due to Reduced Muscle Mass, Strength & Endurance (Muscle) and Aerobic Capacity"
+      url: "https://humanresearchroadmap.nasa.gov/Evidence/reports/Evidence%20report%20aerobic%20and%20muscle_FINAL%204-3-2024.pdf"
+      publication_date: "2024-04-03"
+      source_type: NASA_HRP_EVIDENCE_REPORT
+      location: "Conclusions, report p. 138"
+    evidence_strength:
+      level: STRONG
+      rationale: "NASA review of human spaceflight and bed-rest evidence; conclusions are consistent and explicitly qualified."
+    population:
+      context: "Astronauts and bed-rest subjects"
+      size: "Multiple studies and MEDB dataset"
+      duration: "Short- and long-duration spaceflight; bed rest"
+    thresholds: []
+    limitations:
+      - "No controlled in-flight countermeasure trials"
+      - "High interindividual variability"
+      - "Exercise dose is a knowledge gap"
+      - "No reported impairment of operational activities"
+    system_use:
+      candidate_hypotheses: [H01, H04]
+      supports:
+        - "exercise and activity are necessary context"
+        - "deconditioning is a plausible long-duration effect"
+      weakens:
+        - "a single activity change indicates clinical deconditioning"
+      must_not_be_used_as:
+        - "standalone diagnosis"
+        - "exercise prescription"
+    status:
+      recommended_for_mvp: true
+      quality_flags: [HUMAN_SPACEFLIGHT, OBSERVATIONAL]
+
+  - id: EVID_EXERCISE_002
+    title: "Activity and light exposure are standard longitudinal measurements"
+    domain: [exercise, activity, sleep]
+    metrics: [activity_level, exercise_duration, sleep_duration]
+    context_features: [light_exposure, wrist_sensor]
+    relationship:
+      type: measurement_program
+      direction:
+        activity_level: measured
+    fact: >
+      NASA's Spaceflight Standard Measures investigation collects a standardized set of
+      measurements across multiple body systems before, during, and after a mission. Its data
+      include activity and light exposure gathered through a wrist sensor, sleep reports, cognition
+      tests, sensorimotor tests, and other physiological samples.
+    interpretation: >
+      Activity and light exposure are established longitudinal context variables. They help
+      interpret sleep, fatigue, and heart rate, but they are not diagnostic by themselves.
+    prototype_rule_note: >
+      Capture activity level and, if available, light exposure as context features for sleep and
+      cardiovascular hypotheses.
+    source:
+      organization: NASA
+      title: "Spaceflight Standard Measures"
+      url: "https://www.nasa.gov/reference/standard-measures/"
+      publication_date: "2025-06-04 (page update)"
+      source_type: NASA_PROGRAM_PAGE
+      location: "Description and impact sections"
+    evidence_strength:
+      level: MODERATE
+      rationale: "Program description of an established measurement protocol; not a study of diagnostic accuracy."
+    population:
+      context: "ISS astronauts"
+      size: "Program-level; exact N not stated on the page"
+      duration: "Preflight, in-flight, postflight"
+    thresholds: []
+    limitations:
+      - "Program description, not results"
+      - "Wrist sensor data quality varies"
+    system_use:
+      candidate_hypotheses: [H01, H04]
+      supports:
+        - "activity and light exposure are legitimate context features"
+      weakens:
+        - "activity data can diagnose a health state"
+      must_not_be_used_as:
+        - "standalone diagnosis"
+    status:
+      recommended_for_mvp: true
+      quality_flags: [PROGRAM_DESCRIPTION]
+
+  # ===========================================================================
+  # SpO2 / HYPOXIA
+  # ===========================================================================
+
+  - id: EVID_SPO2_001
+    title: "Pulse oximetry has about 2% accuracy versus arterial blood gas and multiple confounders"
+    domain: [spo2, hypoxia, sensor_reliability]
+    metrics: [spo2]
+    context_features: [perfusion_index, motion, skin_pigment, nail_polish, carboxyhemoglobin]
+    relationship:
+      type: measurement_error
+      direction:
+        measurement_artifact: increase
+        spo2_accuracy: decrease
+    fact: >
+      The American Thoracic Society states that most pulse oximeters give a reading 2% over or 2%
+      under the saturation obtained by arterial blood gas (for example, a reading of 92% may
+      correspond to 90-94%). It lists factors that reduce accuracy: cold hands, not holding still,
+      nail polish (especially black, blue, or green), artificial nails, saturation below 80%,
+      thicker skin, darker skin pigmentation (oximetry may miss below-normal saturation), and
+      smoking (carboxyhemoglobin can make the reading higher than actual oxygen saturation).
+    interpretation: >
+      A single SpO2 value carries measurement uncertainty and can be falsely low or falsely high.
+      Low readings require repetition, signal-quality review, and a second sensor or clinical
+      confirmation before a hypoxia hypothesis is raised.
+    prototype_rule_note: >
+      Never trigger a hypoxia concern from one SpO2 value. Require repeat measurement, perfusion
+      index or signal-quality data, and a second sensor where available.
+    source:
+      organization: American Thoracic Society
+      title: "Pulse Oximetry (Patient Education Information Series)"
+      url: "https://www.thoracic.org/patients/patient-resources/resources/pulse-oximetry.pdf"
+      publication_date: "2011; online version updated 2021-03"
+      source_type: CLINICAL_GUIDANCE
+      location: "How accurate is the pulse oximeter?"
+    evidence_strength:
+      level: STRONG
+      rationale: "Professional society clinical guidance with a specific accuracy statement and a list of confounders."
+    population:
+      context: "Adults using pulse oximetry"
+      size: "Not applicable (guidance)"
+      duration: "Point measurement"
+    thresholds: []
+    limitations:
+      - "Patient education document, not a systematic review"
+      - "Accuracy varies by device"
+      - "Skin pigmentation bias is device- and population-dependent"
+    system_use:
+      candidate_hypotheses: [H03, H08]
+      supports:
+        - "SpO2 needs confirmation before action"
+        - "signal quality and sensor placement matter"
+      weakens:
+        - "one low SpO2 reading establishes hypoxia"
+      must_not_be_used_as:
+        - "standalone diagnosis"
+        - "single-reading alarm"
+    status:
+      recommended_for_mvp: true
+      quality_flags: [CLINICAL_GUIDANCE, MEASUREMENT_ERROR]
+
+  - id: EVID_SPO2_002
+    title: "NASA standard: mild hypoxia lower limit of 127 mmHg PIO2 with monitoring"
+    domain: [hypoxia, environmental_health]
+    metrics: [spo2]
+    context_features: [pio2, cabin_pressure, fio2]
+    relationship:
+      type: standard
+      direction:
+        pio2: decrease
+        hypoxia_risk: increase
+    fact: >
+      NASA-STD-3001 Volume 2 Revision D, Table 6.2-1, specifies a normoxia target range of 145-155
+      mmHg inspired oxygen partial pressure (PIO2), a mild hypoxia lower limit of 127 mmHg, and an
+      absolute lower limit of 122 mmHg for the 1-hour time-weighted average. The 127 mmHg condition
+      is acceptable indefinitely with monitoring. A footnote states that there is no opportunity to
+      collect data in microgravity at 127 mmHg for exploration-class durations, so a health
+      monitoring and mitigation plan is required.
+    interpretation: >
+      This is an environmental exposure standard, not an individual clinical alarm. It establishes
+      that a mildly hypoxic cabin atmosphere is permitted only with monitoring and that PIO2 is
+      required context for interpreting SpO2.
+    prototype_rule_note: >
+      Use cabin PIO2 as context. If PIO2 is low and SpO2 is low, request confirmation and review the
+      environmental sensor. Do not diagnose hypoxia from SpO2 alone.
+    source:
+      organization: NASA
+      title: "NASA Space Flight Human-System Standard, Volume 2: Human Factors, Habitability, and Environmental Health, Revision D"
+      url: "https://standards.nasa.gov/sites/default/files/standards/NASA/D/nasa-std-3001-vol-2-rev-d-signature.pdf"
+      publication_date: "2023-09-29"
+      source_type: NASA_STANDARD
+      location: "Table 6.2-1, report p. 49; requirement [V2 6004] context"
+    evidence_strength:
+      level: VERY_STRONG
+      rationale: "NASA technical standard with explicit exposure ranges and monitoring requirement."
+    population:
+      context: "Crewed spacecraft habitats and spacesuits"
+      size: "Not applicable (standard)"
+      duration: "Indefinite with monitoring at 127 mmHg; 1-hour TWA for the absolute lower limit"
+    thresholds:
+      - metric: pio2
+        value: 145
+        unit: mmHg
+        averaging_window: "normoxia target lower bound"
+        context: "inspired oxygen partial pressure"
+        population: "crewmembers in pressurized habitats"
+        source: "NASA-STD-3001 Vol 2 Rev D, Table 6.2-1"
+      - metric: pio2
+        value: 155
+        unit: mmHg
+        averaging_window: "normoxia target upper bound"
+        context: "inspired oxygen partial pressure"
+        population: "crewmembers in pressurized habitats"
+        source: "NASA-STD-3001 Vol 2 Rev D, Table 6.2-1"
+      - metric: pio2
+        value: 127
+        unit: mmHg
+        averaging_window: "indefinite with monitoring"
+        context: "mild hypoxia lower limit"
+        population: "crewmembers in pressurized habitats"
+        source: "NASA-STD-3001 Vol 2 Rev D, Table 6.2-1"
+      - metric: pio2
+        value: 122
+        unit: mmHg
+        averaging_window: "1_hour_time_weighted_average"
+        context: "absolute lower limit for the minimum hypoxia range"
+        population: "crewmembers in pressurized habitats"
+        source: "NASA-STD-3001 Vol 2 Rev D, Table 6.2-1 footnote"
+    limitations:
+      - "Environmental standard, not an individual clinical threshold"
+      - "Microgravity data at 127 mmHg are lacking for exploration durations"
+      - "Applies to habitat atmosphere, not to a wearable SpO2 reading"
+    system_use:
+      candidate_hypotheses: [H03]
+      supports:
+        - "PIO2 is required context for SpO2"
+        - "mild hypoxia is a monitored condition, not an alarm state"
+      weakens:
+        - "SpO2 alone can establish hypoxia"
+      must_not_be_used_as:
+        - "standalone diagnosis"
+        - "individual SpO2 threshold"
+    status:
+      recommended_for_mvp: true
+      quality_flags: [NASA_STANDARD, ENVIRONMENTAL]
+
+  - id: EVID_HYPOXIA_001
+    title: "Hypoxia onset can be insidious; NASA recommends pulse oximetry with perfusion index"
+    domain: [hypoxia, spo2, cognition]
+    metrics: [spo2, reaction_time, heart_rate]
+    context_features: [perfusion_index, pio2, symptoms]
+    relationship:
+      type: clinical_recommendation
+      direction:
+        hypoxia: increase
+        symptom_recognition: delayed
+    fact: >
+      The NASA hypoxia evidence report states that the insidious onset of hypoxia can affect
+      individual readiness and crew capability severely enough that critical tasks such as piloting
+      may be affected. It recommends an in-flight monitoring plan that includes environmental
+      control and life support monitoring, oxygen saturation using pulse oximetry with perfusion
+      index for signal-quality validation, sleep actigraphy, vascular ultrasound, cognition, and
+      exercise performance.
+    interpretation: >
+      Hypoxia may not present with obvious symptoms. SpO2 plus signal-quality data plus cognitive
+      and environmental context is more informative than any single measure.
+    prototype_rule_note: >
+      Combine SpO2, perfusion index, PIO2, and symptom report. If they disagree, request a repeat
+      measurement and review the environmental sensor before raising concern.
+    source:
+      organization: NASA
+      title: "Evidence Report: Risk of Hypoxia and Decompression Sickness (Hypoxia and DCS)"
+      url: "https://humanresearchroadmap.nasa.gov/Evidence/reports/Evidence%20Report%20Hypoxia%20and%20DCS_FINAL_1-8-2024.pdf"
+      publication_date: "2024-01-08"
+      source_type: NASA_HRP_EVIDENCE_REPORT
+      location: "Monitoring Strategies for Assessing Hypoxia Risk Inflight, report p. 68; insidious onset section"
+    evidence_strength:
+      level: MODERATE
+      rationale: "NASA review and monitoring recommendation; the underlying evidence is limited and the recommendation is not a validated alarm algorithm."
+    population:
+      context: "Astronauts in habitat and EVA environments"
+      size: "Review of multiple studies"
+      duration: "Mission-length and EVA exposures"
+    thresholds: []
+    limitations:
+      - "Monitoring recommendation, not a validated rule"
+      - "Perfusion index availability depends on device"
+      - "Symptom recognition varies"
+    system_use:
+      candidate_hypotheses: [H03]
+      supports:
+        - "hypoxia can be insidious"
+        - "multi-signal confirmation is appropriate"
+      weakens:
+        - "absence of symptoms excludes hypoxia"
+      must_not_be_used_as:
+        - "standalone diagnosis"
+    status:
+      recommended_for_mvp: true
+      quality_flags: [NASA_RECOMMENDATION, EVIDENCE_LIMITED]
+
+  - id: EVID_HYPOXIA_002
+    title: "Mild decompression and hypoxia symptoms are underreported and can be masked"
+    domain: [hypoxia, eva, symptom_reporting]
+    metrics: [spo2]
+    context_features: [eva, symptom_report, repressurization]
+    relationship:
+      type: reporting_bias
+      direction:
+        symptom_severity: mild
+        reporting: decrease
+    fact: >
+      The NASA hypoxia and DCS evidence report states that under-reporting of DCS symptoms is
+      routinely observed in pilot training, that mild symptoms may be masked during EVA because they
+      are attributed to pain from working in the suit, and that symptoms often clear during
+      repressurization. It notes that the incidence of DCS symptoms that would interfere with
+      performance in an EMU is less than 5%, and that about 85% of those with symptoms showed
+      improvement or no change when tests proceeded past the first symptom report.
+    interpretation: >
+      Self-reported symptoms are an incomplete signal. Physiological and environmental data can
+      supplement reporting, but they cannot replace clinical evaluation.
+    prototype_rule_note: >
+      Ask a structured symptom question after EVA and when SpO2 or cognition changes. Do not treat
+      "no reported symptoms" as proof of no effect.
+    source:
+      organization: NASA
+      title: "Evidence Report: Risk of Hypoxia and Decompression Sickness (Hypoxia and DCS)"
+      url: "https://humanresearchroadmap.nasa.gov/Evidence/reports/Evidence%20Report%20Hypoxia%20and%20DCS_FINAL_1-8-2024.pdf"
+      publication_date: "2024-01-08"
+      source_type: NASA_HRP_EVIDENCE_REPORT
+      location: "DCS Symptom Reporting section"
+    evidence_strength:
+      level: MODERATE
+      rationale: "Observational and historical evidence; reporting bias is well described but not quantified for astronauts."
+    population:
+      context: "EVA crewmembers, aviators, and hypobaric chamber subjects"
+      size: "Multiple historical cohorts; exact N not stated in the cited passage"
+      duration: "EVA and chamber exposures"
+    thresholds: []
+    limitations:
+      - "Historical and aviation data"
+      - "Self-report bias"
+      - "EVA suit pain confounds symptom attribution"
+    system_use:
+      candidate_hypotheses: [H03]
+      supports:
+        - "structured symptom queries are needed"
+        - "absence of symptoms is weak evidence"
+      weakens:
+        - "self-report alone can exclude hypoxia or DCS"
+      must_not_be_used_as:
+        - "standalone diagnosis"
+    status:
+      recommended_for_mvp: true
+      quality_flags: [REPORTING_BIAS, OBSERVATIONAL]
+
+  - id: EVID_SENSOR_001
+    title: "A single SpO2 sensor is insufficient to confirm a hypoxia pattern"
+    domain: [sensor_reliability, spo2, hypoxia]
+    metrics: [spo2]
+    context_features: [sensor_agreement, perfusion_index, data_age]
+    relationship:
+      type: interpretation_constraint
+      direction:
+        sensor_count: increase
+        confidence: increase
+    fact: >
+      The American Thoracic Society lists motion, cold hands, nail polish, artificial nails, low
+      saturation, skin pigmentation, and smoking as factors that reduce pulse oximetry accuracy.
+      The NASA hypoxia evidence report recommends pulse oximetry with perfusion index for
+      signal-quality validation and a broader in-flight monitoring plan. Neither source treats a
+      single unvalidated reading as sufficient to establish hypoxia.
+    interpretation: >
+      Confirmation requires either a repeat measurement with good signal quality or a second
+      sensor. A single low reading should lower confidence and trigger a measurement request, not a
+      hypoxia conclusion.
+    prototype_rule_note: >
+      Generate a missing-evidence request for repeat SpO2 and signal quality rather than raising
+      H03 on one reading.
+    source:
+      organization: American Thoracic Society; NASA
+      title: "Pulse Oximetry; Evidence Report: Risk of Hypoxia and Decompression Sickness"
+      url: "https://www.thoracic.org/patients/patient-resources/resources/pulse-oximetry.pdf"
+      additional_urls:
+        - "https://humanresearchroadmap.nasa.gov/Evidence/reports/Evidence%20Report%20Hypoxia%20and%20DCS_FINAL_1-8-2024.pdf"
+      publication_date: "2021 (ATS update); 2024-01-08 (NASA)"
+      source_type: CLINICAL_GUIDANCE
+      location: "ATS accuracy section; NASA monitoring recommendations"
+    evidence_strength:
+      level: MODERATE
+      rationale: "Inference from device-accuracy guidance and a NASA monitoring recommendation; not a direct trial of sensor-fusion rules."
+    population:
+      context: "Pulse oximetry users; astronauts"
+      size: "Not applicable (guidance)"
+      duration: "Point and repeated measurements"
+    thresholds: []
+    limitations:
+      - "No validated sensor-fusion algorithm"
+      - "Second sensor may share the same artifact"
+      - "Clinical confirmation may be unavailable"
+    system_use:
+      candidate_hypotheses: [H03, H08]
+      supports:
+        - "repeat and second-sensor confirmation are appropriate"
+      weakens:
+        - "one sensor is sufficient for a hypoxia hypothesis"
+      must_not_be_used_as:
+        - "standalone diagnosis"
+    status:
+      recommended_for_mvp: true
+      quality_flags: [INTERPRETATION_CONSTRAINT, SENSOR_FUSION]
+
+  # ===========================================================================
+  # BODY TEMPERATURE / CABIN ENVIRONMENT
+  # ===========================================================================
+
+  - id: EVID_TEMP_001
+    title: "NASA cabin temperature and humidity health and performance zones"
+    domain: [thermal, environmental_health]
+    metrics: [cabin_temperature, relative_humidity]
+    context_features: [crew_health_zone, performance_zone]
+    relationship:
+      type: standard
+      direction:
+        cabin_temperature: range
+        relative_humidity: range
+    fact: >
+      NASA-STD-3001 Volume 2 Revision D requires cabin temperature and humidity to remain within
+      the Crew Health Environmental Limits, anchored at 18 degrees C and 75% relative humidity on
+      the upper-left corner and 27 degrees C and 25% relative humidity on the lower-right corner.
+      It also requires the system to reach the Crew Performance Environmental Zone, described as
+      20-25 degrees C and 30-60% relative humidity, to support thermal comfort and routine
+      performance.
+    interpretation: >
+      These are habitat design and operations limits, not individual clinical thresholds. They
+      provide defensible environmental context for a thermal-stress hypothesis.
+    prototype_rule_note: >
+      Use cabin temperature and humidity as context. If they are outside the performance zone,
+      raise an environmental concern and request review, not a medical diagnosis.
+    source:
+      organization: NASA
+      title: "NASA Space Flight Human-System Standard, Volume 2: Human Factors, Habitability, and Environmental Health, Revision D"
+      url: "https://standards.nasa.gov/sites/default/files/standards/NASA/D/nasa-std-3001-vol-2-rev-d-signature.pdf"
+      publication_date: "2023-09-29"
+      source_type: NASA_STANDARD
+      location: "Requirements [V2 6012] and [V2 6013], report pp. 53-54"
+    evidence_strength:
+      level: VERY_STRONG
+      rationale: "NASA technical standard with explicit ranges and operating context."
+    population:
+      context: "Crewed pressurized habitats"
+      size: "Not applicable (standard)"
+      duration: "Occupied nominal operations, excluding suited operations, ascent, entry, landing, and post-landing"
+    thresholds:
+      - metric: cabin_temperature
+        value: 18
+        unit: degC
+        averaging_window: "crew health environmental limit, lower bound"
+        context: "paired with 75% relative humidity at the upper-left corner of the health envelope"
+        population: "crewmembers in pressurized habitats"
+        source: "NASA-STD-3001 Vol 2 Rev D [V2 6012]"
+      - metric: cabin_temperature
+        value: 27
+        unit: degC
+        averaging_window: "crew health environmental limit, upper bound"
+        context: "paired with 25% relative humidity at the lower-right corner of the health envelope"
+        population: "crewmembers in pressurized habitats"
+        source: "NASA-STD-3001 Vol 2 Rev D [V2 6012]"
+      - metric: relative_humidity
+        value: 25
+        unit: "%"
+        averaging_window: "crew health environmental limit, lower bound"
+        context: "boundary of the health envelope"
+        population: "crewmembers in pressurized habitats"
+        source: "NASA-STD-3001 Vol 2 Rev D [V2 6012]"
+      - metric: relative_humidity
+        value: 75
+        unit: "%"
+        averaging_window: "crew health environmental limit, upper bound"
+        context: "boundary of the health envelope"
+        population: "crewmembers in pressurized habitats"
+        source: "NASA-STD-3001 Vol 2 Rev D [V2 6012]"
+      - metric: cabin_temperature
+        value: 20
+        unit: degC
+        averaging_window: "crew performance environmental zone, lower bound"
+        context: "thermal comfort and routine performance"
+        population: "crewmembers in nominally occupied habitable volumes"
+        source: "NASA-STD-3001 Vol 2 Rev D [V2 6013]"
+      - metric: cabin_temperature
+        value: 25
+        unit: degC
+        averaging_window: "crew performance environmental zone, upper bound"
+        context: "thermal comfort and routine performance"
+        population: "crewmembers in nominally occupied habitable volumes"
+        source: "NASA-STD-3001 Vol 2 Rev D [V2 6013]"
+      - metric: relative_humidity
+        value: 30
+        unit: "%"
+        averaging_window: "crew performance environmental zone, lower bound"
+        context: "thermal comfort and routine performance"
+        population: "crewmembers in nominally occupied habitable volumes"
+        source: "NASA-STD-3001 Vol 2 Rev D [V2 6013]"
+      - metric: relative_humidity
+        value: 60
+        unit: "%"
+        averaging_window: "crew performance environmental zone, upper bound"
+        context: "thermal comfort and routine performance"
+        population: "crewmembers in nominally occupied habitable volumes"
+        source: "NASA-STD-3001 Vol 2 Rev D [V2 6013]"
+    limitations:
+      - "Environmental standard, not an individual clinical threshold"
+      - "Individual thermal comfort varies"
+      - "Excludes suited operations and several flight phases"
+    system_use:
+      candidate_hypotheses: [H07]
+      supports:
+        - "cabin temperature and humidity are legitimate context features"
+      weakens:
+        - "cabin environment alone diagnoses a medical condition"
+      must_not_be_used_as:
+        - "standalone diagnosis"
+        - "individual core-temperature threshold"
+    status:
+      recommended_for_mvp: true
+      quality_flags: [NASA_STANDARD, ENVIRONMENTAL]
+
+  - id: EVID_TEMP_002
+    title: "Thermal discomfort outside the performance zone can reduce performance"
+    domain: [thermal, performance]
+    metrics: [cabin_temperature, relative_humidity, reaction_time]
+    relationship:
+      type: standard_rationale
+      direction:
+        thermal_discomfort: increase
+        performance: decrease
+    fact: >
+      The NASA-STD-3001 Volume 2 rationale states that operations outside the Crew Health
+      Environmental Limits may cause dry, stuffy, or irritated mucous membranes, skin rashes from
+      microbial growth at high humidity, thermal discomfort, and decreased performance. It defines
+      the Crew Performance Environmental Zone as the range in which humans can achieve thermal
+      comfort and routine activities are not affected by thermal stress, and states that operating
+      outside this zone will cause performance decrements and impact productivity.
+    interpretation: >
+      Thermal stress is a plausible environmental contributor to performance change, but the
+      standard's rationale is not a dose-response study. It supports context, not a diagnosis.
+    prototype_rule_note: >
+      Combine cabin conditions with the astronaut's thermal comfort report and performance trend.
+      Do not attribute a performance change to temperature without that context.
+    source:
+      organization: NASA
+      title: "NASA Space Flight Human-System Standard, Volume 2: Human Factors, Habitability, and Environmental Health, Revision D"
+      url: "https://standards.nasa.gov/sites/default/files/standards/NASA/D/nasa-std-3001-vol-2-rev-d-signature.pdf"
+      publication_date: "2023-09-29"
+      source_type: NASA_STANDARD
+      location: "Rationale for [V2 6012] and [V2 6013], report pp. 53-54"
+    evidence_strength:
+      level: MODERATE
+      rationale: "Standard rationale and cited office-environment literature; not a controlled spaceflight trial."
+    population:
+      context: "Crewmembers in pressurized habitats; office-environment studies"
+      size: "Not applicable (standard rationale)"
+      duration: "Occupied nominal operations"
+    thresholds: []
+    limitations:
+      - "Rationale, not empirical dose-response"
+      - "Individual thermal comfort varies"
+      - "Performance effects are nonspecific"
+    system_use:
+      candidate_hypotheses: [H07, H02]
+      supports:
+        - "thermal context can strengthen a performance concern"
+      weakens:
+        - "thermal exposure alone establishes cognitive impairment"
+      must_not_be_used_as:
+        - "standalone diagnosis"
+    status:
+      recommended_for_mvp: true
+      quality_flags: [STANDARD_RATIONALE, ENVIRONMENTAL]
+
+  - id: EVID_BODYTEMP_001
+    title: "Normal body temperature depends on measurement site and age"
+    domain: [body_temperature, clinical_reference]
+    metrics: [body_temperature]
+    context_features: [measurement_site, age]
+    relationship:
+      type: normative_range
+      direction:
+        measurement_site: context_dependent
+        body_temperature: context_dependent
+    fact: >
+      A systematic review of 36 articles (9,227 measurement sites from 7,636 subjects) calculated
+      mean +/- 2 standard deviations ranges of 36.32-37.76 degrees C (rectal), 35.76-37.52 degrees C
+      (tympanic), 35.61-37.61 degrees C (urine), 35.73-37.41 degrees C (oral), and 35.01-36.93
+      degrees C (axillary). Adults aged 60 and older had a temperature 0.23 degrees C lower on
+      average than younger adults. The authors conclude that measurement site and age are the most
+      important patient factors.
+    interpretation: >
+      There is no single universal normal or fever threshold. A body-temperature reading must be
+      interpreted with its measurement site, device, and the astronaut's personal baseline.
+    prototype_rule_note: >
+      Store the measurement site and device with every temperature. Prefer change-from-personal-
+      baseline and repeat measurement over a fixed cutoff.
+    source:
+      organization: Open Forum Infectious Diseases (peer-reviewed systematic review)
+      title: "Normal Body Temperature: A Systematic Review"
+      url: "https://doi.org/10.1093/ofid/ofz032"
+      publication_date: "2019-04-09"
+      source_type: PEER_REVIEWED_LITERATURE
+      location: "Abstract; results; PMID 30976605"
+    evidence_strength:
+      level: STRONG
+      rationale: "Systematic review with a large pooled sample and explicit site-specific ranges."
+    population:
+      context: "Healthy adults aged 18 and older"
+      size: "36 articles; 9,227 measurement sites from 7,636 subjects"
+      duration: "Cross-sectional measurements"
+    thresholds:
+      - metric: body_temperature
+        value: 36.32
+        unit: degC
+        averaging_window: "not applicable (cross-sectional normative range)"
+        context: "rectal site, normal range lower bound (mean minus 2 SD)"
+        population: "healthy adults"
+        source: "Geneva et al. 2019, Open Forum Infect Dis"
+      - metric: body_temperature
+        value: 37.76
+        unit: degC
+        averaging_window: "not applicable (cross-sectional normative range)"
+        context: "rectal site, normal range upper bound (mean plus 2 SD)"
+        population: "healthy adults"
+        source: "Geneva et al. 2019, Open Forum Infect Dis"
+      - metric: body_temperature
+        value: 35.76
+        unit: degC
+        averaging_window: "not applicable (cross-sectional normative range)"
+        context: "tympanic site, normal range lower bound (mean minus 2 SD)"
+        population: "healthy adults"
+        source: "Geneva et al. 2019, Open Forum Infect Dis"
+      - metric: body_temperature
+        value: 37.52
+        unit: degC
+        averaging_window: "not applicable (cross-sectional normative range)"
+        context: "tympanic site, normal range upper bound (mean plus 2 SD)"
+        population: "healthy adults"
+        source: "Geneva et al. 2019, Open Forum Infect Dis"
+      - metric: body_temperature
+        value: 35.61
+        unit: degC
+        averaging_window: "not applicable (cross-sectional normative range)"
+        context: "urine site, normal range lower bound (mean minus 2 SD)"
+        population: "healthy adults"
+        source: "Geneva et al. 2019, Open Forum Infect Dis"
+      - metric: body_temperature
+        value: 37.61
+        unit: degC
+        averaging_window: "not applicable (cross-sectional normative range)"
+        context: "urine site, normal range upper bound (mean plus 2 SD)"
+        population: "healthy adults"
+        source: "Geneva et al. 2019, Open Forum Infect Dis"
+      - metric: body_temperature
+        value: 35.73
+        unit: degC
+        averaging_window: "not applicable (cross-sectional normative range)"
+        context: "oral site, normal range lower bound (mean minus 2 SD)"
+        population: "healthy adults"
+        source: "Geneva et al. 2019, Open Forum Infect Dis"
+      - metric: body_temperature
+        value: 37.41
+        unit: degC
+        averaging_window: "not applicable (cross-sectional normative range)"
+        context: "oral site, normal range upper bound (mean plus 2 SD)"
+        population: "healthy adults"
+        source: "Geneva et al. 2019, Open Forum Infect Dis"
+      - metric: body_temperature
+        value: 35.01
+        unit: degC
+        averaging_window: "not applicable (cross-sectional normative range)"
+        context: "axillary site, normal range lower bound (mean minus 2 SD)"
+        population: "healthy adults"
+        source: "Geneva et al. 2019, Open Forum Infect Dis"
+      - metric: body_temperature
+        value: 36.93
+        unit: degC
+        averaging_window: "not applicable (cross-sectional normative range)"
+        context: "axillary site, normal range upper bound (mean plus 2 SD)"
+        population: "healthy adults"
+        source: "Geneva et al. 2019, Open Forum Infect Dis"
+    limitations:
+      - "Terrestrial healthy adults"
+      - "Measurement devices and techniques vary across studies"
+      - "Not specific to astronauts"
+      - "Fever is a clinical judgment, not a single number"
+    system_use:
+      candidate_hypotheses: [H07]
+      supports:
+        - "temperature requires site and baseline context"
+      weakens:
+        - "a universal 37.0 or 38.0 degrees C threshold is valid for all measurements"
+      must_not_be_used_as:
+        - "standalone diagnosis"
+        - "universal fever threshold"
+    status:
+      recommended_for_mvp: true
+      quality_flags: [SYSTEMATIC_REVIEW, SITE_DEPENDENT]
+
+  # ===========================================================================
+  # CO2 EXPOSURE
+  # ===========================================================================
+
+  - id: EVID_CO2_001
+    title: "NASA standard: average 1-hour cabin ppCO2 no more than 3 mmHg"
+    domain: [co2, environmental_health]
+    metrics: [cabin_co2]
+    context_features: [ppco2, averaging_window]
+    relationship:
+      type: standard
+      direction:
+        cabin_co2: increase
+        health_risk: increase
+    fact: >
+      NASA-STD-3001 Volume 2 Revision D requirement [V2 6004] states that the system shall limit
+      the average one-hour carbon dioxide partial pressure (ppCO2) in the habitable volume to no
+      more than 3 mmHg.
+    interpretation: >
+      This is the primary environmental CO2 limit for crewed habitats. It is an engineering and
+      operations requirement, not an individual clinical alarm.
+    prototype_rule_note: >
+      Compare cabin ppCO2 with the 3 mmHg 1-hour average. Treat an exceedance as an environmental
+      concern and request review, not as a medical diagnosis.
+    source:
+      organization: NASA
+      title: "NASA Space Flight Human-System Standard, Volume 2: Human Factors, Habitability, and Environmental Health, Revision D"
+      url: "https://standards.nasa.gov/sites/default/files/standards/NASA/D/nasa-std-3001-vol-2-rev-d-signature.pdf"
+      publication_date: "2023-09-29"
+      source_type: NASA_STANDARD
+      location: "Requirement [V2 6004], report p. 51"
+    evidence_strength:
+      level: VERY_STRONG
+      rationale: "NASA technical standard with an explicit value, averaging window, and operational context."
+    population:
+      context: "Crewed pressurized habitats"
+      size: "Not applicable (standard)"
+      duration: "1-hour average"
+    thresholds:
+      - metric: cabin_co2
+        value: 3
+        unit: mmHg
+        averaging_window: "1_hour"
+        context: "average ppCO2 in the habitable volume"
+        population: "crewmembers in pressurized habitats"
+        source: "NASA-STD-3001 Vol 2 Rev D [V2 6004]"
+    limitations:
+      - "Environmental standard, not an individual clinical threshold"
+      - "Applies to habitable volume, not to a personal sensor"
+      - "Off-nominal CO2 values are outside the standard's scope"
+    system_use:
+      candidate_hypotheses: [H02]
+      supports:
+        - "cabin CO2 is a legitimate environmental exposure"
+      weakens:
+        - "cabin CO2 alone diagnoses a medical condition"
+      must_not_be_used_as:
+        - "standalone diagnosis"
+        - "individual CO2 threshold"
+    status:
+      recommended_for_mvp: true
+      quality_flags: [NASA_STANDARD, ENVIRONMENTAL]
+
+  - id: EVID_CO2_002
+    title: "Cabin CO2 is associated with headache reports on ISS"
+    domain: [co2, headache, environmental_health]
+    metrics: [cabin_co2, fatigue]
+    context_features: [headache_report, 7_day_average]
+    relationship:
+      type: association
+      direction:
+        cabin_co2: increase
+        headache: increase
+    fact: >
+      The NASA OCHMO CO2 technical brief states that 19 of 49 astronauts reported headaches
+      (approximately 38.7%) and that a retrospective analysis found 46 days with reported headaches
+      and 1,670 days of non-reports. It states that to keep the risk of headache below 1%, the
+      average 7-day CO2 needs to be maintained below 2.5 mmHg (the current ISS range is 1-9 mmHg,
+      and the NASA-STD-3001 requirement is <3 mmHg). Headaches have been reported at levels between
+      2.8 and 4.5 mmHg, with worsening fatigue and malaise above 4.5 mmHg.
+    interpretation: >
+      CO2 is a plausible contributor to headache in crewed habitats. The association is stronger
+      for headache than for cognitive impairment. A headache report plus elevated 7-day CO2 is
+      meaningful converging evidence.
+    prototype_rule_note: >
+      Combine headache report with the 7-day average cabin ppCO2. If CO2 is elevated, raise an
+      environmental concern and suggest reviewing ventilation; do not diagnose a CO2 toxicity.
+    source:
+      organization: NASA
+      title: "Carbon Dioxide (CO2) Technical Brief, OCHMO-TB-004, Rev B"
+      url: "https://www.nasa.gov/wp-content/uploads/2023/03/co2-technical-brief-ochmo.pdf"
+      publication_date: "2022-11-10"
+      source_type: NASA_TECHNICAL_BRIEF
+      location: "CO2-Induced Headaches section; Key Historical CO2 Concentrations"
+    evidence_strength:
+      level: STRONG
+      rationale: "NASA operational data and retrospective ISS analysis; observational association, not causal proof."
+    population:
+      context: "ISS astronauts"
+      size: "49 astronauts; 46 headache days and 1,670 non-report days"
+      duration: "7-day average CO2 exposure; retrospective records"
+    thresholds:
+      - metric: cabin_co2
+        value: 2.5
+        unit: mmHg
+        averaging_window: "7_day"
+        context: "predicted probability of headache below 1%"
+        population: "ISS crewmembers"
+        source: "NASA OCHMO CO2 Technical Brief, citing Law et al. 2014"
+      - metric: cabin_co2
+        value: 2.8
+        unit: mmHg
+        averaging_window: "not reported (exposure level at which headaches were reported)"
+        context: "lower bound of reported headache range"
+        population: "crewmembers in habitats"
+        source: "NASA OCHMO CO2 Technical Brief, NASA/TP-2010-216126"
+      - metric: cabin_co2
+        value: 4.5
+        unit: mmHg
+        averaging_window: "not reported (exposure level at which headaches were reported)"
+        context: "upper bound of reported headache range; worsening fatigue and malaise above this level"
+        population: "crewmembers in habitats"
+        source: "NASA OCHMO CO2 Technical Brief, NASA/TP-2010-216126"
+    limitations:
+      - "Observational and retrospective"
+      - "Headache reports are self-reported and may be incomplete"
+      - "CO2 exposure is correlated with other cabin conditions"
+      - "Individual susceptibility varies"
+    system_use:
+      candidate_hypotheses: [H02]
+      supports:
+        - "CO2 plus headache is a plausible environmental relationship"
+        - "7-day averaging is the appropriate window"
+      weakens:
+        - "a single CO2 reading explains a headache"
+      must_not_be_used_as:
+        - "standalone diagnosis"
+        - "proof of causation"
+    status:
+      recommended_for_mvp: true
+      quality_flags: [OBSERVATIONAL, SELF_REPORT]
+
+  - id: EVID_CO2_003
+    title: "Cognitive effects of spacecraft-level CO2 are conflicting and not established"
+    domain: [co2, cognition, environmental_health]
+    metrics: [cabin_co2, reaction_time, mental_fatigue]
+    relationship:
+      type: mixed_evidence
+      direction:
+        cabin_co2: increase
+        cognition: uncertain
+    fact: >
+      The NASA OCHMO CO2 technical brief states that prior research offers conflicting data on CO2
+      exposure and cognitive functioning, including memory, concentration, decision-making, and task
+      performance. It reports that several recent terrestrial studies at levels currently
+      maintained onboard spacecraft and submarines did not reduce cognition or performance in
+      astronaut-like subjects or submarine officers. It cites Scully et al. (2019), Rodehe et al.
+      (2018), and Basner et al. (2017, SPACECOT), each reporting no significant CO2 effect on their
+      cognitive outcomes. In SPACECOT, the only significant time-in-CO2 effects were physical
+      exhaustion and mental fatigue, which increased with exposure duration.
+    interpretation: >
+      Do not encode CO2 -> cognitive impairment as a strong relationship. CO2 may contribute to
+      fatigue, malaise, and headache, but a cognitive decrement at spacecraft-level CO2 is not
+      established.
+    prototype_rule_note: >
+      If CO2 is elevated and cognition is degraded, treat CO2 as one possible contributor and
+      request confirmation. Do not present it as a proven cause.
+    source:
+      organization: NASA
+      title: "Carbon Dioxide (CO2) Technical Brief, OCHMO-TB-004, Rev B"
+      url: "https://www.nasa.gov/wp-content/uploads/2023/03/co2-technical-brief-ochmo.pdf"
+      publication_date: "2022-11-10"
+      source_type: NASA_TECHNICAL_BRIEF
+      location: "Effects of CO2 on Cognitive Functioning"
+    evidence_strength:
+      level: MODERATE
+      rationale: "Deliberately mixed evidence; recent controlled studies find no cognitive effect at spacecraft levels."
+    population:
+      context: "Astronaut-like subjects, submarine officers, and head-down-tilt subjects"
+      size: "Multiple studies; exact N not stated in the brief"
+      duration: "Hours to days of exposure"
+    thresholds: []
+    limitations:
+      - "Conflicting literature"
+      - "Terrestrial analogs may not capture spaceflight stressors"
+      - "Cognitive batteries differ across studies"
+      - "SPACECOT found fatigue effects, not cognitive effects"
+    system_use:
+      candidate_hypotheses: [H02]
+      supports:
+        - "CO2 may contribute to fatigue/malaise"
+      weakens:
+        - "CO2 at spacecraft levels causes cognitive impairment"
+      must_not_be_used_as:
+        - "standalone diagnosis"
+        - "proof of CO2-induced cognitive degradation"
+    status:
+      recommended_for_mvp: true
+      quality_flags: [MIXED_EVIDENCE, DO_NOT_OVERSTATE]
+
+  - id: EVID_CO2_004
+    title: "Historical reports link higher CO2 to fatigue, poor sleep, and mucosal symptoms"
+    domain: [co2, sleep, symptoms]
+    metrics: [cabin_co2, fatigue, sleep_duration]
+    context_features: [symptom_report]
+    relationship:
+      type: historical_association
+      direction:
+        cabin_co2: increase
+        symptoms: increase
+    fact: >
+      The NASA OCHMO CO2 technical brief lists historical associations between CO2 levels and
+      symptoms: headaches at 2.8-4.5 mmHg with worsening fatigue and malaise; fatigue, malaise,
+      decreased sleep, and nausea at levels above 4.5 mmHg; fifth cranial nerve dysesthesia at
+      4.5-5.0 mmHg; and chronic cough, poor sleep, blurred vision, and frontal headaches at
+      3.5 mmHg. The brief attributes these to anecdotal evidence from previous spaceflight missions
+      and cites NASA/TP-2010-216126.
+    interpretation: >
+      These are historical and anecdotal associations, not controlled findings. They are useful for
+      hypothesis generation and for selecting symptom questions, not for thresholds.
+    prototype_rule_note: >
+      Use these symptoms in structured questionnaires when CO2 is elevated. Do not encode the
+      historical levels as individual alarm thresholds.
+    source:
+      organization: NASA
+      title: "Carbon Dioxide (CO2) Technical Brief, OCHMO-TB-004, Rev B"
+      url: "https://www.nasa.gov/wp-content/uploads/2023/03/co2-technical-brief-ochmo.pdf"
+      publication_date: "2022-11-10"
+      source_type: NASA_TECHNICAL_BRIEF
+      location: "Key Historical CO2 Concentrations"
+    evidence_strength:
+      level: WEAK
+      rationale: "Historical and anecdotal associations compiled by NASA; not controlled evidence."
+    population:
+      context: "Previous spaceflight missions"
+      size: "Historical reports; exact N not stated in the brief"
+      duration: "Mission exposures"
+    thresholds: []
+    limitations:
+      - "Anecdotal and historical"
+      - "Confounded by other cabin conditions"
+      - "Symptom reporting is incomplete"
+    system_use:
+      candidate_hypotheses: [H02, H01]
+      supports:
+        - "CO2 may contribute to fatigue and poor sleep"
+        - "structured symptom questions are appropriate"
+      weakens:
+        - "the historical levels are validated individual thresholds"
+      must_not_be_used_as:
+        - "standalone diagnosis"
+        - "validated threshold source"
+    status:
+      recommended_for_mvp: false
+      quality_flags: [HISTORICAL, ANECDOTAL]
+
+  # ===========================================================================
+  # RADIATION AND SPACE WEATHER
+  # ===========================================================================
+
+  - id: EVID_RAD_001
+    title: "NASA career effective dose limit is 600 mSv, corresponding to 3% mean REID"
+    domain: [radiation]
+    metrics: [cumulative_radiation_dose, radiation_dose_rate]
+    relationship:
+      type: standard
+      direction:
+        cumulative_radiation_dose: increase
+        cancer_risk: increase
+    fact: >
+      NASA-STD-3001 Volume 1 Revision C requirement [V1 4030] states that an individual
+      crewmember's total career effective radiation dose due to spaceflight radiation exposure shall
+      be less than 600 mSv. The limit is universal for all ages and sexes. The standard states that
+      the total career dose limit is based on ensuring each crewmember remains below a 3% mean risk
+      of cancer mortality (risk of exposure-induced death, REID) above the non-exposed baseline mean.
+    interpretation: >
+      Provides a defensible cumulative-exposure standard. It is a career limit, not an acute
+      clinical alarm, and it does not predict an individual's actual cancer outcome.
+    prototype_rule_note: >
+      Track cumulative dose against the 600 mSv career limit and flag when the remaining margin is
+      low. Do not convert dose into an individual diagnosis.
+    source:
+      organization: NASA
+      title: "NASA Space Flight Human-System Standard, Volume 1: Crew Health, Revision C"
+      url: "https://standards.nasa.gov/sites/default/files/standards/NASA/C/nasa-std-3001-vol-1-rev-c-signature.pdf"
+      publication_date: "2023-09-29"
+      source_type: NASA_STANDARD
+      location: "Requirement [V1 4030], report pp. 42-43"
+    evidence_strength:
+      level: VERY_STRONG
+      rationale: "NASA technical standard with an explicit career limit and a stated risk basis."
+    population:
+      context: "NASA crewmembers"
+      size: "Not applicable (standard)"
+      duration: "Career cumulative exposure"
+    thresholds:
+      - metric: cumulative_radiation_dose
+        value: 600
+        unit: mSv
+        averaging_window: "career total"
+        context: "total career effective dose due to spaceflight radiation exposure; universal for all ages and sexes"
+        population: "NASA crewmembers"
+        source: "NASA-STD-3001 Vol 1 Rev C [V1 4030]"
+    limitations:
+      - "Career limit, not an acute exposure threshold"
+      - "Effective dose is a modeled quantity with uncertainty"
+      - "Individual risk varies"
+      - "Not a clinical diagnostic threshold"
+    system_use:
+      candidate_hypotheses: [H06]
+      supports:
+        - "cumulative radiation dose is a legitimate long-term concern"
+      weakens:
+        - "a single dose reading predicts an individual cancer outcome"
+      must_not_be_used_as:
+        - "standalone diagnosis"
+        - "individual cancer risk prediction"
+    status:
+      recommended_for_mvp: true
+      quality_flags: [NASA_STANDARD, LONG_TERM]
+
+  - id: EVID_RAD_002
+    title: "NASA organ-specific career and short-term radiation limits"
+    domain: [radiation]
+    metrics: [cumulative_radiation_dose]
+    context_features: [organ_specific_dose]
+    relationship:
+      type: standard
+      direction:
+        organ_dose: increase
+        non_cancer_risk: increase
+    fact: >
+      NASA-STD-3001 Volume 1 Revision C, Table 4.8-1, specifies dose limits for non-cancer effects
+      over 30-day, 1-year, and career windows. Career limits are lens 4,000 mGy-Eq, skin 6,000
+      mGy-Eq, circulatory system 1,000 mGy-Eq, and CNS 1,500 mGy. Blood-forming organs have no
+      career limit but are capped at 250 mGy-Eq per 30 days and 500 mGy-Eq per year. CNS limits are
+      calculated at the hippocampus, and a separate CNS limit applies to particles with Z >= 10
+      (100 mGy per year, 250 mGy career).
+    interpretation: >
+      Radiation risk is not only a single career effective-dose number; organ-specific limits matter
+      for lens, skin, circulatory, and CNS outcomes. These are design and surveillance limits, not
+      wearable alarms.
+    prototype_rule_note: >
+      If organ-dose data are available, track them separately. Do not collapse all radiation risk
+      into one number.
+    source:
+      organization: NASA
+      title: "NASA Space Flight Human-System Standard, Volume 1: Crew Health, Revision C"
+      url: "https://standards.nasa.gov/sites/default/files/standards/NASA/C/nasa-std-3001-vol-1-rev-c-signature.pdf"
+      publication_date: "2023-09-29"
+      source_type: NASA_STANDARD
+      location: "Table 4.8-1 and associated requirements, report pp. 42-43"
+    evidence_strength:
+      level: VERY_STRONG
+      rationale: "NASA technical standard with explicit organ-specific limits."
+    population:
+      context: "NASA crewmembers"
+      size: "Not applicable (standard)"
+      duration: "30-day, 1-year, and career windows"
+    thresholds:
+      - metric: lens_dose
+        value: 1000
+        unit: mGy-Eq
+        averaging_window: "30_day"
+        context: "lens limit intended to prevent early severe cataracts"
+        population: "NASA crewmembers"
+        source: "NASA-STD-3001 Vol 1 Rev C, Table 4.8-1"
+      - metric: lens_dose
+        value: 2000
+        unit: mGy-Eq
+        averaging_window: "1_year"
+        context: "lens limit intended to prevent early severe cataracts"
+        population: "NASA crewmembers"
+        source: "NASA-STD-3001 Vol 1 Rev C, Table 4.8-1"
+      - metric: lens_dose
+        value: 4000
+        unit: mGy-Eq
+        averaging_window: "career"
+        context: "lens limit intended to prevent early severe cataracts"
+        population: "NASA crewmembers"
+        source: "NASA-STD-3001 Vol 1 Rev C, Table 4.8-1"
+      - metric: skin_dose
+        value: 1500
+        unit: mGy-Eq
+        averaging_window: "30_day"
+        context: "skin limit"
+        population: "NASA crewmembers"
+        source: "NASA-STD-3001 Vol 1 Rev C, Table 4.8-1"
+      - metric: skin_dose
+        value: 3000
+        unit: mGy-Eq
+        averaging_window: "1_year"
+        context: "skin limit"
+        population: "NASA crewmembers"
+        source: "NASA-STD-3001 Vol 1 Rev C, Table 4.8-1"
+      - metric: skin_dose
+        value: 6000
+        unit: mGy-Eq
+        averaging_window: "career"
+        context: "skin limit"
+        population: "NASA crewmembers"
+        source: "NASA-STD-3001 Vol 1 Rev C, Table 4.8-1"
+      - metric: bfo_dose
+        value: 250
+        unit: mGy-Eq
+        averaging_window: "30_day"
+        context: "blood-forming organs"
+        population: "NASA crewmembers"
+        source: "NASA-STD-3001 Vol 1 Rev C, Table 4.8-1"
+      - metric: bfo_dose
+        value: 500
+        unit: mGy-Eq
+        averaging_window: "1_year"
+        context: "blood-forming organs; no career limit is specified"
+        population: "NASA crewmembers"
+        source: "NASA-STD-3001 Vol 1 Rev C, Table 4.8-1"
+      - metric: circulatory_dose
+        value: 250
+        unit: mGy-Eq
+        averaging_window: "30_day"
+        context: "circulatory system dose averaged over heart muscle and adjacent arteries"
+        population: "NASA crewmembers"
+        source: "NASA-STD-3001 Vol 1 Rev C, Table 4.8-1"
+      - metric: circulatory_dose
+        value: 500
+        unit: mGy-Eq
+        averaging_window: "1_year"
+        context: "circulatory system dose averaged over heart muscle and adjacent arteries"
+        population: "NASA crewmembers"
+        source: "NASA-STD-3001 Vol 1 Rev C, Table 4.8-1"
+      - metric: circulatory_dose
+        value: 1000
+        unit: mGy-Eq
+        averaging_window: "career"
+        context: "circulatory system dose averaged over heart muscle and adjacent arteries"
+        population: "NASA crewmembers"
+        source: "NASA-STD-3001 Vol 1 Rev C, Table 4.8-1"
+      - metric: cns_dose
+        value: 500
+        unit: mGy
+        averaging_window: "30_day"
+        context: "central nervous system dose calculated at the hippocampus"
+        population: "NASA crewmembers"
+        source: "NASA-STD-3001 Vol 1 Rev C, Table 4.8-1"
+      - metric: cns_dose
+        value: 1000
+        unit: mGy
+        averaging_window: "1_year"
+        context: "central nervous system dose calculated at the hippocampus"
+        population: "NASA crewmembers"
+        source: "NASA-STD-3001 Vol 1 Rev C, Table 4.8-1"
+      - metric: cns_dose
+        value: 1500
+        unit: mGy
+        averaging_window: "career"
+        context: "central nervous system dose calculated at the hippocampus"
+        population: "NASA crewmembers"
+        source: "NASA-STD-3001 Vol 1 Rev C, Table 4.8-1"
+      - metric: cns_dose_z10
+        value: 100
+        unit: mGy
+        averaging_window: "1_year"
+        context: "central nervous system limit for particles with Z >= 10, calculated at the hippocampus"
+        population: "NASA crewmembers"
+        source: "NASA-STD-3001 Vol 1 Rev C, Table 4.8-1"
+      - metric: cns_dose_z10
+        value: 250
+        unit: mGy
+        averaging_window: "career"
+        context: "central nervous system limit for particles with Z >= 10, calculated at the hippocampus"
+        population: "NASA crewmembers"
+        source: "NASA-STD-3001 Vol 1 Rev C, Table 4.8-1"
+    limitations:
+      - "Design and surveillance limits"
+      - "Dose quantities are modeled"
+      - "Not individual clinical alarms"
+    system_use:
+      candidate_hypotheses: [H06]
+      supports:
+        - "organ-specific radiation surveillance is appropriate"
+      weakens:
+        - "a single effective-dose number captures all radiation risk"
+      must_not_be_used_as:
+        - "standalone diagnosis"
+        - "individual risk prediction"
+    status:
+      recommended_for_mvp: false
+      quality_flags: [NASA_STANDARD, ORGAN_SPECIFIC]
+
+  - id: EVID_RAD_003
+    title: "Galactic cosmic radiation dose rate is about 1.5 mSv/day unshielded"
+    domain: [radiation, space_weather]
+    metrics: [radiation_dose_rate, cumulative_radiation_dose]
+    relationship:
+      type: physical_environment
+      direction:
+        gcr_exposure: increase
+        cumulative_radiation_dose: increase
+    fact: >
+      NASA-STD-3001 Volume 1 Revision C states that the unshielded galactic cosmic radiation (GCR)
+      effective dose rate is about 1.5 mSv/day, and that shielding of 10-40 g/cm2 reduces this to
+      about 1.3 mSv/day or lower. The standard also notes that effective dose per mission day varies
+      with the solar cycle.
+    interpretation: >
+      GCR is a continuous background exposure. It provides a baseline for interpreting cumulative
+      dose, but it does not predict an acute event or an individual outcome.
+    prototype_rule_note: >
+      Use mission duration and shielding context to interpret cumulative dose. Do not treat the
+      average rate as a measured individual dose.
+    source:
+      organization: NASA
+      title: "NASA Space Flight Human-System Standard, Volume 1: Crew Health, Revision C"
+      url: "https://standards.nasa.gov/sites/default/files/standards/NASA/C/nasa-std-3001-vol-1-rev-c-signature.pdf"
+      publication_date: "2023-09-29"
+      source_type: NASA_STANDARD
+      location: "GCR dose-rate discussion, report p. 45; Figure 4.8-1"
+    evidence_strength:
+      level: STRONG
+      rationale: "NASA standard's modeled physical environment; dose rates are estimates with uncertainty."
+    population:
+      context: "Spaceflight radiation environment"
+      size: "Not applicable (physical model)"
+      duration: "Per mission day"
+    thresholds:
+      - metric: radiation_dose_rate
+        value: 1.5
+        unit: mSv/day
+        averaging_window: "1_day"
+        context: "unshielded GCR effective dose rate; galactic cosmic radiation"
+        population: "spaceflight environment"
+        source: "NASA-STD-3001 Vol 1 Rev C"
+      - metric: radiation_dose_rate
+        value: 1.3
+        unit: mSv/day
+        averaging_window: "1_day"
+        context: "GCR effective dose rate with 10-40 g/cm2 shielding"
+        context: "reduced GCR effective dose rate"
+        population: "shielded spacecraft"
+        source: "NASA-STD-3001 Vol 1 Rev C"
+    limitations:
+      - "Modeled, not measured individual dose"
+      - "Solar cycle variation"
+      - "Shielding geometry matters"
+    system_use:
+      candidate_hypotheses: [H06]
+      supports:
+        - "GCR is a continuous exposure"
+        - "mission duration and shielding are relevant context"
+      weakens:
+        - "the average rate is an individual measurement"
+      must_not_be_used_as:
+        - "standalone diagnosis"
+    status:
+      recommended_for_mvp: true
+      quality_flags: [MODELED, PHYSICAL_ENVIRONMENT]
+
+  - id: EVID_RAD_004
+    title: "A solar particle event is a hazard, not a confirmed astronaut dose"
+    domain: [radiation, space_weather]
+    metrics: [radiation_dose_rate, cumulative_radiation_dose]
+    context_features: [solar_particle_event, shielding, dosimeter]
+    relationship:
+      type: interpretation_constraint
+      direction:
+        solar_particle_event: increase
+        radiation_hazard: increase
+    fact: >
+      The NASA radiation standard and NOAA space-weather documentation describe solar particle
+      events and solar radiation storms as hazardous radiation environments. Confirmed astronaut
+      dose requires exposure measurement (dosimetry) or a validated exposure model that accounts for
+      event timing, location, and shielding. A space-weather event alone does not establish an
+      individual's absorbed dose.
+    interpretation: >
+      Space-weather context can raise concern and prompt dosimetry review, but it cannot substitute
+      for dose evidence. The system must keep hazard context and confirmed exposure separate.
+    prototype_rule_note: >
+      When a solar particle event is active, request a dosimeter reading and shielding/location
+      context. Do not infer dose from the event alone.
+    source:
+      organization: NASA; NOAA
+      title: "NASA-STD-3001 Vol 1 Rev C; NOAA SWPC Solar Radiation Storm"
+      url: "https://www.spaceweather.gov/phenomena/solar-radiation-storm"
+      additional_urls:
+        - "https://standards.nasa.gov/sites/default/files/standards/NASA/C/nasa-std-3001-vol-1-rev-c-signature.pdf"
+      publication_date: "2023-09-29; accessed 2026-11-14"
+      source_type: NASA_STANDARD_AND_NOAA_GUIDANCE
+      location: "Radiation environment sections; NOAA solar radiation storm description"
+    evidence_strength:
+      level: STRONG
+      rationale: "Direct consequence of the standard's dose-based limits and NOAA's event definition; an interpretation constraint rather than a study."
+    population:
+      context: "Spaceflight crews and space weather operations"
+      size: "Not applicable"
+      duration: "Event duration (hours to days)"
+    thresholds: []
+    limitations:
+      - "Dose models have uncertainty"
+      - "Shielding and location can change exposure substantially"
+      - "Event forecasting is uncertain"
+    system_use:
+      candidate_hypotheses: [H06]
+      supports:
+        - "space weather is context, not dose"
+        - "dosimetry is required for confirmed exposure"
+      weakens:
+        - "a solar particle event confirms astronaut radiation exposure"
+      must_not_be_used_as:
+        - "standalone diagnosis"
+        - "dose estimate without measurement"
+    status:
+      recommended_for_mvp: true
+      quality_flags: [INTERPRETATION_CONSTRAINT, SCOPE_CRITICAL]
+
+  - id: EVID_RAD_005
+    title: "Radiation risk models carry substantial uncertainty"
+    domain: [radiation, risk_model]
+    metrics: [cumulative_radiation_dose]
+    relationship:
+      type: model_uncertainty
+      direction:
+        dose: increase
+        risk_estimate: uncertain
+    fact: >
+      NASA-STD-3001 Volume 1 Revision C states that variability and subjectivity in the selection of
+      model parameters can easily modify the model output by 25%, and that the model need not be
+      updated unless new data indicate a 30% change in the effective dose associated with the 3%
+      mean REID calculation.
+    interpretation: >
+      Radiation risk estimates are not precise individual predictions. The system should present
+      dose and risk as estimates with uncertainty, not as exact probabilities.
+    prototype_rule_note: >
+      Label radiation risk outputs as modeled estimates. Do not present a point estimate without its
+      uncertainty context.
+    source:
+      organization: NASA
+      title: "NASA Space Flight Human-System Standard, Volume 1: Crew Health, Revision C"
+      url: "https://standards.nasa.gov/sites/default/files/standards/NASA/C/nasa-std-3001-vol-1-rev-c-signature.pdf"
+      publication_date: "2023-09-29"
+      source_type: NASA_STANDARD
+      location: "Rationale for [V1 4030], report p. 43"
+    evidence_strength:
+      level: MODERATE
+      rationale: "Explicit statement of model uncertainty in the standard; not a quantitative validation study."
+    population:
+      context: "NASA crewmembers"
+      size: "Not applicable (standard)"
+      duration: "Career"
+    thresholds: []
+    limitations:
+      - "Uncertainty statement, not a confidence interval for an individual"
+      - "Model-dependent"
+    system_use:
+      candidate_hypotheses: [H06]
+      supports:
+        - "radiation risk must be presented with uncertainty"
+      weakens:
+        - "a point estimate is an individual probability"
+      must_not_be_used_as:
+        - "standalone diagnosis"
+        - "precise individual risk prediction"
+    status:
+      recommended_for_mvp: true
+      quality_flags: [MODEL_UNCERTAINTY]
+
+  - id: EVID_SPACEWEATHER_001
+    title: "NOAA solar radiation storm scale and thresholds"
+    domain: [space_weather, radiation]
+    metrics: [radiation_dose_rate]
+    context_features: [proton_flux, noaa_scale]
+    relationship:
+      type: operational_definition
+      direction:
+        proton_flux: increase
+        solar_radiation_storm: increase
+    fact: >
+      NOAA's Space Weather Prediction Center states that a solar radiation storm occurs when a
+      large-scale magnetic eruption accelerates charged particles, especially protons, to very high
+      velocities. NOAA categorizes storms on an S1-S5 scale based on energetic proton measurements
+      from the GOES satellite. The start of a storm is defined as the time when the flux of protons
+      at energies of at least 10 MeV equals or exceeds 10 proton flux units (1 pfu = 1 particle
+      cm-2 s-1 ster-1). The end is the last time the flux is at or above 10 pfu. Storms can persist
+      for hours to days and can damage biological DNA and electronics.
+    interpretation: >
+      Provides a defensible operational definition of a space-weather event. It is context for
+      radiation concern, not a measure of an astronaut's dose.
+    prototype_rule_note: >
+      Use the NOAA S-scale and proton flux as environmental context. Pair with dosimetry before
+      raising a radiation exposure concern.
+    source:
+      organization: NOAA Space Weather Prediction Center
+      title: "Solar Radiation Storm"
+      url: "https://www.spaceweather.gov/phenomena/solar-radiation-storm"
+      publication_date: "accessed 2026-11-14"
+      source_type: NOAA_OPERATIONAL
+      location: "Phenomena description and NOAA scale definition"
+    evidence_strength:
+      level: STRONG
+      rationale: "Official operational definition from the responsible agency."
+    population:
+      context: "Near-Earth and space weather operations"
+      size: "Not applicable (operational definition)"
+      duration: "Hours to days"
+    thresholds:
+      - metric: proton_flux_10mev
+        value: 10
+        unit: pfu
+        averaging_window: "event start/end definition"
+        context: "S1 solar radiation storm threshold"
+        population: "space environment"
+        source: "NOAA SWPC Solar Radiation Storm"
+    limitations:
+      - "Event definition, not an astronaut dose"
+      - "Proton flux at GOES is not the same as dose at the crew location"
+      - "Storm duration and spectrum vary"
+    system_use:
+      candidate_hypotheses: [H06]
+      supports:
+        - "space-weather events can be identified operationally"
+      weakens:
+        - "a storm threshold equals an astronaut exposure threshold"
+      must_not_be_used_as:
+        - "standalone diagnosis"
+        - "individual dose estimate"
+    status:
+      recommended_for_mvp: true
+      quality_flags: [OPERATIONAL_DEFINITION]
+
+  # ===========================================================================
+  # SENSOR / DATA RELIABILITY
+  # ===========================================================================
+
+  - id: EVID_DATA_001
+    title: "FDIR: fault detection, isolation, recovery, and redundancy are distinct functions"
+    domain: [sensor_reliability, data_quality, engineering]
+    metrics: []
+    context_features: [fault_detection, fault_isolation, recovery, redundancy]
+    relationship:
+      type: engineering_principle
+      direction:
+        fault: increase
+        system_degradation: increase
+    fact: >
+      NASA-HDBK-1002 defines failure detection, fault isolation, failure recovery, and redundancy as
+      distinct functions. Fault management includes detection, isolation, diagnosis, response, and
+      recovery. Redundancy includes hardware redundancy as well as functional, analytic, and
+      information redundancy.
+    interpretation: >
+      Data quality and health state must be represented separately. A sensor fault is a system
+      state, not a physiological state; a missing value is not evidence of a health change.
+    prototype_rule_note: >
+      Model data quality as its own layer with explicit states (valid, suspect, stale, missing,
+      disagreeing). Health hypotheses consume only validated observations.
+    source:
+      organization: NASA
+      title: "NASA Fault Management Handbook (NASA-HDBK-1002)"
+      url: "https://www.nasa.gov/wp-content/uploads/2015/04/636372main_nasa-hdbk-1002_draft.pdf"
+      publication_date: "2012-04-09"
+      source_type: NASA_ENGINEERING_HANDBOOK
+      location: "Definitions; redundancy philosophy; fault management functions"
+    evidence_strength:
+      level: VERY_STRONG
+      rationale: "NASA engineering handbook; directly applicable system-design principle."
+    population:
+      context: "NASA space systems"
+      size: "Not applicable (handbook)"
+      duration: "System lifecycle"
+    thresholds: []
+    limitations:
+      - "Engineering guidance, not medical evidence"
+      - "Implementation-specific"
+    system_use:
+      candidate_hypotheses: [H08, H09]
+      supports:
+        - "data quality must be a separate layer"
+        - "fault handling is distinct from health reasoning"
+      weakens:
+        - "missing or suspect data can be treated as a health observation"
+      must_not_be_used_as:
+        - "standalone diagnosis"
+    status:
+      recommended_for_mvp: true
+      quality_flags: [ENGINEERING_PRINCIPLE, SCOPE_CRITICAL]
+
+  - id: EVID_DATA_002
+    title: "Fault management requires traceability and root-cause analysis"
+    domain: [sensor_reliability, data_quality, engineering]
+    metrics: []
+    context_features: [telemetry_traceability, root_cause]
+    relationship:
+      type: engineering_principle
+      direction:
+        traceability: increase
+        diagnostic_confidence: increase
+    fact: >
+      NASA-HDBK-1002 describes fault management as including detection, isolation, diagnosis,
+      response, and recovery, and emphasizes that telemetry and fault-management data must support
+      traceability and root-cause analysis. The handbook addresses verification and validation of
+      fault-management functions, including the use of failure scenarios and a validation matrix.
+    interpretation: >
+      Every health hypothesis should be traceable to observations, transformations, and evidence
+      records. Without traceability, a confident-looking output cannot be audited or corrected.
+    prototype_rule_note: >
+      Store the evidence path for every hypothesis: raw observation -> validation -> derived
+      feature -> evidence record -> hypothesis -> action. Keep the path reproducible.
+    source:
+      organization: NASA
+      title: "NASA Fault Management Handbook (NASA-HDBK-1002)"
+      url: "https://www.nasa.gov/wp-content/uploads/2015/04/636372main_nasa-hdbk-1002_draft.pdf"
+      publication_date: "2012-04-09"
+      source_type: NASA_ENGINEERING_HANDBOOK
+      location: "Fault management functions; verification and validation"
+    evidence_strength:
+      level: STRONG
+      rationale: "NASA engineering handbook guidance; directly applicable to an auditable reasoning system."
+    population:
+      context: "NASA space systems"
+      size: "Not applicable (handbook)"
+      duration: "System lifecycle"
+    thresholds: []
+    limitations:
+      - "Engineering guidance, not a clinical validation"
+    system_use:
+      candidate_hypotheses: [H08, H09]
+      supports:
+        - "traceable evidence paths are required"
+      weakens:
+        - "an unexplained confidence score is acceptable"
+      must_not_be_used_as:
+        - "standalone diagnosis"
+    status:
+      recommended_for_mvp: true
+      quality_flags: [ENGINEERING_PRINCIPLE]
+
+  - id: EVID_DATA_003
+    title: "Missing or stale data should degrade confidence, not imply a health state"
+    domain: [data_quality, missing_data]
+    metrics: []
+    context_features: [data_age, missingness, staleness]
+    relationship:
+      type: interpretation_constraint
+      direction:
+        data_missing: increase
+        assessment_confidence: decrease
+    fact: >
+      NASA-HDBK-1002 treats fault detection, isolation, and recovery as separate functions and
+      requires telemetry that supports traceability and root-cause analysis. In that framework,
+      missing, stale, or invalid data are data-quality states that require a system response; they
+      are not measurements of the monitored process.
+    interpretation: >
+      A missing health measurement should produce an "insufficient data" evidence state and a
+      measurement request. It should not be interpreted as a normal or abnormal physiological value.
+    prototype_rule_note: >
+      H09 (insufficient data) should be the default when required observations are missing, stale,
+      or invalid. Request the missing measurement explicitly.
+    source:
+      organization: NASA
+      title: "NASA Fault Management Handbook (NASA-HDBK-1002)"
+      url: "https://www.nasa.gov/wp-content/uploads/2015/04/636372main_nasa-hdbk-1002_draft.pdf"
+      publication_date: "2012-04-09"
+      source_type: NASA_ENGINEERING_HANDBOOK
+      location: "Fault detection and isolation; telemetry traceability"
+    evidence_strength:
+      level: STRONG
+      rationale: "Direct application of NASA fault-management principles to data quality; not a clinical study."
+    population:
+      context: "NASA space systems"
+      size: "Not applicable (handbook)"
+      duration: "System lifecycle"
+    thresholds: []
+    limitations:
+      - "Engineering principle, not a medical rule"
+      - "Staleness limits are implementation-specific"
+    system_use:
+      candidate_hypotheses: [H08, H09]
+      supports:
+        - "missing data is a data-quality state"
+        - "insufficient data is a legitimate hypothesis state"
+      weakens:
+        - "missing data can be treated as normal"
+        - "missing data can be treated as abnormal"
+      must_not_be_used_as:
+        - "standalone diagnosis"
+    status:
+      recommended_for_mvp: true
+      quality_flags: [ENGINEERING_PRINCIPLE, SCOPE_CRITICAL]
+
+  - id: EVID_DATA_004
+    title: "Redundant sensors and information redundancy support disagreement resolution"
+    domain: [sensor_reliability, data_quality]
+    metrics: []
+    context_features: [sensor_agreement, redundancy, cross_check]
+    relationship:
+      type: engineering_principle
+      direction:
+        redundancy: increase
+        fault_isolation: increase
+    fact: >
+      NASA-HDBK-1002 describes hardware redundancy as well as functional, analytic, and information
+      redundancy. It states that redundancy supports fault isolation and that redundancy management
+      is part of fault management. The handbook also addresses the need to verify that fault
+      responses are valid and do not introduce unnecessary or invalid responses.
+    interpretation: >
+      When two sensors disagree, the disagreement is itself evidence of a data-quality problem. The
+      system should isolate the likely faulty source before using either value for a health
+      hypothesis.
+    prototype_rule_note: >
+      Implement a disagreement state. If sensors disagree beyond their stated accuracy, mark the
+      observation suspect and request a third measurement or a manual check.
+    source:
+      organization: NASA
+      title: "NASA Fault Management Handbook (NASA-HDBK-1002)"
+      url: "https://www.nasa.gov/wp-content/uploads/2015/04/636372main_nasa-hdbk-1002_draft.pdf"
+      publication_date: "2012-04-09"
+      source_type: NASA_ENGINEERING_HANDBOOK
+      location: "Redundancy philosophy; fault isolation"
+    evidence_strength:
+      level: STRONG
+      rationale: "NASA engineering handbook; directly applicable to multi-sensor validation."
+    population:
+      context: "NASA space systems"
+      size: "Not applicable (handbook)"
+      duration: "System lifecycle"
+    thresholds: []
+    limitations:
+      - "Engineering guidance, not a validated medical sensor-fusion algorithm"
+    system_use:
+      candidate_hypotheses: [H08]
+      supports:
+        - "sensor disagreement is a data-quality signal"
+        - "redundancy supports fault isolation"
+      weakens:
+        - "one of two disagreeing sensors must be the physiological truth"
+      must_not_be_used_as:
+        - "standalone diagnosis"
+    status:
+      recommended_for_mvp: true
+      quality_flags: [ENGINEERING_PRINCIPLE]
+
+  # ===========================================================================
+  # LONGITUDINAL PERSONAL BASELINES
+  # ===========================================================================
+
+  - id: EVID_BASELINE_001
+    title: "LSAH conducts career-long, individually tailored surveillance"
+    domain: [longitudinal_baseline, occupational_health]
+    metrics: []
+    context_features: [personal_baseline, clinical_surveillance]
+    relationship:
+      type: surveillance_program
+      direction:
+        longitudinal_surveillance: enabled
+    fact: >
+      NASA's Lifetime Surveillance of Astronaut Health (LSAH) screens and monitors astronauts for
+      occupationally related injury or disease, examines acute and chronic morbidity and mortality,
+      defines and analyzes health risks associated with occupational exposures, and designs
+      individually tailored medical examinations and surveillance for particular outcomes. Its
+      intent is to detect potential health problems at an early stage and prevent the development or
+      progression of occupationally related conditions.
+    interpretation: >
+      Supports longitudinal, individually tailored monitoring rather than one-time population
+      screening. It is the strongest program-level justification for change-from-personal-baseline.
+    prototype_rule_note: >
+      Prefer within-person change over population ranges. Preserve the date, context, and method of
+      each baseline measurement.
+    source:
+      organization: NASA
+      title: "Lifetime Surveillance of Astronaut Health (LSAH)"
+      url: "https://www.nasa.gov/directorates/esdmd/hhp/lifetime-surveillance-of-astronaut-health-lsah/"
+      publication_date: "2023-03-16"
+      source_type: NASA_PROGRAM_PAGE
+      location: "Program description"
+    evidence_strength:
+      level: STRONG
+      rationale: "Established NASA occupational health program; program description rather than a comparative study."
+    population:
+      context: "NASA astronauts"
+      size: "Career-long cohort"
+      duration: "Career-long"
+    thresholds: []
+    limitations:
+      - "Program description, not a quantitative evaluation"
+      - "Data are not fully public"
+    system_use:
+      candidate_hypotheses: [H01, H04, H05, H06, H07, H09]
+      supports:
+        - "longitudinal personal baseline is an established practice"
+      weakens:
+        - "population-normal ranges are sufficient for individual monitoring"
+      must_not_be_used_as:
+        - "standalone diagnosis"
+    status:
+      recommended_for_mvp: true
+      quality_flags: [PROGRAM_DESCRIPTION, LONGITUDINAL]
+
+  - id: EVID_BASELINE_002
+    title: "Spaceflight Standard Measures collects pre-, in-, and post-mission multi-system data"
+    domain: [longitudinal_baseline, measurement_program]
+    metrics: [sleep_duration, reaction_time, activity_level, heart_rate]
+    context_features: [preflight, inflight, postflight]
+    relationship:
+      type: measurement_program
+      direction:
+        longitudinal_sampling: enabled
+    fact: >
+      NASA's Spaceflight Standard Measures investigation collects a standardized set of measurements
+      across multiple body systems at various time points before, during, and after a mission. The
+      data include activity and light exposure from a wrist sensor, sleep reports, fluid and saliva
+      samples, cognition tests, sensorimotor tests, strength tests, and fecal samples.
+    interpretation: >
+      NASA itself uses repeated, multi-system sampling across mission phases. This supports a
+      monitoring design that compares an astronaut with their own preflight and in-flight history.
+    prototype_rule_note: >
+      Establish preflight baselines for every metric the system will monitor. Use the same
+      instrument and protocol where possible.
+    source:
+      organization: NASA
+      title: "Spaceflight Standard Measures"
+      url: "https://www.nasa.gov/reference/standard-measures/"
+      publication_date: "2025-06-04 (page update)"
+      source_type: NASA_PROGRAM_PAGE
+      location: "Description and impact"
+    evidence_strength:
+      level: STRONG
+      rationale: "Established NASA measurement program; program description rather than a comparative study."
+    population:
+      context: "ISS astronauts"
+      size: "Program-level; exact N not stated on the page"
+      duration: "Preflight, in-flight, postflight"
+    thresholds: []
+    limitations:
+      - "Program description, not results"
+      - "Not all measures are available continuously"
+    system_use:
+      candidate_hypotheses: [H01, H04, H05, H09]
+      supports:
+        - "pre/in/post comparison is an established design"
+      weakens:
+        - "a single in-flight measurement is a sufficient baseline"
+      must_not_be_used_as:
+        - "standalone diagnosis"
+    status:
+      recommended_for_mvp: true
+      quality_flags: [PROGRAM_DESCRIPTION, LONGITUDINAL]
+
+  - id: EVID_BASELINE_003
+    title: "Individual variability is substantial across sleep, cardiovascular, and ocular responses"
+    domain: [longitudinal_baseline, variability]
+    metrics: [sleep_duration, heart_rate, systolic_bp]
+    context_features: [interindividual_variability]
+    relationship:
+      type: variability
+      direction:
+        individual: variable
+    fact: >
+      NASA evidence reports describe substantial interindividual variability: sleep duration and
+      quality differ across crewmembers; cardiovascular responses to spaceflight and exercise vary;
+      SANS findings vary in type and severity; and the fitness report notes high interindividual
+      variability in response to exercise prescriptions, with groups of crew returning with greater
+      than 10% and greater than 20% losses. The sleep report also notes that sex differences have
+      not been systematically studied in spaceflight.
+    interpretation: >
+      Population averages can hide clinically important individual change. A personal baseline is
+      necessary, and sex-specific evidence is incomplete.
+    prototype_rule_note: >
+      Compute change from the individual's own baseline. Report uncertainty when the evidence base
+      is dominated by one sex or a small sample.
+    source:
+      organization: NASA
+      title: "Sleep, Cardio, SANS, and Fitness evidence reports"
+      url: "https://humanresearchroadmap.nasa.gov/Evidence/reports/Sleep.pdf"
+      additional_urls:
+        - "https://humanresearchroadmap.nasa.gov/Evidence/reports/Cardio%20Risk%20EB%202022%20FINAL_4-3-2023.pdf"
+        - "https://humanresearchroadmap.nasa.gov/Evidence/reports/SANS%20EB%202022%20FINAL_8-15-22.pdf"
+        - "https://humanresearchroadmap.nasa.gov/Evidence/reports/Evidence%20report%20aerobic%20and%20muscle_FINAL%204-3-2024.pdf"
+      publication_date: "2016-2021 (reports)"
+      source_type: NASA_HRP_EVIDENCE_REPORT
+      location: "Variability discussions across reports"
+    evidence_strength:
+      level: STRONG
+      rationale: "Consistent across multiple NASA evidence reports."
+    population:
+      context: "Astronauts"
+      size: "Multiple cohorts"
+      duration: "Short- and long-duration spaceflight"
+    thresholds: []
+    limitations:
+      - "Variability is described, not fully quantified"
+      - "Small samples in some subgroups"
+      - "Sex-specific evidence is limited"
+    system_use:
+      candidate_hypotheses: [H01, H04, H05]
+      supports:
+        - "personal baseline is necessary"
+        - "population averages are insufficient"
+      weakens:
+        - "one population range fits all astronauts"
+      must_not_be_used_as:
+        - "standalone diagnosis"
+    status:
+      recommended_for_mvp: true
+      quality_flags: [VARIABILITY, HUMAN_SPACEFLIGHT]
+
+  - id: EVID_BASELINE_004
+    title: "Change-from-personal-baseline is more informative than population-normal ranges"
+    domain: [longitudinal_baseline, reasoning_design]
+    metrics: []
+    context_features: [personal_baseline_delta, measurement_context]
+    relationship:
+      type: interpretation_constraint
+      direction:
+        personal_baseline_delta: increase
+        assessment_specificity: increase
+    fact: >
+      NASA's LSAH and Standard Measures programs use repeated, individually tailored measurements
+      across the career and across mission phases. NASA evidence reports document substantial
+      interindividual variability in sleep, cardiovascular, and ocular responses. Together these
+      facts establish that a population-normal range is not equivalent to an individual's normal.
+    interpretation: >
+      The system should treat change from the astronaut's own baseline as the primary signal, with
+      population ranges used only as a fallback when no baseline exists.
+    prototype_rule_note: >
+      Require a documented baseline before interpreting a change as meaningful. If no baseline
+      exists, say so and request one rather than defaulting to a population cutoff.
+    source:
+      organization: NASA
+      title: "LSAH; Spaceflight Standard Measures; NASA HRP evidence reports"
+      url: "https://www.nasa.gov/directorates/esdmd/hhp/lifetime-surveillance-of-astronaut-health-lsah/"
+      additional_urls:
+        - "https://www.nasa.gov/reference/standard-measures/"
+        - "https://humanresearchroadmap.nasa.gov/Evidence/reports/Sleep.pdf"
+      publication_date: "2023-2025"
+      source_type: NASA_PROGRAM_PAGE
+      location: "Program descriptions and variability discussions"
+    evidence_strength:
+      level: MODERATE
+      rationale: "Well-supported inference from NASA practice and variability evidence; not a direct comparative trial of rule performance."
+    population:
+      context: "Astronauts"
+      size: "Multiple cohorts"
+      duration: "Career and mission phases"
+    thresholds: []
+    limitations:
+      - "Inference, not a validated algorithm"
+      - "Baseline data may be missing or non-comparable"
+      - "Measurement conditions can change"
+    system_use:
+      candidate_hypotheses: [H01, H04, H05, H07, H09]
+      supports:
+        - "personal baseline is the primary comparison"
+      weakens:
+        - "population-normal ranges are sufficient"
+      must_not_be_used_as:
+        - "standalone diagnosis"
+    status:
+      recommended_for_mvp: true
+      quality_flags: [INFERENCE, REASONING_DESIGN]

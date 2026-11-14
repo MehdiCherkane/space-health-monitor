@@ -1,0 +1,27 @@
+synthetic_mission:
+  path: examples/synthetic_mission.csv
+  adapter: generic
+  source: synthetic_fixture
+  provenance: SYNTHETIC
+  baseline_phase: preflight
+  contexts: [mission_phase, activity]
+  as_of: '2026-02-11T00:00:00Z'
+  expected_intervals:
+    heart_rate: 1D
+    sleep_duration: 1D
+    reaction_time: 1D
+    fatigue: 1D
+    cabin_co2: 1D
+    hrv: 1D
+  features:
+    window: 7D
+    floor: 0.000001
+    deviation_mad: 2.0
+    max_gap: 2D
+  changepoints:
+    penalty: 5.0
+    min_size: 5
+  lags:
+    - {a: sleep_duration, b: reaction_time, method: temporal, lag: 1D}
+    - {a: sleep_duration, b: reaction_time, method: temporal, lag: 2D}
+    - {a: sleep_duration, b: reaction_time, method: row, lag: 1}

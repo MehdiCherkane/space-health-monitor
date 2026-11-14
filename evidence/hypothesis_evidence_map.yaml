@@ -1,0 +1,480 @@
+# Hypothesis -> Evidence Map
+# Scope: candidate evidence states for a deterministic astronaut health monitoring system.
+# These are NOT diagnoses. Each hypothesis is a question the system may raise, never a conclusion.
+# Cross-references point to records in registry.yaml.
+#
+# CONFIDENCE CEILING means: even with all listed supporting evidence present, the system may not
+# exceed this qualitative level without human review and additional clinical evidence.
+
+schema_version: "1.0"
+generated: "2026-11-14"
+hypothesis_count: 9
+
+global_constraints:
+  - "Outputs are evidence states, not diagnoses."
+  - "Behavioral health outputs must never be depression, anxiety disorder, PTSD, or psychiatric disorder."
+  - "No numerical confidence weights are used; only STRONG, MODERATE, WEAK."
+  - "No treatment prescriptions. The system measures, verifies, reassesses, and escalates."
+  - "Every hypothesis must expose supporting, contradicting, and missing evidence."
+  - "HUMAN_REVIEW_REQUIRED for every hypothesis at or above MODERATE concern."
+  - "A missing measurement is a reason to request it, not a reason to lower confidence silently."
+
+hypotheses:
+
+  - id: H01
+    name: fatigue_related_performance_degradation
+    definition: >
+      A pattern consistent with fatigue-related performance degradation, where fatigue is
+      understood as the combined effect of sleep loss, circadian disruption, and workload.
+      This is not a diagnosis of a sleep disorder or any medical condition.
+    scope_boundary: >
+      The hypothesis concerns performance and readiness. It does not assert brain injury,
+      psychiatric illness, or permanent incapacity.
+    supporting_evidence:
+      - EVID_SLEEP_002
+      - EVID_SLEEP_003
+      - EVID_SLEEP_004
+      - EVID_SLEEP_005
+      - EVID_SLEEP_006
+      - EVID_SLEEP_007
+      - EVID_COG_001
+      - EVID_COG_002
+      - EVID_COG_003
+      - EVID_FATIGUE_001
+      - EVID_FATIGUE_002
+      - EVID_WORKLOAD_001
+      - EVID_EXERCISE_002
+      - EVID_BASELINE_003
+    contradicting_evidence:
+      - EVID_COG_004
+      - EVID_SLEEP_001
+      - EVID_SLEEP_002
+      - EVID_WORKLOAD_001
+    missing_evidence:
+      - "sleep_duration and sleep_efficiency from the current mission phase"
+      - "time_since_wake at the moment of cognitive testing"
+      - "work_hours and days_since_rest"
+      - "sleep_medication_use and caffeine/nicotine context"
+      - "circadian_phase or schedule_shift"
+      - "repeat reaction-time test after a failed or borderline test"
+      - "personal preflight baseline for reaction_time and sleep_duration"
+      - "independent confirmation from a second cognitive measure or supervisor report"
+    confidence_ceiling: MODERATE
+    confidence_notes: >
+      Cognitive findings in flight are inconsistent and based on very small samples
+      (EVID_COG_004). A HIGH concern would require converging objective and contextual evidence
+      plus human review. A single test is never sufficient.
+    required_context:
+      - "flight phase"
+      - "duty/rest schedule"
+      - "time of day"
+      - "activity level"
+    recommended_actions:
+      - "repeat_reaction_time_test"
+      - "request_sleep_and_workload_report"
+      - "review_schedule_and_workload"
+      - "human_review_if_persistent"
+    prohibited_outputs:
+      - "sleep disorder diagnosis"
+      - "cognitive impairment diagnosis"
+      - "fitness-for-duty determination"
+    mvp: true
+
+  - id: H02
+    name: environment_related_cognitive_degradation
+    definition: >
+      A pattern in which a cognitive or performance change is temporally associated with an
+      environmental exposure such as elevated cabin CO2, thermal discomfort, or humidity outside
+      the performance zone. Association is not causation.
+    scope_boundary: >
+      The hypothesis is about an environmental exposure as a possible contributor. It does not
+      assert CO2 toxicity, brain injury, or a psychiatric condition.
+    supporting_evidence:
+      - EVID_CO2_001
+      - EVID_CO2_002
+      - EVID_CO2_003
+      - EVID_CO2_004
+      - EVID_TEMP_001
+      - EVID_TEMP_002
+      - EVID_FATIGUE_002
+    contradicting_evidence:
+      - EVID_CO2_003
+      - EVID_TEMP_002
+    missing_evidence:
+      - "cabin ppCO2 with the correct 1-hour and 7-day averaging windows"
+      - "cabin temperature, relative humidity, and sensor placement"
+      - "personal symptom report, especially headache, fatigue, and sleep quality"
+      - "cognitive baseline from the same time of day"
+      - "ventilation or airflow data"
+      - "evidence that the exposure preceded the performance change"
+    confidence_ceiling: WEAK
+    confidence_notes: >
+      Recent controlled studies do not show cognitive reduction at spacecraft-level CO2
+      (EVID_CO2_003). CO2 -> headache is better supported than CO2 -> cognitive impairment.
+      The system must not present environmental exposure as a proven cause of cognitive change.
+    required_context:
+      - "exposure window"
+      - "cabin sensor quality"
+      - "time of day"
+      - "sleep and workload"
+    recommended_actions:
+      - "repeat_cognitive_test"
+      - "review_environmental_sensor"
+      - "request_symptom_report"
+      - "escalate_to_environmental_review"
+    prohibited_outputs:
+      - "CO2 toxicity diagnosis"
+      - "cognitive impairment diagnosis"
+      - "causal claim from correlation"
+    mvp: true
+
+  - id: H03
+    name: possible_hypoxia_pattern
+    definition: >
+      A pattern consistent with hypoxia, such as a low SpO2, low inspired oxygen partial pressure,
+      compatible symptoms, or a cognitive change. The pattern requires confirmation and is not a
+      diagnosis.
+    scope_boundary: >
+      The hypothesis concerns oxygenation. It does not assert a pulmonary, cardiac, or neurological
+      diagnosis.
+    supporting_evidence:
+      - EVID_SPO2_002
+      - EVID_HYPOXIA_001
+      - EVID_HYPOXIA_002
+      - EVID_SENSOR_001
+      - EVID_COG_001
+    contradicting_evidence:
+      - EVID_SPO2_001
+      - EVID_SENSOR_001
+      - EVID_SPO2_002
+      - EVID_HYPOXIA_002
+    missing_evidence:
+      - "repeat SpO2 with signal-quality or perfusion index"
+      - "second SpO2 sensor or an independent measurement"
+      - "cabin PIO2, barometric pressure, and FIO2"
+      - "structured symptom report"
+      - "cognitive assessment at the same time"
+      - "sensor placement and motion context"
+      - "clinical blood gas or medical evaluation if available"
+    confidence_ceiling: MODERATE
+    confidence_notes: >
+      Pulse oximetry has approximately 2% accuracy versus arterial blood gas and multiple
+      confounders (EVID_SPO2_001). A permitted mild-hypoxia atmosphere can produce low readings
+      without pathology (EVID_SPO2_002). Confirmation is mandatory before escalation.
+    required_context:
+      - "PIO2 and cabin pressure"
+      - "sensor signal quality"
+      - "activity and motion"
+      - "symptoms"
+    recommended_actions:
+      - "repeat_spo2"
+      - "check_sensor_placement"
+      - "perform_secondary_measurement"
+      - "check_environmental_sensor"
+      - "complete_symptom_questionnaire"
+      - "escalate_to_medical_protocol_if_confirmed"
+    prohibited_outputs:
+      - "hypoxia diagnosis"
+      - "oxygen prescription"
+      - "single-reading alarm"
+    mvp: true
+
+  - id: H04
+    name: cardiovascular_concern
+    definition: >
+      A pattern consistent with a cardiovascular concern, such as a persistent resting heart-rate
+      change, a blood-pressure change, orthostatic symptoms, or a fluid-shift-related finding.
+      This is not a diagnosis of arrhythmia, thrombosis, or any cardiovascular disease.
+    scope_boundary: >
+      The hypothesis concerns cardiovascular adaptation and possible concern. It does not assert a
+      specific cardiac or vascular diagnosis.
+    supporting_evidence:
+      - EVID_HR_001
+      - EVID_HR_002
+      - EVID_HR_003
+      - EVID_BP_001
+      - EVID_BP_002
+      - EVID_HRV_001
+      - EVID_FLUID_001
+      - EVID_FLUID_002
+      - EVID_FLUID_003
+      - EVID_EXERCISE_001
+    contradicting_evidence:
+      - EVID_HR_001
+      - EVID_HR_002
+      - EVID_HRV_002
+      - EVID_FLUID_001
+      - EVID_EXERCISE_001
+    missing_evidence:
+      - "posture and activity at the time of measurement"
+      - "repeat resting measurement"
+      - "controlled orthostatic test with timed BP and HR"
+      - "flight phase and postflight day"
+      - "medication and fluid intake"
+      - "personal preflight cardiovascular baseline"
+      - "symptom report: dizziness, presyncope, palpitations, chest pain, dyspnea"
+      - "clinical evaluation if symptoms are present"
+    confidence_ceiling: MODERATE
+    confidence_notes: >
+      Heart rate and blood pressure are strongly context-dependent (EVID_HR_001, EVID_HR_002).
+      Orthostatic intolerance is common postflight (EVID_HR_003), and HRV is insufficient for
+      standalone rules (EVID_HRV_002). Persistent resting change plus orthostatic confirmation is
+      required before escalation.
+    required_context:
+      - "flight phase"
+      - "posture"
+      - "activity level"
+      - "exercise"
+      - "medication"
+    recommended_actions:
+      - "repeat_resting_measurement"
+      - "perform_orthostatic_check_if_safe"
+      - "review_activity_and_exercise_context"
+      - "complete_symptom_questionnaire"
+      - "escalate_to_medical_protocol_if_symptomatic"
+    prohibited_outputs:
+      - "cardiovascular diagnosis"
+      - "arrhythmia diagnosis"
+      - "thrombosis diagnosis"
+      - "exercise restriction"
+    mvp: true
+
+  - id: H05
+    name: behavioral_health_concern
+    definition: >
+      A sustained change in mood, cognition, morale, or interpersonal interaction that adversely
+      affects operational readiness or performance. This is NASA's definition of an adverse
+      behavioral change, not a psychiatric diagnosis.
+    scope_boundary: >
+      The hypothesis may indicate that a crewmember needs support or human review. It must never
+      output depression, anxiety disorder, PTSD, or any psychiatric label.
+    supporting_evidence:
+      - EVID_BMED_001
+      - EVID_BMED_002
+      - EVID_BMED_003
+      - EVID_BMED_004
+      - EVID_BMED_005
+      - EVID_STRESS_001
+      - EVID_TEAM_001
+      - EVID_MOOD_001
+      - EVID_SLEEP_006
+      - EVID_WORKLOAD_001
+    contradicting_evidence:
+      - EVID_BMED_002
+      - EVID_BMED_003
+      - EVID_MOOD_001
+      - EVID_TEAM_001
+    missing_evidence:
+      - "validated self-report or structured behavioral health check"
+      - "duration and functional impact of the change"
+      - "sleep, workload, and team context"
+      - "comparison with the astronaut's personal baseline"
+      - "clinical review by a qualified behavioral health professional"
+      - "collateral information from crew or flight surgeon, with consent"
+    confidence_ceiling: MODERATE
+    confidence_notes: >
+      Behavioral emergencies are rare in LEO (EVID_BMED_002), event rates are heterogeneous
+      (EVID_BMED_003), and mood alone is nonspecific (EVID_MOOD_001). The system may raise a
+      concern, but only a qualified professional may evaluate or diagnose.
+    required_context:
+      - "mission phase"
+      - "sleep and workload"
+      - "team and isolation context"
+      - "personal baseline"
+    recommended_actions:
+      - "request_structured_behavioral_health_check"
+      - "review_sleep_and_workload"
+      - "offer_human_review_by_qualified_professional"
+      - "reduce_non_critical_workload_if_appropriate"
+    prohibited_outputs:
+      - "depression"
+      - "anxiety disorder"
+      - "PTSD"
+      - "psychiatric disorder"
+      - "personality judgment"
+      - "fitness-for-duty determination"
+    mvp: true
+
+  - id: H06
+    name: radiation_exposure_concern
+    definition: >
+      A pattern of cumulative or acute radiation exposure that approaches a NASA limit or occurs
+      during a space-weather event. This is an exposure concern, not a cancer diagnosis.
+    scope_boundary: >
+      The hypothesis concerns exposure and limit tracking. It does not predict an individual cancer
+      outcome or assert radiation injury.
+    supporting_evidence:
+      - EVID_RAD_001
+      - EVID_RAD_002
+      - EVID_RAD_003
+      - EVID_RAD_004
+      - EVID_RAD_005
+      - EVID_SPACEWEATHER_001
+    contradicting_evidence:
+      - EVID_RAD_003
+      - EVID_RAD_004
+      - EVID_RAD_005
+    missing_evidence:
+      - "actual dosimeter reading"
+      - "shielding and location during the exposure"
+      - "mission duration and solar cycle phase"
+      - "organ-specific dose if available"
+      - "event timing and spectrum"
+      - "medical evaluation if acute symptoms are present"
+    confidence_ceiling: STRONG
+    confidence_notes: >
+      Limits are explicit (EVID_RAD_001, EVID_RAD_002), but dose and risk estimates carry
+      substantial uncertainty (EVID_RAD_005). A space-weather event is not a confirmed dose
+      (EVID_RAD_004). The concern may be raised from measured dose or a credible exposure model,
+      never from the event alone.
+    required_context:
+      - "dosimetry"
+      - "shielding"
+      - "mission phase"
+      - "solar activity"
+    recommended_actions:
+      - "review_dosimeter_data"
+      - "review_shielding_and_location"
+      - "check_space_weather_status"
+      - "escalate_to_radiation_health_protocol_if_limit_approached"
+    prohibited_outputs:
+      - "cancer diagnosis"
+      - "individual cancer risk prediction"
+      - "dose estimate without measurement"
+    mvp: true
+    mvp_note: "MVP scope is cumulative dose tracking and space-weather context, not acute medical management."
+
+  - id: H07
+    name: thermal_stress_pattern
+    definition: >
+      A pattern consistent with thermal stress, such as cabin conditions outside the performance
+      zone, reported thermal discomfort, or a body-temperature change. This is not a diagnosis of
+      fever, heat illness, or infection.
+    scope_boundary: >
+      The hypothesis concerns thermal exposure and comfort. It does not assert an infectious or
+      endocrine diagnosis.
+    supporting_evidence:
+      - EVID_TEMP_001
+      - EVID_TEMP_002
+      - EVID_BODYTEMP_001
+    contradicting_evidence:
+      - EVID_TEMP_001
+      - EVID_TEMP_002
+      - EVID_BODYTEMP_001
+    missing_evidence:
+      - "measurement site and device for body temperature"
+      - "repeat body-temperature measurement"
+      - "personal baseline body temperature"
+      - "cabin temperature and humidity at the crewmember's location"
+      - "thermal comfort report and clothing/activity context"
+      - "symptom report"
+      - "clinical evaluation if fever is suspected"
+    confidence_ceiling: WEAK
+    confidence_notes: >
+      Cabin limits are explicit (EVID_TEMP_001), but the performance effect is a standard rationale
+      rather than a controlled trial (EVID_TEMP_002), and body temperature depends on site and age
+      (EVID_BODYTEMP_001). The system may raise an environmental or comfort concern, not a fever
+      diagnosis.
+    required_context:
+      - "cabin zone"
+      - "measurement site"
+      - "activity and clothing"
+      - "personal baseline"
+    recommended_actions:
+      - "repeat_body_temperature_with_site_recorded"
+      - "check_cabin_environmental_sensor"
+      - "request_thermal_comfort_and_symptom_report"
+      - "escalate_to_medical_protocol_if_fever_suspected"
+    prohibited_outputs:
+      - "fever diagnosis"
+      - "heat illness diagnosis"
+      - "infection diagnosis"
+    mvp: true
+
+  - id: H08
+    name: sensor_fault_likely
+    definition: >
+      A data-quality state indicating that a sensor, signal, or telemetry path is likely faulty,
+      stale, missing, or disagreeing with a redundant source. This is a system state, not a health
+      state.
+    scope_boundary: >
+      The hypothesis concerns measurement validity. It must not be used to infer that the astronaut
+      is healthy or unwell.
+    supporting_evidence:
+      - EVID_DATA_001
+      - EVID_DATA_002
+      - EVID_DATA_003
+      - EVID_DATA_004
+      - EVID_SPO2_001
+      - EVID_SENSOR_001
+    contradicting_evidence:
+      - EVID_DATA_004
+      - EVID_SPO2_001
+    missing_evidence:
+      - "second sensor or redundant measurement"
+      - "signal-quality or perfusion index"
+      - "sensor placement and motion context"
+      - "calibration and maintenance log"
+      - "telemetry timestamp and data age"
+      - "manual check or device restart result"
+    confidence_ceiling: STRONG
+    confidence_notes: >
+      Fault detection and isolation are established engineering functions (EVID_DATA_001,
+      EVID_DATA_004). A sensor fault may coexist with a real physiological change, so the system
+      must not discard the health question; it must mark the observation as unusable and request a
+      valid measurement.
+    required_context:
+      - "sensor identity"
+      - "data age"
+      - "signal quality"
+      - "redundant source"
+    recommended_actions:
+      - "check_sensor_placement"
+      - "repeat_measurement"
+      - "perform_secondary_measurement"
+      - "review_device_status"
+      - "mark_observation_suspect"
+    prohibited_outputs:
+      - "health conclusion from faulty data"
+      - "silent deletion of the health question"
+    mvp: true
+
+  - id: H09
+    name: insufficient_data_for_assessment
+    definition: >
+      The evidence required to assess a health question is missing, stale, invalid, or
+      uninterpretable. No health conclusion can be drawn.
+    scope_boundary: >
+      This is a data-quality and reasoning state. It is never evidence of wellness or illness.
+    supporting_evidence:
+      - EVID_DATA_003
+      - EVID_DATA_001
+      - EVID_DATA_002
+      - EVID_BASELINE_004
+      - EVID_SPO2_001
+    # No evidence contradicts this state; it is resolved only by obtaining the missing measurement.
+    contradicting_evidence: []
+    missing_evidence:
+      - "the specific measurement that is missing"
+      - "a valid repeat measurement"
+      - "the personal baseline needed for comparison"
+      - "the context needed to interpret the measurement"
+    confidence_ceiling: VERY_STRONG
+    confidence_notes: >
+      This is a logical state, not a clinical inference. The correct response is to request the
+      missing evidence, not to lower confidence silently or default to normal.
+    required_context:
+      - "which hypothesis cannot be assessed"
+      - "which required evidence is missing"
+      - "why it is missing"
+    recommended_actions:
+      - "request_missing_measurement"
+      - "request_repeat_measurement"
+      - "request_personal_baseline"
+      - "state_insufficient_data_explicitly"
+    prohibited_outputs:
+      - "normal"
+      - "abnormal"
+      - "reassurance"
+      - "diagnosis"
+    mvp: true

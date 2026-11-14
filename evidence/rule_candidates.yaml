@@ -1,0 +1,741 @@
+# Rule Candidates
+# These are NOT production rules. They are qualitative reasoning candidates for human review,
+# derived from registry.yaml and hypothesis_evidence_map.yaml.
+#
+# STRENGTH is qualitative: STRONG | MODERATE | WEAK | INSUFFICIENT.
+# No numeric confidence weights are used.
+# Every rule requires human review before any operational action beyond measurement and reassessment.
+#
+# REQUIRED_EVIDENCE semantics:
+#   all: every item must be present
+#   any: at least one item must be present
+# Items are evidence features, not raw thresholds. Threshold-bearing features name the registry
+# record that supplies value, unit, window, population, and source.
+
+schema_version: "1.0"
+generated: "2026-11-14"
+rule_count: 16
+
+rules:
+
+  - id: RULE_CANDIDATE_001
+    name: fatigue_related_performance_degradation
+    hypothesis: H01
+    strength: MODERATE
+    required_evidence:
+      any:
+        - sustained_sleep_deficit_vs_personal_baseline
+        - reaction_time_degradation_vs_personal_baseline
+        - reaction_lapse_increase_vs_personal_baseline
+      all:
+        - fatigue_context_present
+    strengthening_evidence:
+      - high_workload
+      - circadian_disruption
+      - sleep_medication_use
+      - extended_time_since_wake
+      - subjective_fatigue_increase
+    contradicting_evidence:
+      - sleep_duration_within_personal_baseline
+      - stable_reaction_time_trend
+      - no_functional_impact_reported
+      - alternative_explanation_present
+    missing_evidence_requests:
+      - repeat_reaction_time_test
+      - sleep_and_workload_report
+      - time_since_wake
+      - personal_baseline_for_sleep_and_reaction_time
+    scientific_basis:
+      - EVID_SLEEP_002
+      - EVID_SLEEP_003
+      - EVID_SLEEP_004
+      - EVID_COG_001
+      - EVID_COG_002
+      - EVID_COG_004
+      - EVID_FATIGUE_001
+    recommended_actions:
+      - repeat_cognitive_test
+      - request_sleep_and_workload_report
+      - review_schedule_and_workload
+      - human_review_if_persistent
+    prohibited_outputs:
+      - sleep_disorder_diagnosis
+      - cognitive_impairment_diagnosis
+      - fitness_for_duty_determination
+    status: HUMAN_REVIEW_REQUIRED
+    encoding_status: CANDIDATE_FOR_MVP
+    notes: >
+      A single test is never sufficient. In-flight cognitive findings are inconsistent
+      (EVID_COG_004), so the rule requires a personal trend plus context.
+
+  - id: RULE_CANDIDATE_002
+    name: acute_sleep_loss_or_extended_wake
+    hypothesis: H01
+    strength: MODERATE
+    required_evidence:
+      all:
+        - sleep_below_personal_baseline_or_extended_time_since_wake
+      any:
+        - subjective_fatigue_increase
+        - reaction_time_degradation_vs_personal_baseline
+        - reaction_lapse_increase_vs_personal_baseline
+    strengthening_evidence:
+      - circadian_low_period
+      - high_workload
+      - sleep_medication_use
+      - multiple_consecutive_short_sleep_nights
+    contradicting_evidence:
+      - adequate_sleep_reported_and_confirmed
+      - stable_performance
+      - alternative_explanation_present
+    missing_evidence_requests:
+      - sleep_duration_confirmation
+      - time_since_wake
+      - caffeine_and_stimulant_use
+      - repeat_reaction_time_test
+    scientific_basis:
+      - EVID_SLEEP_003
+      - EVID_SLEEP_004
+      - EVID_COG_001
+      - EVID_SLEEP_007
+    recommended_actions:
+      - offer_rest_opportunity_if_operationally_feasible
+      - repeat_cognitive_test
+      - review_duty_schedule
+      - human_review_if_persistent
+    prohibited_outputs:
+      - fitness_for_duty_determination
+      - sleep_disorder_diagnosis
+      - stimulant_or_sedative_prescription
+    status: HUMAN_REVIEW_REQUIRED
+    encoding_status: CANDIDATE_FOR_MVP
+    notes: >
+      The 19 h and 24 h alcohol-equivalence figures are laboratory findings, not operational
+      thresholds (EVID_SLEEP_004). They inform context, not an alarm.
+
+  - id: RULE_CANDIDATE_003
+    name: circadian_misalignment_affecting_sleep_and_performance
+    hypothesis: H01
+    strength: MODERATE
+    required_evidence:
+      all:
+        - schedule_shift_or_adverse_circadian_phase
+      any:
+        - sleep_duration_change_vs_personal_baseline
+        - reaction_time_degradation_vs_personal_baseline
+        - subjective_fatigue_increase
+    strengthening_evidence:
+      - multiple_consecutive_night_shifts
+      - non_24_hour_schedule
+      - poor_sleep_quality
+    contradicting_evidence:
+      - stable_schedule
+      - stable_sleep_and_performance
+      - alternative_explanation_present
+    missing_evidence_requests:
+      - sleep_diary_or_actigraphy
+      - light_exposure_context
+      - repeat_cognitive_test_at_same_circadian_phase
+    scientific_basis:
+      - EVID_SLEEP_005
+      - EVID_SLEEP_007
+      - EVID_EXERCISE_002
+    recommended_actions:
+      - review_schedule_and_light_exposure
+      - repeat_cognitive_test
+      - human_review_if_persistent
+    prohibited_outputs:
+      - circadian_disorder_diagnosis
+      - fitness_for_duty_determination
+    status: HUMAN_REVIEW_REQUIRED
+    encoding_status: CANDIDATE_FOR_MVP
+    notes: >
+      Circadian phase is usually inferred, not measured. The rule should state that limitation.
+
+  - id: RULE_CANDIDATE_004
+    name: co2_associated_headache
+    hypothesis: H02
+    strength: MODERATE
+    required_evidence:
+      all:
+        - headache_or_head_pressure_report
+        - cabin_ppco2_elevated_for_window
+    strengthening_evidence:
+      - fatigue_or_malaise
+      - poor_sleep_report
+      - multiple_crew_with_similar_symptoms
+      - 7_day_average_above_2_5_mmHg
+    contradicting_evidence:
+      - cabin_ppco2_within_standard
+      - alternative_headache_explanation
+      - no_temporal_relationship
+    missing_evidence_requests:
+      - repeat_cabin_co2_measurement
+      - symptom_details_and_timing
+      - ventilation_or_airflow_review
+      - headache_history_and_medication_context
+    scientific_basis:
+      - EVID_CO2_001
+      - EVID_CO2_002
+      - EVID_CO2_004
+    thresholds:
+      - record: EVID_CO2_001
+        use: "1-hour average cabin ppCO2 <= 3 mmHg"
+      - record: EVID_CO2_002
+        use: "7-day average < 2.5 mmHg for <1% headache risk; reported headache range 2.8-4.5 mmHg"
+    recommended_actions:
+      - review_environmental_sensor
+      - request_symptom_report
+      - escalate_to_environmental_review
+      - human_review_if_persistent
+    prohibited_outputs:
+      - co2_toxicity_diagnosis
+      - headache_diagnosis
+      - medication_prescription
+    status: HUMAN_REVIEW_REQUIRED
+    encoding_status: CANDIDATE_FOR_MVP
+    notes: >
+      This is the strongest environmental relationship in the registry, but it remains an
+      observational association. CO2 -> cognitive impairment is not included (EVID_CO2_003).
+
+  - id: RULE_CANDIDATE_005
+    name: environment_associated_cognitive_change
+    hypothesis: H02
+    strength: WEAK
+    required_evidence:
+      all:
+        - cognitive_or_performance_change_vs_personal_baseline
+        - environmental_exposure_outside_performance_zone
+    strengthening_evidence:
+      - headache_or_fatigue
+      - multiple_crew_affected
+      - improvement_after_environmental_correction
+    contradicting_evidence:
+      - environmental_conditions_within_standard
+      - stable_cognition_on_repeat
+      - alternative_explanation_present
+    missing_evidence_requests:
+      - repeat_cognitive_test
+      - personal_exposure_estimate
+      - thermal_comfort_and_symptom_report
+      - ventilation_data
+    scientific_basis:
+      - EVID_CO2_003
+      - EVID_TEMP_002
+      - EVID_COG_004
+    recommended_actions:
+      - repeat_cognitive_test
+      - review_environmental_sensor
+      - request_symptom_report
+      - human_review_if_persistent
+    prohibited_outputs:
+      - cognitive_impairment_diagnosis
+      - causal_claim_from_correlation
+      - co2_toxicity_diagnosis
+    status: HUMAN_REVIEW_REQUIRED
+    encoding_status: DO_NOT_ENCODE_AS_MVP_TRIGGER
+    notes: >
+      Kept as a hypothesis only. Recent controlled studies do not show cognitive reduction at
+      spacecraft-level CO2 (EVID_CO2_003). The system may surface the context but must not claim
+      causation.
+
+  - id: RULE_CANDIDATE_006
+    name: possible_hypoxia_pattern
+    hypothesis: H03
+    strength: MODERATE
+    required_evidence:
+      all:
+        - spo2_below_personal_baseline_or_low_absolute_value
+      any:
+        - low_inspired_oxygen_partial_pressure
+        - compatible_symptoms
+        - cognitive_change_vs_personal_baseline
+    strengthening_evidence:
+      - second_low_spo2_reading
+      - poor_perfusion_index_or_signal_quality
+      - heart_rate_elevation
+      - recent_eva_or_cabin_pressure_change
+    contradicting_evidence:
+      - normal_repeat_spo2_with_good_signal
+      - normal_pio2_and_cabin_pressure
+      - alternative_explanation_for_symptoms
+      - second_sensor_normal
+    missing_evidence_requests:
+      - repeat_spo2
+      - second_spo2_sensor_or_perfusion_index
+      - cabin_pio2_and_pressure
+      - structured_symptom_report
+      - cognitive_assessment
+    scientific_basis:
+      - EVID_SPO2_001
+      - EVID_SPO2_002
+      - EVID_HYPOXIA_001
+      - EVID_HYPOXIA_002
+      - EVID_SENSOR_001
+    thresholds:
+      - record: EVID_SPO2_002
+        use: "PIO2 145-155 mmHg normoxia target; 127 mmHg mild hypoxia lower limit with monitoring; 122 mmHg 1-hour absolute lower limit"
+    recommended_actions:
+      - repeat_spo2
+      - check_sensor_placement
+      - perform_secondary_measurement
+      - check_environmental_sensor
+      - complete_symptom_questionnaire
+      - escalate_to_medical_protocol_if_confirmed
+    prohibited_outputs:
+      - hypoxia_diagnosis
+      - oxygen_prescription
+      - single_reading_alarm
+    status: HUMAN_REVIEW_REQUIRED
+    encoding_status: CANDIDATE_FOR_MVP
+    notes: >
+      No numeric SpO2 cutoff is encoded. The rule uses personal baseline plus PIO2 and symptom
+      context because oximetry has approximately 2% accuracy versus arterial blood gas.
+
+  - id: RULE_CANDIDATE_007
+    name: single_low_spo2_is_a_data_quality_event_first
+    hypothesis: H03
+    strength: STRONG
+    required_evidence:
+      all:
+        - single_unconfirmed_low_spo2_reading
+    strengthening_evidence:
+      - poor_perfusion_index
+      - motion_or_cold_hands
+      - nail_polish_or_artificial_nails
+      - known_sensor_problem
+    contradicting_evidence:
+      - good_signal_quality_and_repeat_low
+      - second_sensor_also_low
+      - clinical_confirmation
+    missing_evidence_requests:
+      - repeat_spo2
+      - signal_quality_or_perfusion_index
+      - second_sensor
+      - sensor_placement_check
+    scientific_basis:
+      - EVID_SPO2_001
+      - EVID_SENSOR_001
+      - EVID_DATA_003
+    recommended_actions:
+      - repeat_spo2
+      - check_sensor_placement
+      - perform_secondary_measurement
+      - mark_observation_suspect
+    prohibited_outputs:
+      - hypoxia_diagnosis
+      - alarm_from_single_reading
+    status: HUMAN_REVIEW_REQUIRED
+    encoding_status: CANDIDATE_FOR_MVP
+    notes: >
+      This rule deliberately fires before the hypoxia rule. Its purpose is to prevent a
+      measurement artifact from becoming a health hypothesis.
+
+  - id: RULE_CANDIDATE_008
+    name: persistent_resting_heart_rate_change
+    hypothesis: H04
+    strength: MODERATE
+    required_evidence:
+      all:
+        - heart_rate_elevated_vs_personal_baseline
+        - repeated_at_rest
+        - not_explained_by_exercise_or_activity
+    strengthening_evidence:
+      - orthostatic_symptoms
+      - blood_pressure_change_vs_personal_baseline
+      - recent_spaceflight_or_postflight_phase
+      - fever_or_illness_context
+      - fluid_intake_change
+    contradicting_evidence:
+      - exercise_or_high_activity_context
+      - caffeine_or_stimulant_use
+      - stress_or_anxiety_context
+      - normal_repeat_at_rest
+      - alternative_explanation_present
+    missing_evidence_requests:
+      - posture_and_activity_at_measurement
+      - repeat_resting_measurement
+      - orthostatic_check_if_safe
+      - symptom_report
+      - personal_preflight_baseline
+    scientific_basis:
+      - EVID_HR_001
+      - EVID_HR_002
+      - EVID_HR_003
+      - EVID_BP_001
+      - EVID_FLUID_001
+    thresholds:
+      - record: EVID_BP_001
+        use: "orthostatic hypotension consensus definition if a controlled posture change is performed"
+    recommended_actions:
+      - repeat_resting_measurement
+      - perform_orthostatic_check_if_safe
+      - review_activity_and_exercise_context
+      - complete_symptom_questionnaire
+      - escalate_to_medical_protocol_if_symptomatic
+    prohibited_outputs:
+      - tachycardia_diagnosis
+      - arrhythmia_diagnosis
+      - exercise_restriction
+    status: HUMAN_REVIEW_REQUIRED
+    encoding_status: CANDIDATE_FOR_MVP
+    notes: >
+      This rule explicitly excludes exercise-associated heart rate. There is no validated
+      astronaut-specific resting-HR cutoff (EVID_HR_002).
+
+  - id: RULE_CANDIDATE_009
+    name: orthostatic_intolerance_pattern
+    hypothesis: H04
+    strength: MODERATE
+    required_evidence:
+      all:
+        - posture_change_or_standing
+      any:
+        - orthostatic_symptoms
+        - consensus_orthostatic_bp_change
+        - heart_rate_increase_with_standing
+    strengthening_evidence:
+      - postflight_landing_day
+      - long_duration_spaceflight
+      - presyncope
+      - reduced_stroke_volume_context
+    contradicting_evidence:
+      - no_bp_drop_on_repeat
+      - symptoms_explained_by_alternative_cause
+      - normal_orthostatic_test
+    missing_evidence_requests:
+      - timed_bp_and_hr_with_posture
+      - symptom_details
+      - fluid_intake
+      - repeat_orthostatic_check
+    scientific_basis:
+      - EVID_BP_001
+      - EVID_HR_003
+      - EVID_BP_002
+    thresholds:
+      - record: EVID_BP_001
+        use: "sustained SBP fall >=20 mmHg or DBP fall >=10 mmHg within 3 min of standing or head-up tilt >=60 deg"
+    recommended_actions:
+      - perform_controlled_orthostatic_check_if_safe
+      - repeat_measurement
+      - escalate_to_medical_protocol_if_symptomatic
+    prohibited_outputs:
+      - orthostatic_hypotension_diagnosis_outside_protocol
+      - syncope_diagnosis
+      - fluid_or_salt_prescription
+    status: HUMAN_REVIEW_REQUIRED
+    encoding_status: CANDIDATE_FOR_MVP
+    notes: >
+      The consensus definition requires a controlled posture change and timed readings. It is not
+      a spontaneous wearable threshold.
+
+  - id: RULE_CANDIDATE_010
+    name: hrv_based_stress_or_cardiovascular_concern
+    hypothesis: H04
+    strength: INSUFFICIENT
+    required_evidence:
+      all:
+        - hrv_change_vs_personal_baseline
+    strengthening_evidence: []
+    contradicting_evidence:
+      - contested_lf_hf_interpretation
+      - posture_and_respiration_confounders
+      - activity_and_medication_confounders
+    missing_evidence_requests:
+      - posture_and_respiration_context
+      - activity_and_medication_context
+      - repeat_measurement
+    scientific_basis:
+      - EVID_HRV_001
+      - EVID_HRV_002
+    recommended_actions:
+      - do_not_use_as_standalone_trigger
+      - retain_as_context_only_if_needed
+    prohibited_outputs:
+      - stress_diagnosis
+      - cardiovascular_diagnosis
+      - sympathovagal_balance_score
+    status: HUMAN_REVIEW_REQUIRED
+    encoding_status: DO_NOT_ENCODE
+    notes: >
+      Rejected for MVP. The NASA review explicitly describes LF/HF interpretation as
+      controversial and does not provide an astronaut-specific threshold.
+
+  - id: RULE_CANDIDATE_011
+    name: behavioral_health_concern
+    hypothesis: H05
+    strength: WEAK
+    required_evidence:
+      all:
+        - sustained_change_in_mood_or_cognition_or_morale_or_interpersonal_interaction
+        - functional_impact_on_readiness_or_performance
+    strengthening_evidence:
+      - sleep_disruption
+      - high_workload
+      - isolation_or_confinement
+      - team_conflict_or_cohesion_decline
+      - persistence_over_multiple_days
+    contradicting_evidence:
+      - transient_change_with_clear_explanation
+      - normal_sleep_and_workload
+      - no_functional_impact
+      - return_to_personal_baseline
+    missing_evidence_requests:
+      - structured_behavioral_health_check
+      - duration_and_functional_impact
+      - sleep_and_workload_context
+      - personal_baseline
+      - qualified_clinical_review
+    scientific_basis:
+      - EVID_BMED_001
+      - EVID_BMED_002
+      - EVID_BMED_005
+      - EVID_MOOD_001
+      - EVID_STRESS_001
+      - EVID_TEAM_001
+    recommended_actions:
+      - request_structured_behavioral_health_check
+      - offer_human_review_by_qualified_professional
+      - review_sleep_and_workload
+      - reduce_non_critical_workload_if_appropriate
+    prohibited_outputs:
+      - depression
+      - anxiety_disorder
+      - ptsd
+      - psychiatric_disorder
+      - personality_judgment
+      - fitness_for_duty_determination
+    status: HUMAN_REVIEW_REQUIRED
+    encoding_status: CANDIDATE_FOR_MVP
+    notes: >
+      Concern-level only. NASA defines an adverse behavioral change as a functional decrement,
+      not a diagnosis (EVID_BMED_001). Mood alone is nonspecific (EVID_MOOD_001).
+
+  - id: RULE_CANDIDATE_012
+    name: radiation_exposure_approaching_limit
+    hypothesis: H06
+    strength: STRONG
+    required_evidence:
+      all:
+        - measured_or_modeled_cumulative_dose_available
+      any:
+        - cumulative_dose_approaching_career_limit
+        - organ_dose_approaching_organ_limit
+        - acute_exposure_near_short_term_limit
+    strengthening_evidence:
+      - high_dose_rate
+      - long_mission_duration
+      - low_shielding
+      - solar_particle_event
+      - repeated_evas
+    contradicting_evidence:
+      - dose_well_below_limit
+      - model_uncertainty_exceeds_margin
+      - event_without_dosimetry
+    missing_evidence_requests:
+      - dosimeter_reading
+      - shielding_and_location
+      - organ_specific_dose
+      - event_timing_and_spectrum
+    scientific_basis:
+      - EVID_RAD_001
+      - EVID_RAD_002
+      - EVID_RAD_003
+      - EVID_RAD_005
+      - EVID_SPACEWEATHER_001
+    thresholds:
+      - record: EVID_RAD_001
+        use: "career effective dose < 600 mSv, corresponding to 3% mean REID"
+      - record: EVID_RAD_002
+        use: "organ-specific career and short-term limits"
+    recommended_actions:
+      - review_dosimeter_data
+      - review_shielding_and_location
+      - check_space_weather_status
+      - escalate_to_radiation_health_protocol_if_limit_approached
+    prohibited_outputs:
+      - cancer_diagnosis
+      - individual_cancer_risk_prediction
+      - dose_estimate_without_measurement
+    status: HUMAN_REVIEW_REQUIRED
+    encoding_status: CANDIDATE_FOR_MVP
+    notes: >
+      This is a limit-tracking rule, not a medical diagnostic rule. Dose and risk are modeled
+      estimates with substantial uncertainty (EVID_RAD_005).
+
+  - id: RULE_CANDIDATE_013
+    name: solar_particle_event_radiation_context
+    hypothesis: H06
+    strength: MODERATE
+    required_evidence:
+      all:
+        - noaa_s1_or_higher_solar_radiation_storm
+    strengthening_evidence:
+      - high_proton_flux
+      - eva_or_unshielded_activity
+      - low_shielding_location
+    contradicting_evidence:
+      - no_event
+      - dosimetry_normal
+      - adequate_shielding_confirmed
+    missing_evidence_requests:
+      - dosimeter_reading
+      - crew_location_and_shielding
+      - event_duration_and_spectrum
+    scientific_basis:
+      - EVID_SPACEWEATHER_001
+      - EVID_RAD_004
+      - EVID_RAD_003
+    thresholds:
+      - record: EVID_SPACEWEATHER_001
+        use: "S1 threshold: >=10 pfu at >=10 MeV protons"
+    recommended_actions:
+      - check_space_weather_status
+      - review_dosimeter_data
+      - review_shielding_and_location
+      - follow_radiation_protocol_if_indicated
+    prohibited_outputs:
+      - dose_estimate_without_measurement
+      - radiation_injury_diagnosis
+      - cancer_risk_prediction
+    status: HUMAN_REVIEW_REQUIRED
+    encoding_status: CANDIDATE_FOR_MVP
+    notes: >
+      The event is context. Confirmed exposure requires dosimetry (EVID_RAD_004). Do not turn an
+      S-scale event into an astronaut dose.
+
+  - id: RULE_CANDIDATE_014
+    name: thermal_stress_or_fever_concern
+    hypothesis: H07
+    strength: WEAK
+    required_evidence:
+      all:
+        - body_temperature_change_vs_personal_baseline_with_site_recorded
+      any:
+        - cabin_outside_performance_zone
+        - thermal_discomfort_report
+        - compatible_symptoms
+    strengthening_evidence:
+      - repeat_temperature_confirms_change
+      - multiple_crew_affected
+      - high_humidity_or_poor_ventilation
+    contradicting_evidence:
+      - repeat_temperature_normal
+      - measurement_site_or_device_explains_change
+      - cabin_within_standard
+      - alternative_explanation_present
+    missing_evidence_requests:
+      - repeat_body_temperature_with_site
+      - cabin_temperature_and_humidity
+      - thermal_comfort_and_symptom_report
+      - personal_baseline_temperature
+    scientific_basis:
+      - EVID_TEMP_001
+      - EVID_TEMP_002
+      - EVID_BODYTEMP_001
+    thresholds:
+      - record: EVID_TEMP_001
+        use: "cabin health limits 18-27 C and 25-75% RH; performance zone 20-25 C and 30-60% RH"
+      - record: EVID_BODYTEMP_001
+        use: "site-specific normal ranges; no universal fever cutoff"
+    recommended_actions:
+      - repeat_body_temperature_with_site_recorded
+      - check_cabin_environmental_sensor
+      - request_thermal_comfort_and_symptom_report
+      - escalate_to_medical_protocol_if_fever_suspected
+    prohibited_outputs:
+      - fever_diagnosis
+      - heat_illness_diagnosis
+      - infection_diagnosis
+    status: HUMAN_REVIEW_REQUIRED
+    encoding_status: CANDIDATE_FOR_MVP
+    notes: >
+      No universal body-temperature threshold is encoded. Measurement site and personal baseline
+      are mandatory.
+
+  - id: RULE_CANDIDATE_015
+    name: sensor_fault_likely
+    hypothesis: H08
+    strength: STRONG
+    required_evidence:
+      any:
+        - missing_telemetry
+        - stale_telemetry
+        - implausible_reading
+        - redundant_sensor_disagreement
+        - out_of_range_reading
+    strengthening_evidence:
+      - poor_signal_quality
+      - device_error_or_maintenance_flag
+      - repeated_disagreement
+      - calibration_expired
+    contradicting_evidence:
+      - repeat_measurement_valid
+      - second_sensor_agrees
+      - calibration_current
+      - transient_artifact_resolved
+    missing_evidence_requests:
+      - second_sensor_or_redundant_measurement
+      - signal_quality_or_perfusion_index
+      - sensor_placement_check
+      - device_status_and_maintenance_log
+    scientific_basis:
+      - EVID_DATA_001
+      - EVID_DATA_002
+      - EVID_DATA_003
+      - EVID_DATA_004
+      - EVID_SPO2_001
+    recommended_actions:
+      - check_sensor_placement
+      - repeat_measurement
+      - perform_secondary_measurement
+      - review_device_status
+      - mark_observation_suspect
+    prohibited_outputs:
+      - health_conclusion_from_faulty_data
+      - silent_deletion_of_the_health_question
+    status: HUMAN_REVIEW_REQUIRED
+    encoding_status: CANDIDATE_FOR_MVP
+    notes: >
+      A sensor fault and a real physiological change can coexist. Mark the observation unusable and
+      request a valid measurement; do not close the health question.
+
+  - id: RULE_CANDIDATE_016
+    name: insufficient_data_for_assessment
+    hypothesis: H09
+    strength: VERY_STRONG
+    required_evidence:
+      any:
+        - required_measurement_missing
+        - required_measurement_stale
+        - required_measurement_invalid
+        - required_baseline_missing
+    strengthening_evidence:
+      - multiple_required_domains_missing
+      - sensor_fault_confirmed
+      - baseline_unavailable
+    contradicting_evidence: []
+    missing_evidence_requests:
+      - the_specific_missing_measurement
+      - valid_repeat_measurement
+      - personal_baseline_if_unavailable
+      - context_needed_to_interpret_the_measurement
+    scientific_basis:
+      - EVID_DATA_003
+      - EVID_DATA_001
+      - EVID_BASELINE_004
+    recommended_actions:
+      - request_missing_measurement
+      - request_repeat_measurement
+      - request_personal_baseline
+      - state_insufficient_data_explicitly
+    prohibited_outputs:
+      - normal
+      - abnormal
+      - reassurance
+      - diagnosis
+    status: HUMAN_REVIEW_REQUIRED
+    encoding_status: CANDIDATE_FOR_MVP
+    notes: >
+      This rule must take precedence over any health hypothesis when its required evidence is
+      missing. It is a reasoning state, not a clinical inference.
