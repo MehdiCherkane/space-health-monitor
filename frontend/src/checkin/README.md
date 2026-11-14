@@ -3,15 +3,10 @@
 Behavioral-demo feature for the `sleep_vigilance` scenario, on branch `build/checkin`.
 Owner: Mohsine. Write scope: `frontend/src/checkin/` (tests colocated here).
 
-**Status at this handoff:** the standalone feature source is complete and its pure logic is
-covered by committed tests. **Integrated checks B01, B04 and B05 are Blocked** until Hamza's
-shell and API are merged and wired (HZ-03/HZ-04/HZ-12/HZ-13). No shared entry point,
-dependency manifest, lockfile or file outside this folder was changed.
-
-Branch base: `8dc32b970...` (latest `main`, after the demo-QA docs merge). The contract types
-are mirrored from the published HZ-03 shell, `build/replay-api` at
-`bd2f71bd6f9724c2559c9a48517cf71300e0e883`.
-Contract base: `contracts/v1.md` (kickoff PR #1, `533309242e58985dfa919225b9c2d515c7585872`).
+**Status:** mounted by the shell in `src/App.tsx` for `sleep_vigilance` runs. Props come from
+the shared `src/api/types.ts` (`CheckInProps`); this folder no longer mirrors API types.
+The shell mounts the component with `key={run.run_id}`, so a fresh run or scenario switch
+starts with an empty form, no reaction task and no pending retry payload.
 
 ## What it does
 
@@ -36,54 +31,22 @@ Contract base: `contracts/v1.md` (kickoff PR #1, `533309242e58985dfa919225b9c2d5
 Everything the UI shows about availability, labels and reasons comes from props; the
 component does not compute statuses and never calls the API itself.
 
-## Export and mounting (for Hamza)
+## Export and mounting
 
-Named export: **`CrewCheckIn`** from `frontend/src/checkin/CrewCheckIn.tsx`, re-exported
-from `frontend/src/checkin/index.ts`.
+Named export **`CrewCheckIn`** from `./index.ts`; props are `CheckInProps` from
+`../api/types.ts`:
 
-```tsx
-import { CrewCheckIn } from "./checkin";
+| Prop | Meaning |
+|---|---|
+| `run` | Active run; the shell keys the component by `run.run_id`. |
+| `scenarioId` | Only `sleep_vigilance` renders the form. |
+| `missionTime` | Current replay clock (UTC whole-second), used as `observed_at`. |
+| `actions` | Engine actions; reads `start_reaction_check` and `review_available_inputs`. |
+| `onSubmit` | Shell calls `POST /api/v1/runs/{run_id}/observations`, then refreshes state for that run only. Rejections carry displayable messages. |
+| `onAction` | Required. Shell route for `review_available_inputs` → **Why?** evidence drawer. |
 
-<CrewCheckIn
-  run={run}                          // Run returned by the shell
-  scenarioId={state.scenario_id}
-  missionTime={state.as_of}          // current mission clock from the shell
-  actions={state.actions}            // engine actions (reaction availability + fallback)
-  onSubmit={(payload) => submitObservations(run.run_id, payload)}
-  onAction={(actionId) => routeAction(actionId)}   // review_available_inputs -> evidence drawer
-/>
-```
-
-The shell routes `start_reaction_check` to this component (it is mounted here); the
-component calls `onAction("review_available_inputs")` for the fallback.
-
-### Props (mirrored from HZ-03, plus one requested extension)
-
-Hamza published the shared shell and `frontend/src/api/types.ts` on `build/replay-api`
-(commit `bd2f71b`) after this branch started. `types.ts` in this folder mirrors the
-published names and shapes so the shell mount can later swap to imports without renaming
-call sites.
-
-| Prop | Published type | Meaning |
-|---|---|---|
-| `run` | `Run` | Run metadata returned when the shell creates the run; the callback uses `run.run_id`. |
-| `scenarioId` | `ScenarioId` | Contract scenario id. Only `sleep_vigilance` renders the form. |
-| `missionTime` | `string` | Current mission clock, UTC ISO whole-second; used as `observed_at`. |
-| `actions` | `Action[]` | Engine actions. The component reads `start_reaction_check` and `review_available_inputs`; a missing action means no reaction check is offered. |
-| `onSubmit` | `(submission: SubmissionRequest) => Promise<SubmissionResponse>` | Wired by Hamza to `POST /api/v1/runs/{run_id}/observations`. Reject with an `Error` whose message is safe to display (server `422` text passes through). |
-| `onAction` | `(actionId: string) => void` | **Requested extension, not yet in published `CheckInProps`**: shell-owned route for `review_available_inputs`. Without it the B04 fallback would not be clickable. |
-
-**Interface deltas to settle with Hamza/El Mahdi:**
-
-1. **`onAction`** is not in the published `CheckInProps`. Add it (or route the fallback from
-   the shell's action list and tell this component to render the reason only).
-2. **`submission_id` ownership (D8).** Hamza's frontend README says the shell generates the
-   id; this component generates and reuses it to preserve MO-07 retry semantics (retry reuses
-   the original id, payload and mission timestamp; edited input gets a new id). Smallest
-   resolution: the shell forwards the client payload unchanged (recommended), or
-   `CheckInProps` exposes a `createSubmissionId` callback.
-3. **Import swap.** When the shell merges, replace the mirrored declarations in `types.ts`
-   with imports from `../api/types.ts`; call sites keep the same names.
+`submission_id` (D8) is minted here and reused with the same payload and mission time on
+retry; the shell forwards the payload unchanged.
 
 ## Payloads (contract shapes)
 
@@ -189,8 +152,8 @@ a fake submit callback that resolves, rejects (displayable message) or resolves 
 It shows a **Fixture preview — fake callback, synthetic sample entries, not an integrated
 run** badge and a callback log. It is dev-only; the app shell should not import it.
 
-It needs Hamza's shell/Vite toolchain to run. Once that exists, mount it as the shell's dev
-preview route.
+The app's static state gallery (`/?gallery`) also mounts the component with a fake submit
+callback for every behavioral state.
 
 ## Verification
 
@@ -253,14 +216,15 @@ python -m unittest discover -s tests/engine
 
 Result: **Pass — 43 tests** (Python 3.12.10 in this checkout).
 
-## Checks for the PR
+## Checks recorded at the `build/checkin` handoff
 
-Rule used below: **Pass** needs a command reproducible on this branch; **Blocked** means the
+Historical record; rows marked Blocked for the shell/toolchain are superseded by the
+integrated tests above. Rule used below: **Pass** needs a command reproducible on this branch; **Blocked** means the
 check needs the shared shell/toolchain or API that is not in this checkout (plan §1.6).
 
 | Check | Status | Evidence |
 |---|---|---|
-| MO-01 inspect branch/contract, prop types | **Pass** | Branch `build/checkin`; contract and plan read; HZ-03 types mirrored and labeled in `types.ts`. |
+| MO-01 inspect branch/contract, prop types | **Pass** | Contract and plan read; props now come from the shared `src/api/types.ts`. |
 | MO-02 component export and preview-harness source | **Pass** | `CrewCheckIn` export from `index.ts`; `preview/FixturePreview.tsx` committed. |
 | MO-02 preview runs in a shell | **Blocked** | Shell is published on `build/replay-api`, not merged into this standalone branch; local harness evidence only. |
 | MO-03/04/05 client validation, payload, server-message display (pure logic) | **Pass** | `validation.test.mjs`, `payload.test.mjs`; message/retry code inspected. |
@@ -283,25 +247,12 @@ check needs the shared shell/toolchain or API that is not in this checkout (plan
 
 ## Open items and smallest decisions needed
 
-1. **Shared-file integration requests — Hamza.** The shell/toolchain now exists on
-   `build/replay-api`, so merging this folder into the shell needs two shared-file edits
-   (owner Hamza; requested, not made here):
-   - `frontend/tsconfig.json`: add `"allowImportingTsExtensions": true` (valid with
-     `noEmit`). This feature imports its own modules with `.ts` extensions so the committed
-     `node --test` suite runs without a bundler; without the option, `tsc --noEmit` fails
-     once the shell and this folder are on the same branch.
-   - `frontend/src/api/types.ts`: add `onAction(actionId: string): void` to
-     `CheckInProps` (or route the B04 fallback differently; see the props deltas above).
-2. **Import swap and DOM harness — Hamza/Mohsine.** After the shell merges: replace the
-   mirrored types in `types.ts` with imports from `../api/types.ts`; delete the local
-   `env.d.ts` CSS declaration if `vite/client` already covers it; and port the temporary
-   DOM tests to the shell's Vitest runner under this folder.
-3. **API endpoints (HZ-04/HZ-12/HZ-13) — Hamza.** Needed to run B01/B04/B05 end to end; the
-   component is ready to mount.
-4. **Submission id (D8) — Hamza/El Mahdi.** See the props delta above: the shell's README
-   says the shell generates the id, while MO-07 needs the component to retain it across
-   retries. Recommended: shell forwards the client payload unchanged, or publishes a
-   `createSubmissionId` callback.
+Resolved on `build/frontend-ui`: `allowImportingTsExtensions` is in `tsconfig.json`,
+`onAction` is required in the shared `CheckInProps`, the mirrored `types.ts` and local
+`env.d.ts` were removed, the shell forwards the client-minted `submission_id` unchanged, and
+rendered behaviour (submit/retry, fresh-run reset, fallback routing) is covered by
+`src/App.test.tsx` under Vitest + jsdom.
+
 5. **Labels (D11) — Fadoua/Amine.** The table above is the published click-path vocabulary;
    confirm or request wording changes.
 6. **Automatic reaction submission — El Mahdi/Hamza.** The plan's Part A says "a complete
@@ -323,8 +274,7 @@ check needs the shared shell/toolchain or API that is not in this checkout (plan
 ```
 frontend/src/checkin/
   README.md                  this handoff
-  index.ts                   public export (CrewCheckIn + types)
-  types.ts                   mirrored HZ-03 contract types + requested onAction extension
+  index.ts                   public export (CrewCheckIn)
   constants.ts               contract ids/units/labels + prototype reaction settings
   validation.ts              client-side field validation
   payload.ts                 pure submission payload builders
@@ -337,39 +287,9 @@ frontend/src/checkin/
   ReactionTask.tsx           instructions, practice, measured trials, cancel, focus handling
   ReactionResultPanel.tsx    completion result, automatic-submission state and retry
   checkin.css                scoped feature styles
-  env.d.ts                   local CSS-module type declaration
   preview/FixturePreview.tsx fixture-preview harness with fake callbacks
   preview/fixtures.ts        preview props (engine-shaped actions)
   *.test.mjs                 committed dependency-free tests
-```
-
-## PR handoff
-
-```
-Branch: build/checkin
-Base: 8dc32b970 (main after PR #3); contract types mirrored from HZ-03 build/replay-api bd2f71b
-Changed files: frontend/src/checkin/** (all files above; nothing outside the folder)
-How to verify (exact command or click path):
-  cd frontend/src/checkin && node --test         (41 tests, Node v24.21.0)
-  python -m unittest discover -s tests/engine    (43 tests, unchanged regression)
-  Preview harness: mount preview/FixturePreview.tsx once the shell exists; toggle
-  available/unavailable reaction resource and the resolve/reject/slow fake callback.
-Checks (ID — status — exact command — observed result):
-  MO-01, MO-02 (source), MO-03..MO-06 (logic), MO-07 (logic), MO-08/09/11 (machine),
-  MO-10, MO-12 (logic), MO-13 (committed spy checks), MO-15 — Pass — see the table above.
-  MO-02 (preview run), MO-03..MO-05 (rendered), MO-07 (rendered), MO-08/11 (rendered),
-  MO-12 (fallback click), MO-13 (component-level), MO-14, B01, B04, B05 — Blocked —
-  waiting on the shared shell/toolchain/API (HZ-03/HZ-04/HZ-12/HZ-13).
-Preview vs integrated: component behaviour was exercised in a temporary local Vite/Vitest
-  harness (13/13 DOM checks, strict tsc, Vite build, headless-Chrome render); that harness
-  is not reproducible from this branch until the shared toolchain lands, so no integrated
-  run is claimed.
-Open questions / blockers (owner + smallest decision needed): see the list above.
-Shared-file changes requested (owner Hamza, not made on this branch):
-  - frontend/tsconfig.json: add "allowImportingTsExtensions": true (this folder imports .ts
-    extensions so the committed node --test suite needs no bundler)
-  - frontend/src/api/types.ts: add onAction(actionId: string): void to CheckInProps
-  - after merge: swap mirrored types for imports from ../api/types.ts and drop local env.d.ts
 ```
 
 ## Disclaimer

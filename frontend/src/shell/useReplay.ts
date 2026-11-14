@@ -1,10 +1,10 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
 
-import { ApiError, createRun, getStateAt, type DataMode } from '../api/client'
-import type { Run, ScenarioId, StateEnvelope } from '../api/types'
-import { loadVisibleState, createRequestGate } from './replay'
+import { ApiError, createRun, getObservations, getStateAt, type DataMode } from '../api/client'
+import type { LoadStatus, Observation, Run, ScenarioId, StateEnvelope } from '../api/types'
+import { createRequestGate, loadVisibleState, stateForView } from './replay'
 
-export type ReplayStatus = 'idle' | 'loading' | 'ready' | 'error'
+export type ReplayStatus = LoadStatus
 
 function describe(cause: unknown): string {
   if (cause instanceof ApiError) return cause.message
@@ -15,6 +15,7 @@ export interface Replay {
   scenarioId: ScenarioId
   run: Run | null
   clock: string
+  /** State for exactly this run, scenario and clock; null while loading or after a failure. */
   state: StateEnvelope | null
   dataMode: DataMode
   status: ReplayStatus
@@ -22,6 +23,8 @@ export interface Replay {
   setScenario(scenarioId: ScenarioId): void
   seek(asOf: string): void
   retry(): void
+  /** Re-read the state at the current clock, e.g. after a submission. */
+  refresh(): void
   reset(): void
 }
 
@@ -72,10 +75,18 @@ export function useReplay(initialScenario: ScenarioId = 'radlab_stale'): Replay 
         if (cancelled || !result) return
         setState(result.state)
         setDataMode(result.dataMode)
+        if (result.dataMode === 'fixture-preview' && result.state.as_of !== clock) {
+          // A preview is a fixed snapshot: move the clock to its own time instead of
+          // presenting it as the requested one (bug B).
+          setClock(result.state.as_of)
+          return
+        }
         setStatus('ready')
       })
       .catch((cause) => {
         if (cancelled) return
+        // Never leave an earlier clock's state on screen beside a failure (bug A).
+        setState(null)
         setStatus('error')
         setError(describe(cause))
       })
@@ -100,10 +111,12 @@ export function useReplay(initialScenario: ScenarioId = 'radlab_stale'): Replay 
     [scenarioId],
   )
 
+  const refresh = useCallback(() => setStateAttempt((attempt) => attempt + 1), [])
+
   const retry = useCallback(() => {
-    if (run) setStateAttempt((attempt) => attempt + 1)
+    if (run) refresh()
     else setRunAttempt((attempt) => attempt + 1)
-  }, [run])
+  }, [run, refresh])
 
   const reset = useCallback(() => {
     gate.current.invalidate()
@@ -115,13 +128,68 @@ export function useReplay(initialScenario: ScenarioId = 'radlab_stale'): Replay 
     scenarioId,
     run,
     clock,
-    state,
+    state: stateForView(state, run, clock),
     dataMode,
     status,
     error,
     setScenario,
     seek,
     retry,
+    refresh,
     reset,
   }
+}
+
+export interface HistoryResult {
+  observations: Observation[]
+  status: ReplayStatus
+  error: string | null
+}
+
+/**
+ * D7: the shell reads source history and passes it to the dashboard. A response for an
+ * older run, clock or source is discarded.
+ */
+export function useSourceHistory(
+  run: Run | null,
+  clock: string,
+  sourceId: string | null,
+  metric: string | null,
+  attempt = 0,
+  /** The state this history accompanies; a newly loaded state (e.g. after a submit) reloads it. */
+  version: unknown = null,
+): HistoryResult {
+  const [result, setResult] = useState<HistoryResult & { key: string }>({
+    key: '',
+    observations: [],
+    status: 'idle',
+    error: null,
+  })
+  const key = run && clock && sourceId ? `${run.run_id}|${clock}|${sourceId}|${metric}` : ''
+
+  useEffect(() => {
+    if (!run || !key || !sourceId) return
+    let cancelled = false
+    setResult({ key, observations: [], status: 'loading', error: null })
+    getObservations(run.run_id, {
+      asOf: clock,
+      sourceId,
+      metric: metric ?? undefined,
+      limit: 180,
+    })
+      .then((history) => {
+        if (!cancelled) setResult({ key, observations: history.observations, status: 'ready', error: null })
+      })
+      .catch((cause) => {
+        if (!cancelled) setResult({ key, observations: [], status: 'error', error: describe(cause) })
+      })
+    return () => {
+      cancelled = true
+    }
+    // `key` covers run, clock, source and metric.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [key, attempt, version])
+
+  if (result.key !== key) return { observations: [], status: key ? 'loading' : 'idle', error: null }
+  return result
 }

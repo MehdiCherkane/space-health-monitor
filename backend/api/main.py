@@ -17,6 +17,7 @@ import json
 import math
 import os
 import re
+from datetime import datetime
 from pathlib import Path
 from typing import Any, Literal
 from uuid import uuid4
@@ -78,18 +79,39 @@ class Submission(BaseModel):
     entries: list[Entry] = Field(min_length=1)
 
 
-def _utc(value: str, field: str) -> None:
-    if not WHOLE_SECOND_UTC.fullmatch(value):
-        raise HTTPException(422, f"{field} must be a whole-second UTC timestamp ending in Z")
+def _utc(value: str, field: str) -> datetime:
+    """Parse canonical whole-second UTC; the regex alone accepts impossible times like 09:99."""
+    if WHOLE_SECOND_UTC.fullmatch(value):
+        try:
+            return datetime.strptime(value, "%Y-%m-%dT%H:%M:%SZ")
+        except ValueError:
+            pass
+    raise HTTPException(
+        422, f"{field} must be a valid whole-second UTC timestamp ending in Z"
+    )
 
 
 def _clock_in_range(run: dict[str, str], value: str, field: str) -> None:
-    _utc(value, field)
-    if not run["range_start"] <= value <= run["range_end"]:
+    clock = _utc(value, field)
+    if not _utc(run["range_start"], "range_start") <= clock <= _utc(run["range_end"], "range_end"):
         raise HTTPException(422, f"{field} is outside the run range")
 
 
+def _require_finite(value: Any, path: str) -> None:
+    """Reject NaN/Infinity anywhere in metadata; they poison later evaluation."""
+    if isinstance(value, float) and not math.isfinite(value):
+        raise ValueError(f"{path} must be a finite number")
+    if isinstance(value, dict):
+        for key, item in value.items():
+            _require_finite(item, f"{path}.{key}")
+    elif isinstance(value, list):
+        for index, item in enumerate(value):
+            _require_finite(item, f"{path}[{index}]")
+
+
 def _validate_entry(entry: Entry) -> None:
+    if entry.metadata is not None:
+        _require_finite(entry.metadata, "metadata")
     if (entry.source_id, entry.metric, entry.unit) == (
         "crew_sleep_log",
         "sleep_duration",
@@ -161,15 +183,30 @@ def _payload_hash(submission: Submission, rows: list[dict[str, Any]]) -> str:
     return hashlib.sha256(payload.encode("utf-8")).hexdigest()
 
 
-def _preview_state(example: dict[str, Any], run_id: str, as_of: str) -> dict[str, Any]:
+def _preview_state(example: dict[str, Any], run_id: str) -> dict[str, Any]:
+    """A fixed snapshot: keep the example's own as_of so it never poses as another clock."""
     state = copy.deepcopy(example)
     state["run_id"] = run_id
-    state["as_of"] = as_of
     return state
 
 
-def create_app(db_path: str | Path | None = None) -> FastAPI:
+def _resources(override: dict[str, bool] | None) -> dict[str, bool]:
+    """Policy resources, optionally overridden (tests, or ASTRO_VITAL_RESOURCES JSON for B04)."""
+    if override is None and os.environ.get("ASTRO_VITAL_RESOURCES"):
+        override = json.loads(os.environ["ASTRO_VITAL_RESOURCES"])
+    resources = dict(POLICY["resources"])
+    for key, value in (override or {}).items():
+        if key not in resources or not isinstance(value, bool):
+            raise ValueError(f"unknown resource or non-boolean value: {key}")
+        resources[key] = value
+    return resources
+
+
+def create_app(
+    db_path: str | Path | None = None, resources: dict[str, bool] | None = None
+) -> FastAPI:
     """Build the app around one SQLite file (tests use their own temporary database)."""
+    resources = _resources(resources)
     store = Storage(db_path or os.environ.get("ASTRO_VITAL_DB") or DEFAULT_DB)
     store.initialize()
     examples = {
@@ -207,14 +244,14 @@ def create_app(db_path: str | Path | None = None) -> FastAPI:
         if store.count_observations(run_id) == 0:
             response.headers["X-Data-Mode"] = PREVIEW_MODE
             response.headers["X-Data-Source"] = PREVIEW_SOURCE
-            return _preview_state(examples[run["scenario_id"]], run_id, as_of)
+            return _preview_state(examples[run["scenario_id"]], run_id)
         # Only visible observations; the engine owns every status, action and incident.
         state = evaluate(
             run["scenario_id"],
             run_id,
             as_of,
             observations,
-            dict(POLICY["resources"]),
+            dict(resources),
             POLICY,
         )
         response.headers["X-Data-Mode"] = INTEGRATED_MODE

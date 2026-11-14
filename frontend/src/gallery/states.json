@@ -1,0 +1,1847 @@
+[
+ {
+  "id": "state-1",
+  "scenario_id": "radlab",
+  "label": "Example A · DosTel1 stale 455 s, DosTel2 current 0 s, open incident",
+  "origin": "contract example",
+  "state": {
+   "schema_version": 1,
+   "run_id": "example-radlab",
+   "scenario_id": "radlab_stale",
+   "as_of": "2022-04-01T23:20:00Z",
+   "sources": [
+    {
+     "source_id": "DosTel1",
+     "metric": "absorbed_dose_rate",
+     "state": "stale",
+     "last_observation_id": "d1-231225",
+     "age_seconds": 455,
+     "reason_code": "older_than_demo_window"
+    },
+    {
+     "source_id": "DosTel2",
+     "metric": "absorbed_dose_rate",
+     "state": "current",
+     "last_observation_id": "d2-232000",
+     "age_seconds": 0,
+     "reason_code": "within_demo_window"
+    }
+   ],
+   "observations": [
+    {
+     "id": "d1-231225",
+     "subject_id": null,
+     "metric": "absorbed_dose_rate",
+     "value": 1.65945,
+     "unit": "µGy/h",
+     "observed_at": "2022-04-01T23:12:25Z",
+     "source_id": "DosTel1",
+     "provenance": "REAL_HISTORICAL",
+     "source_timestamp": "2022-04-01T23:12:25"
+    },
+    {
+     "id": "d2-232000",
+     "subject_id": null,
+     "metric": "absorbed_dose_rate",
+     "value": 2.211496,
+     "unit": "µGy/h",
+     "observed_at": "2022-04-01T23:20:00Z",
+     "source_id": "DosTel2",
+     "provenance": "REAL_HISTORICAL",
+     "source_timestamp": "2022-04-01T23:20:00"
+    }
+   ],
+   "assessments": [
+    {
+     "id": "demo-radlab-status",
+     "rule_id": "SOURCE_FRESHNESS",
+     "rule_version": 1,
+     "state": "watch",
+     "title": "DosTel1 stale · DosTel2 current",
+     "supporting_evidence": [
+      {
+       "code": "source_age_exceeds_window",
+       "observation_ids": [
+        "d1-231225"
+       ],
+       "detail": "DosTel1 last reported 7 min 35 s ago."
+      },
+      {
+       "code": "other_source_current",
+       "observation_ids": [
+        "d2-232000"
+       ],
+       "detail": "DosTel2 reported at the current replay time."
+      }
+     ],
+     "conflicting_evidence": [],
+     "missing_inputs": [],
+     "action_ids": [
+      "view_source_history"
+     ]
+    }
+   ],
+   "actions": [
+    {
+     "id": "view_source_history",
+     "label": "Review source history",
+     "required_resource_ids": [],
+     "available": true,
+     "unavailable_reason": null
+    }
+   ],
+   "incidents": [
+    {
+     "id": "stale-DosTel1-d1-231225",
+     "source_id": "DosTel1",
+     "state": "open",
+     "opened_at": "2022-04-01T23:17:26Z",
+     "closed_at": null,
+     "last_observation_id": "d1-231225"
+    }
+   ]
+  }
+ },
+ {
+  "id": "state-2",
+  "scenario_id": "radlab",
+  "label": "23:12:25 · both current, age 0 s",
+  "origin": "engine, synthetic rows",
+  "state": {
+   "schema_version": 1,
+   "run_id": "gallery",
+   "scenario_id": "radlab_stale",
+   "as_of": "2022-04-01T23:12:25Z",
+   "sources": [
+    {
+     "source_id": "DosTel1",
+     "metric": "absorbed_dose_rate",
+     "state": "current",
+     "last_observation_id": "d1",
+     "age_seconds": 0,
+     "reason_code": "within_demo_window"
+    },
+    {
+     "source_id": "DosTel2",
+     "metric": "absorbed_dose_rate",
+     "state": "current",
+     "last_observation_id": "d2",
+     "age_seconds": 0,
+     "reason_code": "within_demo_window"
+    }
+   ],
+   "observations": [
+    {
+     "id": "d1",
+     "subject_id": null,
+     "metric": "absorbed_dose_rate",
+     "value": 1.0,
+     "unit": "µGy/h",
+     "observed_at": "2022-04-01T23:12:25Z",
+     "source_id": "DosTel1",
+     "provenance": "SYNTHETIC"
+    },
+    {
+     "id": "d2",
+     "subject_id": null,
+     "metric": "absorbed_dose_rate",
+     "value": 1.0,
+     "unit": "µGy/h",
+     "observed_at": "2022-04-01T23:12:25Z",
+     "source_id": "DosTel2",
+     "provenance": "SYNTHETIC"
+    }
+   ],
+   "assessments": [
+    {
+     "id": "demo-radlab-status",
+     "rule_id": "SOURCE_FRESHNESS",
+     "rule_version": 1,
+     "state": "observed",
+     "title": "DosTel1 current · DosTel2 current",
+     "supporting_evidence": [
+      {
+       "code": "other_source_current",
+       "observation_ids": [
+        "d1"
+       ],
+       "detail": "DosTel1 reported at the current replay time."
+      },
+      {
+       "code": "other_source_current",
+       "observation_ids": [
+        "d2"
+       ],
+       "detail": "DosTel2 reported at the current replay time."
+      }
+     ],
+     "conflicting_evidence": [],
+     "missing_inputs": [],
+     "action_ids": [
+      "view_source_history"
+     ]
+    }
+   ],
+   "actions": [
+    {
+     "id": "view_source_history",
+     "label": "Review source history",
+     "required_resource_ids": [],
+     "available": true,
+     "unavailable_reason": null
+    }
+   ],
+   "incidents": []
+  }
+ },
+ {
+  "id": "state-3",
+  "scenario_id": "radlab",
+  "label": "23:17:26 · both stale at 301 s, incidents open",
+  "origin": "engine, synthetic rows",
+  "state": {
+   "schema_version": 1,
+   "run_id": "gallery",
+   "scenario_id": "radlab_stale",
+   "as_of": "2022-04-01T23:17:26Z",
+   "sources": [
+    {
+     "source_id": "DosTel1",
+     "metric": "absorbed_dose_rate",
+     "state": "stale",
+     "last_observation_id": "d1",
+     "age_seconds": 301,
+     "reason_code": "older_than_demo_window"
+    },
+    {
+     "source_id": "DosTel2",
+     "metric": "absorbed_dose_rate",
+     "state": "stale",
+     "last_observation_id": "d2",
+     "age_seconds": 301,
+     "reason_code": "older_than_demo_window"
+    }
+   ],
+   "observations": [
+    {
+     "id": "d1",
+     "subject_id": null,
+     "metric": "absorbed_dose_rate",
+     "value": 1.0,
+     "unit": "µGy/h",
+     "observed_at": "2022-04-01T23:12:25Z",
+     "source_id": "DosTel1",
+     "provenance": "SYNTHETIC"
+    },
+    {
+     "id": "d2",
+     "subject_id": null,
+     "metric": "absorbed_dose_rate",
+     "value": 1.0,
+     "unit": "µGy/h",
+     "observed_at": "2022-04-01T23:12:25Z",
+     "source_id": "DosTel2",
+     "provenance": "SYNTHETIC"
+    }
+   ],
+   "assessments": [
+    {
+     "id": "demo-radlab-status",
+     "rule_id": "SOURCE_FRESHNESS",
+     "rule_version": 1,
+     "state": "watch",
+     "title": "DosTel1 stale · DosTel2 stale",
+     "supporting_evidence": [
+      {
+       "code": "source_age_exceeds_window",
+       "observation_ids": [
+        "d1"
+       ],
+       "detail": "DosTel1 last reported 5 min 1 s ago."
+      },
+      {
+       "code": "source_age_exceeds_window",
+       "observation_ids": [
+        "d2"
+       ],
+       "detail": "DosTel2 last reported 5 min 1 s ago."
+      }
+     ],
+     "conflicting_evidence": [],
+     "missing_inputs": [],
+     "action_ids": [
+      "view_source_history"
+     ]
+    }
+   ],
+   "actions": [
+    {
+     "id": "view_source_history",
+     "label": "Review source history",
+     "required_resource_ids": [],
+     "available": true,
+     "unavailable_reason": null
+    }
+   ],
+   "incidents": [
+    {
+     "id": "stale-DosTel1-d1",
+     "source_id": "DosTel1",
+     "state": "open",
+     "opened_at": "2022-04-01T23:17:26Z",
+     "closed_at": null,
+     "last_observation_id": "d1"
+    },
+    {
+     "id": "stale-DosTel2-d2",
+     "source_id": "DosTel2",
+     "state": "open",
+     "opened_at": "2022-04-01T23:17:26Z",
+     "closed_at": null,
+     "last_observation_id": "d2"
+    }
+   ]
+  }
+ },
+ {
+  "id": "state-4",
+  "scenario_id": "radlab",
+  "label": "23:30:00 · recovered, one resolved incident",
+  "origin": "engine, synthetic rows",
+  "state": {
+   "schema_version": 1,
+   "run_id": "gallery",
+   "scenario_id": "radlab_stale",
+   "as_of": "2022-04-01T23:30:00Z",
+   "sources": [
+    {
+     "source_id": "DosTel1",
+     "metric": "absorbed_dose_rate",
+     "state": "current",
+     "last_observation_id": "after",
+     "age_seconds": 60,
+     "reason_code": "within_demo_window"
+    },
+    {
+     "source_id": "DosTel2",
+     "metric": "absorbed_dose_rate",
+     "state": "current",
+     "last_observation_id": "other-new",
+     "age_seconds": 0,
+     "reason_code": "within_demo_window"
+    }
+   ],
+   "observations": [
+    {
+     "id": "before",
+     "subject_id": null,
+     "metric": "absorbed_dose_rate",
+     "value": 1.0,
+     "unit": "µGy/h",
+     "observed_at": "2022-04-01T23:12:25Z",
+     "source_id": "DosTel1",
+     "provenance": "SYNTHETIC"
+    },
+    {
+     "id": "other",
+     "subject_id": null,
+     "metric": "absorbed_dose_rate",
+     "value": 1.0,
+     "unit": "µGy/h",
+     "observed_at": "2022-04-01T23:20:00Z",
+     "source_id": "DosTel2",
+     "provenance": "SYNTHETIC"
+    },
+    {
+     "id": "after",
+     "subject_id": null,
+     "metric": "absorbed_dose_rate",
+     "value": 1.0,
+     "unit": "µGy/h",
+     "observed_at": "2022-04-01T23:29:00Z",
+     "source_id": "DosTel1",
+     "provenance": "SYNTHETIC"
+    },
+    {
+     "id": "other-new",
+     "subject_id": null,
+     "metric": "absorbed_dose_rate",
+     "value": 1.0,
+     "unit": "µGy/h",
+     "observed_at": "2022-04-01T23:30:00Z",
+     "source_id": "DosTel2",
+     "provenance": "SYNTHETIC"
+    }
+   ],
+   "assessments": [
+    {
+     "id": "demo-radlab-status",
+     "rule_id": "SOURCE_FRESHNESS",
+     "rule_version": 1,
+     "state": "observed",
+     "title": "DosTel1 current · DosTel2 current",
+     "supporting_evidence": [
+      {
+       "code": "other_source_current",
+       "observation_ids": [
+        "after"
+       ],
+       "detail": "DosTel1 last reported 60 s ago."
+      },
+      {
+       "code": "other_source_current",
+       "observation_ids": [
+        "other-new"
+       ],
+       "detail": "DosTel2 reported at the current replay time."
+      }
+     ],
+     "conflicting_evidence": [],
+     "missing_inputs": [],
+     "action_ids": [
+      "view_source_history"
+     ]
+    }
+   ],
+   "actions": [
+    {
+     "id": "view_source_history",
+     "label": "Review source history",
+     "required_resource_ids": [],
+     "available": true,
+     "unavailable_reason": null
+    }
+   ],
+   "incidents": [
+    {
+     "id": "stale-DosTel1-before",
+     "source_id": "DosTel1",
+     "state": "resolved",
+     "opened_at": "2022-04-01T23:17:26Z",
+     "closed_at": "2022-04-01T23:29:00Z",
+     "last_observation_id": "before"
+    },
+    {
+     "id": "stale-DosTel2-other",
+     "source_id": "DosTel2",
+     "state": "resolved",
+     "opened_at": "2022-04-01T23:25:01Z",
+     "closed_at": "2022-04-01T23:30:00Z",
+     "last_observation_id": "other"
+    }
+   ]
+  }
+ },
+ {
+  "id": "state-5",
+  "scenario_id": "radlab",
+  "label": "Missing reading · DosTel1 has no reading",
+  "origin": "engine, synthetic rows",
+  "state": {
+   "schema_version": 1,
+   "run_id": "gallery",
+   "scenario_id": "radlab_stale",
+   "as_of": "2022-04-01T23:20:00Z",
+   "sources": [
+    {
+     "source_id": "DosTel1",
+     "metric": "absorbed_dose_rate",
+     "state": "missing",
+     "last_observation_id": null,
+     "age_seconds": null,
+     "reason_code": "no_eligible_observation"
+    },
+    {
+     "source_id": "DosTel2",
+     "metric": "absorbed_dose_rate",
+     "state": "current",
+     "last_observation_id": "d2",
+     "age_seconds": 0,
+     "reason_code": "within_demo_window"
+    }
+   ],
+   "observations": [
+    {
+     "id": "d2",
+     "subject_id": null,
+     "metric": "absorbed_dose_rate",
+     "value": 1.0,
+     "unit": "µGy/h",
+     "observed_at": "2022-04-01T23:20:00Z",
+     "source_id": "DosTel2",
+     "provenance": "SYNTHETIC"
+    }
+   ],
+   "assessments": [
+    {
+     "id": "demo-radlab-status",
+     "rule_id": "SOURCE_FRESHNESS",
+     "rule_version": 1,
+     "state": "insufficient_data",
+     "title": "DosTel1 missing · DosTel2 current",
+     "supporting_evidence": [
+      {
+       "code": "other_source_current",
+       "observation_ids": [
+        "d2"
+       ],
+       "detail": "DosTel2 reported at the current replay time."
+      }
+     ],
+     "conflicting_evidence": [],
+     "missing_inputs": [
+      "DosTel1"
+     ],
+     "action_ids": [
+      "view_source_history"
+     ]
+    }
+   ],
+   "actions": [
+    {
+     "id": "view_source_history",
+     "label": "Review source history",
+     "required_resource_ids": [],
+     "available": true,
+     "unavailable_reason": null
+    }
+   ],
+   "incidents": []
+  }
+ },
+ {
+  "id": "state-6",
+  "scenario_id": "radlab",
+  "label": "Invalid reading · wrong unit on DosTel1",
+  "origin": "engine, synthetic rows",
+  "state": {
+   "schema_version": 1,
+   "run_id": "gallery",
+   "scenario_id": "radlab_stale",
+   "as_of": "2022-04-01T23:20:00Z",
+   "sources": [
+    {
+     "source_id": "DosTel1",
+     "metric": "absorbed_dose_rate",
+     "state": "invalid",
+     "last_observation_id": "bad",
+     "age_seconds": 60,
+     "reason_code": "invalid_observation"
+    },
+    {
+     "source_id": "DosTel2",
+     "metric": "absorbed_dose_rate",
+     "state": "current",
+     "last_observation_id": "d2",
+     "age_seconds": 0,
+     "reason_code": "within_demo_window"
+    }
+   ],
+   "observations": [
+    {
+     "id": "bad",
+     "subject_id": null,
+     "metric": "absorbed_dose_rate",
+     "value": 1.0,
+     "unit": "mGy/h",
+     "observed_at": "2022-04-01T23:19:00Z",
+     "source_id": "DosTel1",
+     "provenance": "SYNTHETIC"
+    },
+    {
+     "id": "d2",
+     "subject_id": null,
+     "metric": "absorbed_dose_rate",
+     "value": 1.0,
+     "unit": "µGy/h",
+     "observed_at": "2022-04-01T23:20:00Z",
+     "source_id": "DosTel2",
+     "provenance": "SYNTHETIC"
+    }
+   ],
+   "assessments": [
+    {
+     "id": "demo-radlab-status",
+     "rule_id": "SOURCE_FRESHNESS",
+     "rule_version": 1,
+     "state": "insufficient_data",
+     "title": "DosTel1 invalid · DosTel2 current",
+     "supporting_evidence": [
+      {
+       "code": "invalid_observation",
+       "observation_ids": [
+        "bad"
+       ],
+       "detail": "DosTel1 has an unusable reading."
+      },
+      {
+       "code": "other_source_current",
+       "observation_ids": [
+        "d2"
+       ],
+       "detail": "DosTel2 reported at the current replay time."
+      }
+     ],
+     "conflicting_evidence": [],
+     "missing_inputs": [
+      "DosTel1"
+     ],
+     "action_ids": [
+      "view_source_history"
+     ]
+    }
+   ],
+   "actions": [
+    {
+     "id": "view_source_history",
+     "label": "Review source history",
+     "required_resource_ids": [],
+     "available": true,
+     "unavailable_reason": null
+    }
+   ],
+   "incidents": []
+  }
+ },
+ {
+  "id": "state-7",
+  "scenario_id": "radlab",
+  "label": "Edge cases · conflicting source, missing evidence reference, long text",
+  "origin": "hand-edited test props",
+  "state": {
+   "schema_version": 1,
+   "run_id": "example-radlab",
+   "scenario_id": "radlab_stale",
+   "as_of": "2022-04-01T23:20:00Z",
+   "sources": [
+    {
+     "source_id": "DosTel1",
+     "metric": "absorbed_dose_rate",
+     "state": "stale",
+     "last_observation_id": "d1-not-returned",
+     "age_seconds": 455,
+     "reason_code": "older_than_demo_window"
+    },
+    {
+     "source_id": "DosTel2",
+     "metric": "absorbed_dose_rate",
+     "state": "conflicting",
+     "last_observation_id": "d2-232000",
+     "age_seconds": 0,
+     "reason_code": "conflicting_observations"
+    }
+   ],
+   "observations": [
+    {
+     "id": "d1-231225",
+     "subject_id": null,
+     "metric": "absorbed_dose_rate",
+     "value": 1.65945,
+     "unit": "µGy/h",
+     "observed_at": "2022-04-01T23:12:25Z",
+     "source_id": "DosTel1",
+     "provenance": "REAL_HISTORICAL",
+     "source_timestamp": "2022-04-01T23:12:25"
+    },
+    {
+     "id": "d2-232000",
+     "subject_id": null,
+     "metric": "absorbed_dose_rate",
+     "value": 2.211496,
+     "unit": "µGy/h",
+     "observed_at": "2022-04-01T23:20:00Z",
+     "source_id": "DosTel2",
+     "provenance": "REAL_HISTORICAL",
+     "source_timestamp": "2022-04-01T23:20:00"
+    }
+   ],
+   "assessments": [
+    {
+     "id": "demo-radlab-status",
+     "rule_id": "SOURCE_FRESHNESS",
+     "rule_version": 1,
+     "state": "watch",
+     "title": "DosTel1 stale · DosTel2 current",
+     "supporting_evidence": [
+      {
+       "code": "source_age_exceeds_window",
+       "observation_ids": [
+        "d1-not-returned"
+       ],
+       "detail": "DosTel1 last reported 7 min 35 s ago."
+      },
+      {
+       "code": "other_source_current",
+       "observation_ids": [
+        "d2-232000"
+       ],
+       "detail": "DosTel2 reported at the current replay time. DosTel2 reported at the current replay time. DosTel2 reported at the current replay time. DosTel2 reported at the current replay time. DosTel2 reported at the current replay time. DosTel2 reported at the current replay time."
+      }
+     ],
+     "conflicting_evidence": [
+      {
+       "code": "conflicting_observations",
+       "observation_ids": [
+        "d2-232000"
+       ],
+       "detail": "Placeholder conflicting entry. The contract reserves this state but defines no conflict rule."
+      }
+     ],
+     "missing_inputs": [],
+     "action_ids": [
+      "view_source_history"
+     ]
+    }
+   ],
+   "actions": [
+    {
+     "id": "view_source_history",
+     "label": "Review source history",
+     "required_resource_ids": [],
+     "available": true,
+     "unavailable_reason": null
+    }
+   ],
+   "incidents": [
+    {
+     "id": "stale-DosTel1-d1-231225",
+     "source_id": "DosTel1",
+     "state": "open",
+     "opened_at": "2022-04-01T23:17:26Z",
+     "closed_at": null,
+     "last_observation_id": "d1-231225"
+    }
+   ]
+  }
+ },
+ {
+  "id": "state-8",
+  "scenario_id": "sleep_vigilance",
+  "label": "Example B · Vigilance data missing at 09:00",
+  "origin": "contract example",
+  "state": {
+   "schema_version": 1,
+   "run_id": "example-crew",
+   "scenario_id": "sleep_vigilance",
+   "as_of": "2026-01-10T09:00:00Z",
+   "sources": [
+    {
+     "source_id": "crew_sleep_log",
+     "metric": "sleep_duration",
+     "state": "current",
+     "last_observation_id": "sleep-10",
+     "age_seconds": 7200,
+     "reason_code": "scheduled_input_received"
+    },
+    {
+     "source_id": "reaction_task",
+     "metric": "reaction_time",
+     "state": "missing",
+     "last_observation_id": null,
+     "age_seconds": null,
+     "reason_code": "current_session_missing"
+    }
+   ],
+   "observations": [
+    {
+     "id": "base-sleep-1",
+     "subject_id": "crew-demo-1",
+     "metric": "sleep_duration",
+     "value": 450,
+     "unit": "min",
+     "observed_at": "2026-01-01T07:00:00Z",
+     "source_id": "crew_sleep_log",
+     "provenance": "SYNTHETIC"
+    },
+    {
+     "id": "base-sleep-2",
+     "subject_id": "crew-demo-1",
+     "metric": "sleep_duration",
+     "value": 440,
+     "unit": "min",
+     "observed_at": "2026-01-02T07:00:00Z",
+     "source_id": "crew_sleep_log",
+     "provenance": "SYNTHETIC"
+    },
+    {
+     "id": "base-sleep-3",
+     "subject_id": "crew-demo-1",
+     "metric": "sleep_duration",
+     "value": 450,
+     "unit": "min",
+     "observed_at": "2026-01-03T07:00:00Z",
+     "source_id": "crew_sleep_log",
+     "provenance": "SYNTHETIC"
+    },
+    {
+     "id": "base-sleep-4",
+     "subject_id": "crew-demo-1",
+     "metric": "sleep_duration",
+     "value": 460,
+     "unit": "min",
+     "observed_at": "2026-01-04T07:00:00Z",
+     "source_id": "crew_sleep_log",
+     "provenance": "SYNTHETIC"
+    },
+    {
+     "id": "base-sleep-5",
+     "subject_id": "crew-demo-1",
+     "metric": "sleep_duration",
+     "value": 445,
+     "unit": "min",
+     "observed_at": "2026-01-05T07:00:00Z",
+     "source_id": "crew_sleep_log",
+     "provenance": "SYNTHETIC"
+    },
+    {
+     "id": "sleep-08",
+     "subject_id": "crew-demo-1",
+     "metric": "sleep_duration",
+     "value": 380,
+     "unit": "min",
+     "observed_at": "2026-01-08T07:00:00Z",
+     "source_id": "crew_sleep_log",
+     "provenance": "SYNTHETIC"
+    },
+    {
+     "id": "sleep-09",
+     "subject_id": "crew-demo-1",
+     "metric": "sleep_duration",
+     "value": 370,
+     "unit": "min",
+     "observed_at": "2026-01-09T07:00:00Z",
+     "source_id": "crew_sleep_log",
+     "provenance": "SYNTHETIC"
+    },
+    {
+     "id": "sleep-10",
+     "subject_id": "crew-demo-1",
+     "metric": "sleep_duration",
+     "value": 420,
+     "unit": "min",
+     "observed_at": "2026-01-10T07:00:00Z",
+     "source_id": "crew_sleep_log",
+     "provenance": "SYNTHETIC"
+    }
+   ],
+   "assessments": [
+    {
+     "id": "demo-sleep-vigilance",
+     "rule_id": "SLEEP_VIGILANCE",
+     "rule_version": 1,
+     "state": "insufficient_data",
+     "title": "Vigilance data missing",
+     "supporting_evidence": [
+      {
+       "code": "repeated_short_sleep",
+       "observation_ids": [
+        "sleep-08",
+        "sleep-09",
+        "sleep-10",
+        "base-sleep-1",
+        "base-sleep-2",
+        "base-sleep-3",
+        "base-sleep-4",
+        "base-sleep-5"
+       ],
+       "baseline_id": "crew-demo-sleep-v1",
+       "detail": "Two of the last three logged nights were at least 60 minutes below the 450-minute demo baseline."
+      }
+     ],
+     "conflicting_evidence": [],
+     "missing_inputs": [
+      "reaction_time"
+     ],
+     "action_ids": [
+      "start_reaction_check"
+     ]
+    }
+   ],
+   "actions": [
+    {
+     "id": "start_reaction_check",
+     "label": "Run reaction check",
+     "required_resource_ids": [
+      "local_reaction_task"
+     ],
+     "available": true,
+     "unavailable_reason": null
+    }
+   ],
+   "incidents": []
+  }
+ },
+ {
+  "id": "state-9",
+  "scenario_id": "sleep_vigilance",
+  "label": "09:01 · Sleep and vigilance change (watch)",
+  "origin": "engine, synthetic fixture rows",
+  "state": {
+   "schema_version": 1,
+   "run_id": "gallery",
+   "scenario_id": "sleep_vigilance",
+   "as_of": "2026-01-10T09:01:00Z",
+   "sources": [
+    {
+     "source_id": "crew_sleep_log",
+     "metric": "sleep_duration",
+     "state": "current",
+     "last_observation_id": "sleep-10",
+     "age_seconds": 7260,
+     "reason_code": "scheduled_input_received"
+    },
+    {
+     "source_id": "reaction_task",
+     "metric": "reaction_time",
+     "state": "current",
+     "last_observation_id": "reaction-10",
+     "age_seconds": 0,
+     "reason_code": "scheduled_input_received"
+    }
+   ],
+   "observations": [
+    {
+     "id": "base-sleep-1",
+     "subject_id": "crew-demo-1",
+     "metric": "sleep_duration",
+     "value": 450,
+     "unit": "min",
+     "observed_at": "2026-01-01T07:00:00Z",
+     "source_id": "crew_sleep_log",
+     "provenance": "SYNTHETIC"
+    },
+    {
+     "id": "base-reaction-1",
+     "subject_id": "crew-demo-1",
+     "metric": "reaction_time",
+     "value": 245,
+     "unit": "ms",
+     "observed_at": "2026-01-01T09:00:00Z",
+     "source_id": "reaction_task",
+     "provenance": "SYNTHETIC",
+     "metadata": {
+      "task_version": "demo-rt-v1",
+      "input_profile": "seeded-demo",
+      "trial_count": 5,
+      "false_starts": 0,
+      "completed": true
+     }
+    },
+    {
+     "id": "base-sleep-2",
+     "subject_id": "crew-demo-1",
+     "metric": "sleep_duration",
+     "value": 440,
+     "unit": "min",
+     "observed_at": "2026-01-02T07:00:00Z",
+     "source_id": "crew_sleep_log",
+     "provenance": "SYNTHETIC"
+    },
+    {
+     "id": "base-reaction-2",
+     "subject_id": "crew-demo-1",
+     "metric": "reaction_time",
+     "value": 250,
+     "unit": "ms",
+     "observed_at": "2026-01-02T09:00:00Z",
+     "source_id": "reaction_task",
+     "provenance": "SYNTHETIC",
+     "metadata": {
+      "task_version": "demo-rt-v1",
+      "input_profile": "seeded-demo",
+      "trial_count": 5,
+      "false_starts": 0,
+      "completed": true
+     }
+    },
+    {
+     "id": "base-sleep-3",
+     "subject_id": "crew-demo-1",
+     "metric": "sleep_duration",
+     "value": 450,
+     "unit": "min",
+     "observed_at": "2026-01-03T07:00:00Z",
+     "source_id": "crew_sleep_log",
+     "provenance": "SYNTHETIC"
+    },
+    {
+     "id": "base-reaction-3",
+     "subject_id": "crew-demo-1",
+     "metric": "reaction_time",
+     "value": 255,
+     "unit": "ms",
+     "observed_at": "2026-01-03T09:00:00Z",
+     "source_id": "reaction_task",
+     "provenance": "SYNTHETIC",
+     "metadata": {
+      "task_version": "demo-rt-v1",
+      "input_profile": "seeded-demo",
+      "trial_count": 5,
+      "false_starts": 0,
+      "completed": true
+     }
+    },
+    {
+     "id": "base-sleep-4",
+     "subject_id": "crew-demo-1",
+     "metric": "sleep_duration",
+     "value": 460,
+     "unit": "min",
+     "observed_at": "2026-01-04T07:00:00Z",
+     "source_id": "crew_sleep_log",
+     "provenance": "SYNTHETIC"
+    },
+    {
+     "id": "base-reaction-4",
+     "subject_id": "crew-demo-1",
+     "metric": "reaction_time",
+     "value": 248,
+     "unit": "ms",
+     "observed_at": "2026-01-04T09:00:00Z",
+     "source_id": "reaction_task",
+     "provenance": "SYNTHETIC",
+     "metadata": {
+      "task_version": "demo-rt-v1",
+      "input_profile": "seeded-demo",
+      "trial_count": 5,
+      "false_starts": 0,
+      "completed": true
+     }
+    },
+    {
+     "id": "base-sleep-5",
+     "subject_id": "crew-demo-1",
+     "metric": "sleep_duration",
+     "value": 445,
+     "unit": "min",
+     "observed_at": "2026-01-05T07:00:00Z",
+     "source_id": "crew_sleep_log",
+     "provenance": "SYNTHETIC"
+    },
+    {
+     "id": "base-reaction-5",
+     "subject_id": "crew-demo-1",
+     "metric": "reaction_time",
+     "value": 252,
+     "unit": "ms",
+     "observed_at": "2026-01-05T09:00:00Z",
+     "source_id": "reaction_task",
+     "provenance": "SYNTHETIC",
+     "metadata": {
+      "task_version": "demo-rt-v1",
+      "input_profile": "seeded-demo",
+      "trial_count": 5,
+      "false_starts": 0,
+      "completed": true
+     }
+    },
+    {
+     "id": "sleep-08",
+     "subject_id": "crew-demo-1",
+     "metric": "sleep_duration",
+     "value": 380,
+     "unit": "min",
+     "observed_at": "2026-01-08T07:00:00Z",
+     "source_id": "crew_sleep_log",
+     "provenance": "SYNTHETIC"
+    },
+    {
+     "id": "sleep-09",
+     "subject_id": "crew-demo-1",
+     "metric": "sleep_duration",
+     "value": 370,
+     "unit": "min",
+     "observed_at": "2026-01-09T07:00:00Z",
+     "source_id": "crew_sleep_log",
+     "provenance": "SYNTHETIC"
+    },
+    {
+     "id": "sleep-10",
+     "subject_id": "crew-demo-1",
+     "metric": "sleep_duration",
+     "value": 420,
+     "unit": "min",
+     "observed_at": "2026-01-10T07:00:00Z",
+     "source_id": "crew_sleep_log",
+     "provenance": "SYNTHETIC"
+    },
+    {
+     "id": "reaction-10",
+     "subject_id": "crew-demo-1",
+     "metric": "reaction_time",
+     "value": 310,
+     "unit": "ms",
+     "observed_at": "2026-01-10T09:01:00Z",
+     "source_id": "reaction_task",
+     "provenance": "SYNTHETIC",
+     "metadata": {
+      "task_version": "demo-rt-v1",
+      "input_profile": "seeded-demo",
+      "trial_count": 5,
+      "false_starts": 0,
+      "completed": true
+     }
+    }
+   ],
+   "assessments": [
+    {
+     "id": "demo-sleep-vigilance",
+     "rule_id": "SLEEP_VIGILANCE",
+     "rule_version": 1,
+     "state": "watch",
+     "title": "Sleep and vigilance change",
+     "supporting_evidence": [
+      {
+       "code": "repeated_short_sleep",
+       "observation_ids": [
+        "sleep-08",
+        "sleep-09",
+        "sleep-10",
+        "base-sleep-1",
+        "base-sleep-2",
+        "base-sleep-3",
+        "base-sleep-4",
+        "base-sleep-5"
+       ],
+       "detail": "Two of the last three logged nights were at least 60 minutes below the 450-minute demo baseline.",
+       "baseline_id": "crew-demo-sleep-v1"
+      },
+      {
+       "code": "slower_reaction",
+       "observation_ids": [
+        "reaction-10",
+        "base-reaction-1",
+        "base-reaction-2",
+        "base-reaction-3",
+        "base-reaction-4",
+        "base-reaction-5"
+       ],
+       "detail": "Current reaction time is 310 ms against the 250 ms demo baseline (+24.0%).",
+       "baseline_id": "crew-demo-reaction-v1"
+      }
+     ],
+     "conflicting_evidence": [],
+     "missing_inputs": [],
+     "action_ids": [
+      "review_available_inputs"
+     ]
+    }
+   ],
+   "actions": [
+    {
+     "id": "review_available_inputs",
+     "label": "Review available inputs",
+     "required_resource_ids": [],
+     "available": true,
+     "unavailable_reason": null
+    }
+   ],
+   "incidents": []
+  }
+ },
+ {
+  "id": "state-10",
+  "scenario_id": "sleep_vigilance",
+  "label": "09:01 · Demo pattern not observed (270 ms)",
+  "origin": "engine, synthetic fixture rows",
+  "state": {
+   "schema_version": 1,
+   "run_id": "gallery",
+   "scenario_id": "sleep_vigilance",
+   "as_of": "2026-01-10T09:01:00Z",
+   "sources": [
+    {
+     "source_id": "crew_sleep_log",
+     "metric": "sleep_duration",
+     "state": "current",
+     "last_observation_id": "sleep-10",
+     "age_seconds": 7260,
+     "reason_code": "scheduled_input_received"
+    },
+    {
+     "source_id": "reaction_task",
+     "metric": "reaction_time",
+     "state": "current",
+     "last_observation_id": "reaction-10",
+     "age_seconds": 0,
+     "reason_code": "scheduled_input_received"
+    }
+   ],
+   "observations": [
+    {
+     "id": "base-sleep-1",
+     "subject_id": "crew-demo-1",
+     "metric": "sleep_duration",
+     "value": 450,
+     "unit": "min",
+     "observed_at": "2026-01-01T07:00:00Z",
+     "source_id": "crew_sleep_log",
+     "provenance": "SYNTHETIC"
+    },
+    {
+     "id": "base-reaction-1",
+     "subject_id": "crew-demo-1",
+     "metric": "reaction_time",
+     "value": 245,
+     "unit": "ms",
+     "observed_at": "2026-01-01T09:00:00Z",
+     "source_id": "reaction_task",
+     "provenance": "SYNTHETIC",
+     "metadata": {
+      "task_version": "demo-rt-v1",
+      "input_profile": "seeded-demo",
+      "trial_count": 5,
+      "false_starts": 0,
+      "completed": true
+     }
+    },
+    {
+     "id": "base-sleep-2",
+     "subject_id": "crew-demo-1",
+     "metric": "sleep_duration",
+     "value": 440,
+     "unit": "min",
+     "observed_at": "2026-01-02T07:00:00Z",
+     "source_id": "crew_sleep_log",
+     "provenance": "SYNTHETIC"
+    },
+    {
+     "id": "base-reaction-2",
+     "subject_id": "crew-demo-1",
+     "metric": "reaction_time",
+     "value": 250,
+     "unit": "ms",
+     "observed_at": "2026-01-02T09:00:00Z",
+     "source_id": "reaction_task",
+     "provenance": "SYNTHETIC",
+     "metadata": {
+      "task_version": "demo-rt-v1",
+      "input_profile": "seeded-demo",
+      "trial_count": 5,
+      "false_starts": 0,
+      "completed": true
+     }
+    },
+    {
+     "id": "base-sleep-3",
+     "subject_id": "crew-demo-1",
+     "metric": "sleep_duration",
+     "value": 450,
+     "unit": "min",
+     "observed_at": "2026-01-03T07:00:00Z",
+     "source_id": "crew_sleep_log",
+     "provenance": "SYNTHETIC"
+    },
+    {
+     "id": "base-reaction-3",
+     "subject_id": "crew-demo-1",
+     "metric": "reaction_time",
+     "value": 255,
+     "unit": "ms",
+     "observed_at": "2026-01-03T09:00:00Z",
+     "source_id": "reaction_task",
+     "provenance": "SYNTHETIC",
+     "metadata": {
+      "task_version": "demo-rt-v1",
+      "input_profile": "seeded-demo",
+      "trial_count": 5,
+      "false_starts": 0,
+      "completed": true
+     }
+    },
+    {
+     "id": "base-sleep-4",
+     "subject_id": "crew-demo-1",
+     "metric": "sleep_duration",
+     "value": 460,
+     "unit": "min",
+     "observed_at": "2026-01-04T07:00:00Z",
+     "source_id": "crew_sleep_log",
+     "provenance": "SYNTHETIC"
+    },
+    {
+     "id": "base-reaction-4",
+     "subject_id": "crew-demo-1",
+     "metric": "reaction_time",
+     "value": 248,
+     "unit": "ms",
+     "observed_at": "2026-01-04T09:00:00Z",
+     "source_id": "reaction_task",
+     "provenance": "SYNTHETIC",
+     "metadata": {
+      "task_version": "demo-rt-v1",
+      "input_profile": "seeded-demo",
+      "trial_count": 5,
+      "false_starts": 0,
+      "completed": true
+     }
+    },
+    {
+     "id": "base-sleep-5",
+     "subject_id": "crew-demo-1",
+     "metric": "sleep_duration",
+     "value": 445,
+     "unit": "min",
+     "observed_at": "2026-01-05T07:00:00Z",
+     "source_id": "crew_sleep_log",
+     "provenance": "SYNTHETIC"
+    },
+    {
+     "id": "base-reaction-5",
+     "subject_id": "crew-demo-1",
+     "metric": "reaction_time",
+     "value": 252,
+     "unit": "ms",
+     "observed_at": "2026-01-05T09:00:00Z",
+     "source_id": "reaction_task",
+     "provenance": "SYNTHETIC",
+     "metadata": {
+      "task_version": "demo-rt-v1",
+      "input_profile": "seeded-demo",
+      "trial_count": 5,
+      "false_starts": 0,
+      "completed": true
+     }
+    },
+    {
+     "id": "sleep-08",
+     "subject_id": "crew-demo-1",
+     "metric": "sleep_duration",
+     "value": 380,
+     "unit": "min",
+     "observed_at": "2026-01-08T07:00:00Z",
+     "source_id": "crew_sleep_log",
+     "provenance": "SYNTHETIC"
+    },
+    {
+     "id": "sleep-09",
+     "subject_id": "crew-demo-1",
+     "metric": "sleep_duration",
+     "value": 370,
+     "unit": "min",
+     "observed_at": "2026-01-09T07:00:00Z",
+     "source_id": "crew_sleep_log",
+     "provenance": "SYNTHETIC"
+    },
+    {
+     "id": "sleep-10",
+     "subject_id": "crew-demo-1",
+     "metric": "sleep_duration",
+     "value": 420,
+     "unit": "min",
+     "observed_at": "2026-01-10T07:00:00Z",
+     "source_id": "crew_sleep_log",
+     "provenance": "SYNTHETIC"
+    },
+    {
+     "id": "reaction-10",
+     "subject_id": "crew-demo-1",
+     "metric": "reaction_time",
+     "value": 270,
+     "unit": "ms",
+     "observed_at": "2026-01-10T09:01:00Z",
+     "source_id": "reaction_task",
+     "provenance": "SYNTHETIC",
+     "metadata": {
+      "task_version": "demo-rt-v1",
+      "input_profile": "seeded-demo",
+      "trial_count": 5,
+      "false_starts": 0,
+      "completed": true
+     }
+    }
+   ],
+   "assessments": [
+    {
+     "id": "demo-sleep-vigilance",
+     "rule_id": "SLEEP_VIGILANCE",
+     "rule_version": 1,
+     "state": "observed",
+     "title": "Demo pattern not observed",
+     "supporting_evidence": [
+      {
+       "code": "repeated_short_sleep",
+       "observation_ids": [
+        "sleep-08",
+        "sleep-09",
+        "sleep-10",
+        "base-sleep-1",
+        "base-sleep-2",
+        "base-sleep-3",
+        "base-sleep-4",
+        "base-sleep-5"
+       ],
+       "detail": "Two of the last three logged nights were at least 60 minutes below the 450-minute demo baseline.",
+       "baseline_id": "crew-demo-sleep-v1"
+      },
+      {
+       "code": "reaction_comparison",
+       "observation_ids": [
+        "reaction-10",
+        "base-reaction-1",
+        "base-reaction-2",
+        "base-reaction-3",
+        "base-reaction-4",
+        "base-reaction-5"
+       ],
+       "detail": "Current reaction time is 270 ms against the 250 ms demo baseline (+8.0%).",
+       "baseline_id": "crew-demo-reaction-v1"
+      }
+     ],
+     "conflicting_evidence": [],
+     "missing_inputs": [],
+     "action_ids": [
+      "review_available_inputs"
+     ]
+    }
+   ],
+   "actions": [
+    {
+     "id": "review_available_inputs",
+     "label": "Review available inputs",
+     "required_resource_ids": [],
+     "available": true,
+     "unavailable_reason": null
+    }
+   ],
+   "incidents": []
+  }
+ },
+ {
+  "id": "state-11",
+  "scenario_id": "sleep_vigilance",
+  "label": "09:01 · Current but incomparable browser result",
+  "origin": "engine, synthetic + device rows",
+  "state": {
+   "schema_version": 1,
+   "run_id": "gallery",
+   "scenario_id": "sleep_vigilance",
+   "as_of": "2026-01-10T09:01:00Z",
+   "sources": [
+    {
+     "source_id": "crew_sleep_log",
+     "metric": "sleep_duration",
+     "state": "current",
+     "last_observation_id": "sleep-10",
+     "age_seconds": 7260,
+     "reason_code": "scheduled_input_received"
+    },
+    {
+     "source_id": "reaction_task",
+     "metric": "reaction_time",
+     "state": "current",
+     "last_observation_id": "browser-1",
+     "age_seconds": 0,
+     "reason_code": "incomparable_reaction_result"
+    }
+   ],
+   "observations": [
+    {
+     "id": "base-sleep-1",
+     "subject_id": "crew-demo-1",
+     "metric": "sleep_duration",
+     "value": 450,
+     "unit": "min",
+     "observed_at": "2026-01-01T07:00:00Z",
+     "source_id": "crew_sleep_log",
+     "provenance": "SYNTHETIC"
+    },
+    {
+     "id": "base-reaction-1",
+     "subject_id": "crew-demo-1",
+     "metric": "reaction_time",
+     "value": 245,
+     "unit": "ms",
+     "observed_at": "2026-01-01T09:00:00Z",
+     "source_id": "reaction_task",
+     "provenance": "SYNTHETIC",
+     "metadata": {
+      "task_version": "demo-rt-v1",
+      "input_profile": "seeded-demo",
+      "trial_count": 5,
+      "false_starts": 0,
+      "completed": true
+     }
+    },
+    {
+     "id": "base-sleep-2",
+     "subject_id": "crew-demo-1",
+     "metric": "sleep_duration",
+     "value": 440,
+     "unit": "min",
+     "observed_at": "2026-01-02T07:00:00Z",
+     "source_id": "crew_sleep_log",
+     "provenance": "SYNTHETIC"
+    },
+    {
+     "id": "base-reaction-2",
+     "subject_id": "crew-demo-1",
+     "metric": "reaction_time",
+     "value": 250,
+     "unit": "ms",
+     "observed_at": "2026-01-02T09:00:00Z",
+     "source_id": "reaction_task",
+     "provenance": "SYNTHETIC",
+     "metadata": {
+      "task_version": "demo-rt-v1",
+      "input_profile": "seeded-demo",
+      "trial_count": 5,
+      "false_starts": 0,
+      "completed": true
+     }
+    },
+    {
+     "id": "base-sleep-3",
+     "subject_id": "crew-demo-1",
+     "metric": "sleep_duration",
+     "value": 450,
+     "unit": "min",
+     "observed_at": "2026-01-03T07:00:00Z",
+     "source_id": "crew_sleep_log",
+     "provenance": "SYNTHETIC"
+    },
+    {
+     "id": "base-reaction-3",
+     "subject_id": "crew-demo-1",
+     "metric": "reaction_time",
+     "value": 255,
+     "unit": "ms",
+     "observed_at": "2026-01-03T09:00:00Z",
+     "source_id": "reaction_task",
+     "provenance": "SYNTHETIC",
+     "metadata": {
+      "task_version": "demo-rt-v1",
+      "input_profile": "seeded-demo",
+      "trial_count": 5,
+      "false_starts": 0,
+      "completed": true
+     }
+    },
+    {
+     "id": "base-sleep-4",
+     "subject_id": "crew-demo-1",
+     "metric": "sleep_duration",
+     "value": 460,
+     "unit": "min",
+     "observed_at": "2026-01-04T07:00:00Z",
+     "source_id": "crew_sleep_log",
+     "provenance": "SYNTHETIC"
+    },
+    {
+     "id": "base-reaction-4",
+     "subject_id": "crew-demo-1",
+     "metric": "reaction_time",
+     "value": 248,
+     "unit": "ms",
+     "observed_at": "2026-01-04T09:00:00Z",
+     "source_id": "reaction_task",
+     "provenance": "SYNTHETIC",
+     "metadata": {
+      "task_version": "demo-rt-v1",
+      "input_profile": "seeded-demo",
+      "trial_count": 5,
+      "false_starts": 0,
+      "completed": true
+     }
+    },
+    {
+     "id": "base-sleep-5",
+     "subject_id": "crew-demo-1",
+     "metric": "sleep_duration",
+     "value": 445,
+     "unit": "min",
+     "observed_at": "2026-01-05T07:00:00Z",
+     "source_id": "crew_sleep_log",
+     "provenance": "SYNTHETIC"
+    },
+    {
+     "id": "base-reaction-5",
+     "subject_id": "crew-demo-1",
+     "metric": "reaction_time",
+     "value": 252,
+     "unit": "ms",
+     "observed_at": "2026-01-05T09:00:00Z",
+     "source_id": "reaction_task",
+     "provenance": "SYNTHETIC",
+     "metadata": {
+      "task_version": "demo-rt-v1",
+      "input_profile": "seeded-demo",
+      "trial_count": 5,
+      "false_starts": 0,
+      "completed": true
+     }
+    },
+    {
+     "id": "sleep-08",
+     "subject_id": "crew-demo-1",
+     "metric": "sleep_duration",
+     "value": 380,
+     "unit": "min",
+     "observed_at": "2026-01-08T07:00:00Z",
+     "source_id": "crew_sleep_log",
+     "provenance": "SYNTHETIC"
+    },
+    {
+     "id": "sleep-09",
+     "subject_id": "crew-demo-1",
+     "metric": "sleep_duration",
+     "value": 370,
+     "unit": "min",
+     "observed_at": "2026-01-09T07:00:00Z",
+     "source_id": "crew_sleep_log",
+     "provenance": "SYNTHETIC"
+    },
+    {
+     "id": "sleep-10",
+     "subject_id": "crew-demo-1",
+     "metric": "sleep_duration",
+     "value": 420,
+     "unit": "min",
+     "observed_at": "2026-01-10T07:00:00Z",
+     "source_id": "crew_sleep_log",
+     "provenance": "SYNTHETIC"
+    },
+    {
+     "id": "browser-1",
+     "subject_id": "crew-demo-1",
+     "metric": "reaction_time",
+     "value": 320,
+     "unit": "ms",
+     "observed_at": "2026-01-10T09:01:00Z",
+     "source_id": "reaction_task",
+     "provenance": "LIVE_MEASURED",
+     "metadata": {
+      "task_version": "demo-rt-v1",
+      "input_profile": "browser-keyboard",
+      "trial_count": 5,
+      "false_starts": 0,
+      "completed": true
+     }
+    }
+   ],
+   "assessments": [
+    {
+     "id": "demo-sleep-vigilance",
+     "rule_id": "SLEEP_VIGILANCE",
+     "rule_version": 1,
+     "state": "insufficient_data",
+     "title": "Comparison incomplete",
+     "supporting_evidence": [
+      {
+       "code": "repeated_short_sleep",
+       "observation_ids": [
+        "sleep-08",
+        "sleep-09",
+        "sleep-10",
+        "base-sleep-1",
+        "base-sleep-2",
+        "base-sleep-3",
+        "base-sleep-4",
+        "base-sleep-5"
+       ],
+       "detail": "Two of the last three logged nights were at least 60 minutes below the 450-minute demo baseline.",
+       "baseline_id": "crew-demo-sleep-v1"
+      },
+      {
+       "code": "reaction_comparability_unknown",
+       "observation_ids": [
+        "browser-1",
+        "base-reaction-1",
+        "base-reaction-2",
+        "base-reaction-3",
+        "base-reaction-4",
+        "base-reaction-5"
+       ],
+       "detail": "Task version or input profile differs from the demo baseline; comparability is unknown.",
+       "baseline_id": "crew-demo-reaction-v1"
+      }
+     ],
+     "conflicting_evidence": [],
+     "missing_inputs": [
+      "reaction_time"
+     ],
+     "action_ids": [
+      "start_reaction_check"
+     ]
+    }
+   ],
+   "actions": [
+    {
+     "id": "start_reaction_check",
+     "label": "Run reaction check",
+     "required_resource_ids": [
+      "local_reaction_task"
+     ],
+     "available": true,
+     "unavailable_reason": null
+    }
+   ],
+   "incidents": []
+  }
+ },
+ {
+  "id": "state-12",
+  "scenario_id": "sleep_vigilance",
+  "label": "09:00 · Reaction check unavailable, review fallback",
+  "origin": "engine, resource disabled",
+  "state": {
+   "schema_version": 1,
+   "run_id": "gallery",
+   "scenario_id": "sleep_vigilance",
+   "as_of": "2026-01-10T09:00:00Z",
+   "sources": [
+    {
+     "source_id": "crew_sleep_log",
+     "metric": "sleep_duration",
+     "state": "current",
+     "last_observation_id": "sleep-10",
+     "age_seconds": 7200,
+     "reason_code": "scheduled_input_received"
+    },
+    {
+     "source_id": "reaction_task",
+     "metric": "reaction_time",
+     "state": "missing",
+     "last_observation_id": null,
+     "age_seconds": null,
+     "reason_code": "current_session_missing"
+    }
+   ],
+   "observations": [
+    {
+     "id": "base-sleep-1",
+     "subject_id": "crew-demo-1",
+     "metric": "sleep_duration",
+     "value": 450,
+     "unit": "min",
+     "observed_at": "2026-01-01T07:00:00Z",
+     "source_id": "crew_sleep_log",
+     "provenance": "SYNTHETIC"
+    },
+    {
+     "id": "base-sleep-2",
+     "subject_id": "crew-demo-1",
+     "metric": "sleep_duration",
+     "value": 440,
+     "unit": "min",
+     "observed_at": "2026-01-02T07:00:00Z",
+     "source_id": "crew_sleep_log",
+     "provenance": "SYNTHETIC"
+    },
+    {
+     "id": "base-sleep-3",
+     "subject_id": "crew-demo-1",
+     "metric": "sleep_duration",
+     "value": 450,
+     "unit": "min",
+     "observed_at": "2026-01-03T07:00:00Z",
+     "source_id": "crew_sleep_log",
+     "provenance": "SYNTHETIC"
+    },
+    {
+     "id": "base-sleep-4",
+     "subject_id": "crew-demo-1",
+     "metric": "sleep_duration",
+     "value": 460,
+     "unit": "min",
+     "observed_at": "2026-01-04T07:00:00Z",
+     "source_id": "crew_sleep_log",
+     "provenance": "SYNTHETIC"
+    },
+    {
+     "id": "base-sleep-5",
+     "subject_id": "crew-demo-1",
+     "metric": "sleep_duration",
+     "value": 445,
+     "unit": "min",
+     "observed_at": "2026-01-05T07:00:00Z",
+     "source_id": "crew_sleep_log",
+     "provenance": "SYNTHETIC"
+    },
+    {
+     "id": "sleep-08",
+     "subject_id": "crew-demo-1",
+     "metric": "sleep_duration",
+     "value": 380,
+     "unit": "min",
+     "observed_at": "2026-01-08T07:00:00Z",
+     "source_id": "crew_sleep_log",
+     "provenance": "SYNTHETIC"
+    },
+    {
+     "id": "sleep-09",
+     "subject_id": "crew-demo-1",
+     "metric": "sleep_duration",
+     "value": 370,
+     "unit": "min",
+     "observed_at": "2026-01-09T07:00:00Z",
+     "source_id": "crew_sleep_log",
+     "provenance": "SYNTHETIC"
+    },
+    {
+     "id": "sleep-10",
+     "subject_id": "crew-demo-1",
+     "metric": "sleep_duration",
+     "value": 420,
+     "unit": "min",
+     "observed_at": "2026-01-10T07:00:00Z",
+     "source_id": "crew_sleep_log",
+     "provenance": "SYNTHETIC"
+    }
+   ],
+   "assessments": [
+    {
+     "id": "demo-sleep-vigilance",
+     "rule_id": "SLEEP_VIGILANCE",
+     "rule_version": 1,
+     "state": "insufficient_data",
+     "title": "Vigilance data missing",
+     "supporting_evidence": [
+      {
+       "code": "repeated_short_sleep",
+       "observation_ids": [
+        "sleep-08",
+        "sleep-09",
+        "sleep-10",
+        "base-sleep-1",
+        "base-sleep-2",
+        "base-sleep-3",
+        "base-sleep-4",
+        "base-sleep-5"
+       ],
+       "detail": "Two of the last three logged nights were at least 60 minutes below the 450-minute demo baseline.",
+       "baseline_id": "crew-demo-sleep-v1"
+      }
+     ],
+     "conflicting_evidence": [],
+     "missing_inputs": [
+      "reaction_time"
+     ],
+     "action_ids": [
+      "start_reaction_check",
+      "review_available_inputs"
+     ]
+    }
+   ],
+   "actions": [
+    {
+     "id": "start_reaction_check",
+     "label": "Run reaction check",
+     "required_resource_ids": [
+      "local_reaction_task"
+     ],
+     "available": false,
+     "unavailable_reason": "Reaction check unavailable"
+    },
+    {
+     "id": "review_available_inputs",
+     "label": "Review available inputs",
+     "required_resource_ids": [],
+     "available": true,
+     "unavailable_reason": null
+    }
+   ],
+   "incidents": []
+  }
+ }
+]

@@ -1,7 +1,16 @@
 # Astro Vital frontend shell
 
-Owner: Hamza. The shell, `src/api/types.ts` and `src/api/client.ts` are shared;
-`src/dashboard/` (Amine) and `src/checkin/` (Mohsine) mount into it.
+Shell/API adapter: Hamza. Dashboard: Amine. Check-in: Mohsine. Shared UI kit, state
+gallery and frontend integration/QA: Nassim.
+
+| Path | Role |
+|---|---|
+| `src/api/` | Shared types (`types.ts`) and the only `fetch` layer (`client.ts`) |
+| `src/shell/` | Replay clock, run lifecycle, stale-response discard, source history (D7) |
+| `src/ui/` | Design tokens and presentational primitives (badges, source card, assessment, evidence, actions, incidents, drawer, messages) |
+| `src/dashboard/` | Composes the kit from `DashboardProps`; never fetches |
+| `src/checkin/` | Crew check-in and local reaction task; mounted per run (`key={run.run_id}`) |
+| `src/gallery/` | Static **Fixture preview** state gallery at `/?gallery` |
 
 ## Commands
 
@@ -11,8 +20,17 @@ From `frontend/`:
 npm install
 npm run dev     # Vite on loopback, proxies /api to 127.0.0.1:8000
 npm run build   # tsc --noEmit && vite build
-npx vitest run  # adapter and action-routing tests
+npm test        # Vitest (src/**/*.test.{ts,tsx}, jsdom per file) + node --test (check-in)
 ```
+
+DOM tests use `jsdom` (the only added dev dependency) with a small helper in
+`src/test/dom.tsx`; files opt in with `// @vitest-environment jsdom`. jsdom has no
+`<dialog>` modal API, so the helper stubs `showModal`/`close`; real focus containment and
+Escape are checked in a browser.
+
+Static state gallery (no API needed): `npm run dev`, then open `/?gallery`. States come from
+the contract examples and from `src/gallery/generate_states.py`, which runs the real engine
+on the engine tests' synthetic inputs (`python frontend/src/gallery/generate_states.py`).
 
 ## Adapter contract
 
@@ -28,11 +46,17 @@ npx vitest run  # adapter and action-routing tests
 
 ### D7 — history reaches the dashboard as a prop
 
-The shell owns HTTP. It reads the selected source from `state.sources`, calls
-`getObservations(runId, { asOf: clock, sourceId, metric, limit })` and passes the
-result to the dashboard as `history: Observation[]` (already chronological and
-visible at `clock`). The dashboard never fetches and never filters by time.
-`props.history` may be empty before the first history request.
+The shell owns HTTP. `useSourceHistory` reads the selected source (default: the first in
+`state.sources`), calls `getObservations(runId, { asOf: clock, sourceId, metric, limit })`
+and passes `history`, `historyStatus` and `historyError` to the dashboard. A response for an
+older run, clock or source is discarded. The dashboard never fetches and never filters by
+time.
+
+### Visible state
+
+`useReplay().state` is only ever the envelope for the active run, scenario and clock
+(`stateForView`). During a seek it is withheld; after a failed request it is cleared and the
+error names the clock that has no state. A superseded request's failure is ignored.
 
 ### D8 — `submission_id` format
 
@@ -44,12 +68,18 @@ minting a new ID. The server treats a changed payload under the same ID as a con
 
 ### Action fallback
 
-`CheckInProps.onAction` is optional: the check-in calls it with
+`CheckInProps.onAction` is required: the check-in calls it with
 `review_available_inputs` when `local_reaction_task` is disabled, and the shell routes
 it to the evidence drawer.
 
 ## Fixture preview
 
-The preview API labels every response `X-Data-Mode: fixture-preview`. The shell
-must keep a **Fixture preview** label visible until the evaluator replaces the
-example source in HZ-08; only then may it show an integrated run.
+An empty run returns its contract example labeled `X-Data-Mode: fixture-preview`, with the
+example's own `as_of` (a fixed snapshot, not the requested clock). The shell moves the clock
+to that snapshot time, keeps the **Fixture preview** badge and a snapshot note visible, and
+disables checkpoints, because the example cannot be replayed. Once the run holds stored
+observations, responses are `integrated` engine output and replay works.
+
+To exercise B04 (reaction resource disabled) start the API with
+`ASTRO_VITAL_RESOURCES='{"local_reaction_task": false}'`; tests pass
+`create_app(resources={...})`. Unknown resources or non-boolean values are rejected.

@@ -111,16 +111,34 @@ export interface Checkpoint {
   as_of: string
 }
 
+/** `fixture-preview` means the API served a contract example, not engine output. */
+export type DataMode = 'fixture-preview' | 'integrated' | 'unknown'
+export type LoadStatus = 'idle' | 'loading' | 'ready' | 'error'
+
 export interface DashboardProps {
-  state: StateEnvelope
-  /** Chronological observations visible at `clock`; the shell owns the HTTP call (D7). */
-  history: Observation[]
+  /** State for exactly this run and clock, or null while loading / after a failure. */
+  state: StateEnvelope | null
+  dataMode: DataMode
+  status: LoadStatus
+  error: string | null
   clock: string
   scenarioId: ScenarioId
   checkpoints: Checkpoint[]
+  /** Chronological observations visible at `clock` for `historySourceId`; the shell fetches them (D7). */
+  history: Observation[]
+  historyStatus: LoadStatus
+  historyError: string | null
+  historySourceId: string | null
+  evidenceOpen: boolean
   onScenarioChange(scenarioId: ScenarioId): void
   onSeek(asOf: string): void
+  onReset(): void
+  onRetry(): void
+  onRetryHistory(): void
   onAction(actionId: string): void
+  onSelectHistorySource(sourceId: string): void
+  onOpenEvidence(): void
+  onCloseEvidence(): void
 }
 
 export interface CheckInProps {
@@ -130,5 +148,5 @@ export interface CheckInProps {
   actions: Action[]
   onSubmit(submission: SubmissionRequest): Promise<SubmissionResponse>
   /** Shell route for the `review_available_inputs` fallback when the task is disabled. */
-  onAction?(actionId: string): void
+  onAction(actionId: string): void
 }

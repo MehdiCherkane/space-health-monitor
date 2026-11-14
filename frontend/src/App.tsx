@@ -1,96 +1,125 @@
+import { useCallback, useEffect, useRef, useState } from 'react'
+
+import { routeAction } from './actions'
+import { submitObservations } from './api/client'
+import type { SubmissionRequest } from './api/types'
+import { CrewCheckIn } from './checkin'
+import { Dashboard } from './dashboard/Dashboard'
 import { CHECKPOINTS } from './shell/replay'
-import { useReplay } from './shell/useReplay'
-import type { ScenarioId } from './api/types'
-
-const SCENARIOS: { id: ScenarioId; label: string }[] = [
-  { id: 'radlab_stale', label: 'Detector gap (RadLab)' },
-  { id: 'sleep_vigilance', label: 'Sleep and vigilance' },
-]
-
-const MODE_LABEL = {
-  'fixture-preview': 'Fixture preview',
-  integrated: 'Integrated run',
-  unknown: 'Preview shell',
-} as const
+import { useReplay, useSourceHistory } from './shell/useReplay'
+import { DataModeBadge } from './ui'
 
 export default function App() {
   const replay = useReplay('radlab_stale')
-  const checkpoints = CHECKPOINTS[replay.scenarioId]
+  const { run, state, clock } = replay
+  const [evidenceOpen, setEvidenceOpen] = useState(false)
+  const [historySourceId, setHistorySourceId] = useState<string | null>(null)
+  const [historyAttempt, setHistoryAttempt] = useState(0)
+  const checkInRef = useRef<HTMLDivElement>(null)
+  const runIdRef = useRef<string | null>(null)
+  runIdRef.current = run?.run_id ?? null
+
+  // Default the history source to the first returned source; drop a source this run lacks.
+  const sources = state?.sources ?? []
+  const selected = sources.find((source) => source.source_id === historySourceId) ?? sources[0]
+  const history = useSourceHistory(
+    run,
+    state ? clock : '',
+    selected?.source_id ?? null,
+    selected?.metric ?? null,
+    historyAttempt,
+    state,
+  )
+
+  // A new run starts clean: no open drawer, no remembered history source.
+  useEffect(() => {
+    setEvidenceOpen(false)
+    setHistorySourceId(null)
+  }, [run?.run_id])
+
+  const focusSection = (element: HTMLElement | null) => {
+    const reduce = window.matchMedia?.('(prefers-reduced-motion: reduce)').matches
+    element?.scrollIntoView({ block: 'start', behavior: reduce ? 'auto' : 'smooth' })
+    element?.focus({ preventScroll: true })
+  }
+
+  const onAction = useCallback((actionId: string) => {
+    const route = routeAction(actionId)
+    if (route === 'evidence') setEvidenceOpen(true)
+    else if (route === 'history') focusSection(document.getElementById('source-history'))
+    else if (route === 'checkin') focusSection(checkInRef.current)
+  }, [])
+
+  const { refresh } = replay
+  const onSubmit = useCallback(
+    async (submission: SubmissionRequest) => {
+      if (!run) throw new Error('No active run.')
+      const response = await submitObservations(run.run_id, submission)
+      // Only the run that received the submission may trigger a state refresh.
+      if (runIdRef.current === run.run_id) refresh()
+      return response
+    },
+    [run, refresh],
+  )
+
+  const checkIn =
+    run && replay.scenarioId === 'sleep_vigilance' && run.scenario_id === 'sleep_vigilance' ? (
+      <div ref={checkInRef} tabIndex={-1} className="app-checkin" aria-label="Crew check-in">
+        {/* Keyed by run: a fresh run never inherits form, task or retry state (bug C). */}
+        <CrewCheckIn
+          key={run.run_id}
+          run={run}
+          scenarioId={run.scenario_id}
+          missionTime={clock}
+          actions={state?.actions ?? []}
+          onSubmit={onSubmit}
+          onAction={onAction}
+        />
+      </div>
+    ) : null
 
   return (
-    <main className="shell">
-      <header className="shell-header">
-        <h1>Astro Vital</h1>
-        <span className="badge" data-mode={replay.dataMode}>
-          {MODE_LABEL[replay.dataMode]}
-        </span>
+    <div className="app">
+      <a className="app-skip" href="#main">
+        Skip to dashboard
+      </a>
+      <header className="app-header">
+        <div className="app-brand">
+          <h1>Astro Vital</h1>
+          <p>Offline replay prototype · not a medical device</p>
+        </div>
+        <DataModeBadge mode={replay.dataMode} />
       </header>
 
-      <nav className="toolbar" aria-label="Scenario">
-        {SCENARIOS.map((scenario) => (
-          <button
-            key={scenario.id}
-            type="button"
-            className="chip"
-            aria-pressed={replay.scenarioId === scenario.id}
-            onClick={() => replay.setScenario(scenario.id)}
-          >
-            {scenario.label}
-          </button>
-        ))}
-      </nav>
-
-      <nav className="toolbar" aria-label="Replay checkpoints">
-        {checkpoints.map((checkpoint) => (
-          <button
-            key={checkpoint.id}
-            type="button"
-            className="chip"
-            aria-pressed={replay.clock === checkpoint.as_of}
-            onClick={() => replay.seek(checkpoint.as_of)}
-          >
-            {checkpoint.label}
-          </button>
-        ))}
-        <button type="button" className="chip" onClick={replay.reset}>
-          Fresh run
-        </button>
-      </nav>
-
-      <p className="shell-note">Clock: {replay.clock || '—'}</p>
-
-      {replay.status === 'error' && (
-        <div className="shell-status" role="alert">
-          <p>{replay.error}</p>
-          <button type="button" className="chip" onClick={replay.retry}>
-            Retry
-          </button>
-        </div>
-      )}
-      {replay.status === 'loading' && <p role="status">Loading…</p>}
-
-      {replay.state && (
-        <section aria-label="Returned state">
-          <ul className="state-list">
-            {replay.state.sources.map((source) => (
-              <li key={source.source_id}>
-                {source.source_id}: {source.state}
-                {source.age_seconds === null ? '' : ` · ${source.age_seconds} s`}
-              </li>
-            ))}
-          </ul>
-          {replay.state.assessments.map((assessment) => (
-            <p key={assessment.id}>
-              <strong>{assessment.title}</strong> · {assessment.state}
-            </p>
-          ))}
-        </section>
-      )}
-
-      <p className="shell-note">
-        Shell preview. The dashboard and check-in components mount here once their
-        exports land.
-      </p>
-    </main>
+      <main id="main" className="app-main" tabIndex={-1}>
+        <Dashboard
+          state={state}
+          dataMode={replay.dataMode}
+          status={replay.status}
+          error={replay.error}
+          clock={clock}
+          scenarioId={replay.scenarioId}
+          checkpoints={CHECKPOINTS[replay.scenarioId]}
+          history={history.observations}
+          historyStatus={history.status}
+          historyError={history.error}
+          historySourceId={selected?.source_id ?? null}
+          evidenceOpen={evidenceOpen}
+          onScenarioChange={replay.setScenario}
+          onSeek={replay.seek}
+          onReset={replay.reset}
+          onRetry={replay.retry}
+          onRetryHistory={() => setHistoryAttempt((attempt) => attempt + 1)}
+          onAction={onAction}
+          onSelectHistorySource={(sourceId) => {
+            setHistorySourceId(sourceId)
+            focusSection(document.getElementById('source-history'))
+          }}
+          onOpenEvidence={() => setEvidenceOpen(true)}
+          onCloseEvidence={() => setEvidenceOpen(false)}
+          aside={checkIn}
+        />
+      </main>
+    </div>
   )
 }

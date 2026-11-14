@@ -8,6 +8,8 @@ import type { Checkpoint, Run, ScenarioId, StateEnvelope } from '../api/types'
 export const CHECKPOINTS: Record<ScenarioId, Checkpoint[]> = {
   radlab_stale: [
     { id: '23:12:25', label: '23:12:25', as_of: '2022-04-01T23:12:25Z' },
+    { id: '23:17:25', label: '23:17:25', as_of: '2022-04-01T23:17:25Z' },
+    { id: '23:17:26', label: '23:17:26', as_of: '2022-04-01T23:17:26Z' },
     { id: '23:20:00', label: '23:20:00', as_of: '2022-04-01T23:20:00Z' },
     { id: '23:30:00', label: '23:30:00', as_of: '2022-04-01T23:30:00Z' },
   ],
@@ -52,6 +54,26 @@ export async function loadVisibleState(
   fetchState: (runId: string, asOf: string) => Promise<VisibleState> = getStateAt,
 ): Promise<VisibleState | null> {
   const token = gate.begin()
-  const result = await fetchState(run.run_id, clock)
-  return gate.isCurrent(token) ? result : null
+  try {
+    const result = await fetchState(run.run_id, clock)
+    return gate.isCurrent(token) ? result : null
+  } catch (error) {
+    // A superseded request's failure must not replace a newer answer with an error.
+    if (!gate.isCurrent(token)) return null
+    throw error
+  }
+}
+
+/**
+ * Only state that belongs to the active run, scenario and clock may be shown.
+ * Anything else (an earlier seek, a failed rewind, a previous run) is withheld.
+ */
+export function stateForView(
+  state: StateEnvelope | null,
+  run: Run | null,
+  clock: string,
+): StateEnvelope | null {
+  if (!state || !run) return null
+  if (state.run_id !== run.run_id || state.scenario_id !== run.scenario_id) return null
+  return state.as_of === clock ? state : null
 }

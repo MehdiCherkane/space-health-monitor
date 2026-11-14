@@ -8,7 +8,7 @@ import {
   START_REACTION_CHECK_ACTION_ID,
   CHECK_IN_SCENARIO_ID,
 } from "./constants.ts";
-import type { Action } from "./types.ts";
+import type { Action } from "../api/types.ts";
 
 /** Find one action by id; null when the engine did not return it. */
 export function findAction(
