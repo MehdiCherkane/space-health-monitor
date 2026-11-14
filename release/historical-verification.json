@@ -1,0 +1,154 @@
+{
+  "archive": {
+    "status": "Pass",
+    "check": "A01",
+    "expected_sha256": "be73563615dbbd28b0b8548a0b9ba40c2059f3dc68ef8941203eb350dcc9e9fb",
+    "observed_sha256": "be73563615dbbd28b0b8548a0b9ba40c2059f3dc68ef8941203eb350dcc9e9fb",
+    "dostel1_count": 84,
+    "dostel2_count": 96,
+    "total_observations": 180
+  },
+  "checks": {
+    "A01": "Pass",
+    "A02": "Pass",
+    "A03": "Pass",
+    "A04": "Pass"
+  },
+  "api": "Pass",
+  "X01": "Not run — requires offline browser rehearsal",
+  "scope": "Isolated current main + PR11 d99c549 + El Mahdi archive/importer changes; not merged main",
+  "checkpoints": {
+    "23:12:25": {
+      "sources": [
+        {
+          "source_id": "DosTel1",
+          "metric": "absorbed_dose_rate",
+          "state": "current",
+          "last_observation_id": "DosTel1:2022-04-01T23:12:25Z",
+          "age_seconds": 0,
+          "reason_code": "within_demo_window"
+        },
+        {
+          "source_id": "DosTel2",
+          "metric": "absorbed_dose_rate",
+          "state": "current",
+          "last_observation_id": "DosTel2:2022-04-01T23:10:00Z",
+          "age_seconds": 145,
+          "reason_code": "within_demo_window"
+        }
+      ],
+      "incidents": []
+    },
+    "23:17:25": {
+      "sources": [
+        {
+          "source_id": "DosTel1",
+          "metric": "absorbed_dose_rate",
+          "state": "current",
+          "last_observation_id": "DosTel1:2022-04-01T23:12:25Z",
+          "age_seconds": 300,
+          "reason_code": "within_demo_window"
+        },
+        {
+          "source_id": "DosTel2",
+          "metric": "absorbed_dose_rate",
+          "state": "current",
+          "last_observation_id": "DosTel2:2022-04-01T23:15:47Z",
+          "age_seconds": 98,
+          "reason_code": "within_demo_window"
+        }
+      ],
+      "incidents": []
+    },
+    "23:17:26": {
+      "sources": [
+        {
+          "source_id": "DosTel1",
+          "metric": "absorbed_dose_rate",
+          "state": "stale",
+          "last_observation_id": "DosTel1:2022-04-01T23:12:25Z",
+          "age_seconds": 301,
+          "reason_code": "older_than_demo_window"
+        },
+        {
+          "source_id": "DosTel2",
+          "metric": "absorbed_dose_rate",
+          "state": "current",
+          "last_observation_id": "DosTel2:2022-04-01T23:15:47Z",
+          "age_seconds": 99,
+          "reason_code": "within_demo_window"
+        }
+      ],
+      "incidents": [
+        {
+          "id": "stale-DosTel1-DosTel1:2022-04-01T23:12:25Z",
+          "source_id": "DosTel1",
+          "state": "open",
+          "opened_at": "2022-04-01T23:17:26Z",
+          "closed_at": null,
+          "last_observation_id": "DosTel1:2022-04-01T23:12:25Z"
+        }
+      ]
+    },
+    "23:20:00": {
+      "sources": [
+        {
+          "source_id": "DosTel1",
+          "metric": "absorbed_dose_rate",
+          "state": "stale",
+          "last_observation_id": "DosTel1:2022-04-01T23:12:25Z",
+          "age_seconds": 455,
+          "reason_code": "older_than_demo_window"
+        },
+        {
+          "source_id": "DosTel2",
+          "metric": "absorbed_dose_rate",
+          "state": "current",
+          "last_observation_id": "DosTel2:2022-04-01T23:20:00Z",
+          "age_seconds": 0,
+          "reason_code": "within_demo_window"
+        }
+      ],
+      "incidents": [
+        {
+          "id": "stale-DosTel1-DosTel1:2022-04-01T23:12:25Z",
+          "source_id": "DosTel1",
+          "state": "open",
+          "opened_at": "2022-04-01T23:17:26Z",
+          "closed_at": null,
+          "last_observation_id": "DosTel1:2022-04-01T23:12:25Z"
+        }
+      ]
+    },
+    "23:30:00": {
+      "sources": [
+        {
+          "source_id": "DosTel1",
+          "metric": "absorbed_dose_rate",
+          "state": "current",
+          "last_observation_id": "DosTel1:2022-04-01T23:30:00Z",
+          "age_seconds": 0,
+          "reason_code": "within_demo_window"
+        },
+        {
+          "source_id": "DosTel2",
+          "metric": "absorbed_dose_rate",
+          "state": "current",
+          "last_observation_id": "DosTel2:2022-04-01T23:30:00Z",
+          "age_seconds": 0,
+          "reason_code": "within_demo_window"
+        }
+      ],
+      "incidents": [
+        {
+          "id": "stale-DosTel1-DosTel1:2022-04-01T23:12:25Z",
+          "source_id": "DosTel1",
+          "state": "resolved",
+          "opened_at": "2022-04-01T23:17:26Z",
+          "closed_at": "2022-04-01T23:30:00Z",
+          "last_observation_id": "DosTel1:2022-04-01T23:12:25Z"
+        }
+      ]
+    }
+  }
+}

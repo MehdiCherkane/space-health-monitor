@@ -1,43 +1,38 @@
 # Astro Vital · two-minute pitch
 
-**Integrated walkthrough draft — Blocked.** Use only after A01, A03-A04, B01-B02 and X01 pass on the recorded build. The canonical fixture's engine checks pass; the fresh API path still returns a preview. Follow the [recording sheet](recording-checklist.md). The bracketed IDs link the script to the [claim/source table](../evidence/demo-claims.md) and are presenter notes.
+Choose the version that matches the recorded build. The full version needs
+A01–A04, B01–B02 and X01 evidence on the frozen SHA. The preview version
+describes the merged baseline and can be rehearsed while runtime is pending.
+Bracketed IDs are presenter notes. [Claims and sources](../evidence/demo-claims.md) ·
+[Recording sheet](recording-checklist.md).
 
-## 0:00–0:20 · Opening
+## Full walkthrough
 
-- “On a long mission, the crew needs to see when the evidence behind a health check is incomplete.” [C09]
-- “Astro Vital shows the readings behind each assessment and which inputs are still missing.” [C06, C09]
-- “We’ll look at an ISS detector replay and then a simulated crew check-in.” [C02, C05]
+| Time | Screen | Narration |
+| --- | --- | --- |
+| 0:00–0:20 | Build SHA and dashboard. | “Astro Vital helps a crew member see when an assessment has missing or stale evidence. Open **Why?** to see the rule, the readings it used, and what still needs checking.” [C09] |
+| 0:20–0:52 | **Detector gap (RadLab)** → **23:20:00** → **Why?**. Close → **23:30:00** → **Incident history**. | “These two detector streams come from NASA RadLab. At 23:20 UTC, DosTel1’s latest reading is 455 seconds old. DosTel2 has just reported. The gap’s cause is unknown. At 23:30, both streams are current, and the resolved incident stays in history.” [C01–C04] |
+| 0:52–1:33 | **Sleep and vigilance** → **Fresh run** → **09:00** → **Why?**. Close → **09:01** → **Why?**. | “This crew history is synthetic. At 09:00 the reaction result is missing, so the assessment stays pending. At 09:01 the synthetic sample is 310 milliseconds, 24 percent above the 250-millisecond baseline. Two nights were also at least an hour below the 450-minute sleep baseline. With both conditions present, the rule shows **Sleep and vigilance change**.” [C05–C08] |
+| 1:33–2:00 | Hold on rule and provenance. Briefly show recorded offline proof. | “We rehearsed this build with the laptop disconnected. NASA’s sleep evidence report describes how researchers study vigilance under sleep loss. Here, the thresholds are prototype settings, and the local task measures response time. The assessment helps a crew member decide what to check next.” [C08–C12] |
 
-## 0:20–0:55 · Detector replay
+Use a fresh synthetic run for B01/B02 without check-ins. The optional device
+take belongs to a separate run. Display **Recorded on this device** on its
+result and let the measured value stand. [C07]
 
-*Click **Detector gap (RadLab)** → **23:20:00** → **Why?**. Point to the two source timestamps. Close the drawer, click **23:30:00**, and show **Incident history**.*
+## Reduced walkthrough for review
 
-- “These are archived readings from two detectors in the ISS Columbus module.” [C01, C02]
-- “At 23:20 UTC, DosTel1’s last reading is seven minutes and thirty-five seconds old, while DosTel2 has just reported.” [C03]
-- “The cause of the gap is unknown.” [C03]
-- “By 23:30, both sources are current again, and the resolved incident stays in the history.” [C04]
+If the historical archive remains unavailable, El Mahdi reviews the reduced
+claims before use. If the seed path passes browser acceptance, show the crew
+sequence above and describe RadLab as a fixed preview. If the seed path still
+returns a preview, use the narration below and show actual test evidence for
+the change at 09:01. Keep **Fixture preview** visible.
 
-## 0:55–1:35 · Crew check-in
+| Time | Screen | Narration |
+| --- | --- | --- |
+| 0:00–0:18 | Title and visible build mode. | “Astro Vital is a prototype for reviewing the evidence behind a crew health check. I’ll show two fixed previews, then the synthetic example we ran through the evaluator.” [C09] |
+| 0:18–0:48 | **Detector gap (RadLab)** → **Why?** at the fixed clock. | “This contract example shows what a detector gap looks like. At 23:20 UTC the example has one stale reading and one current reading. The gap’s cause is unknown. The pinned archive and recovery replay are pending verification.” [C01–C04] |
+| 0:48–1:30 | **Sleep and vigilance** → **Why?**, then cut to test evidence labeled **Engine validation**. | “At 09:00, sleep history is available and the reaction result is missing. In our engine test, the 09:01 synthetic sample is 310 milliseconds against 250, an increase of 24 percent. The evaluator changes to watch under the demo rule. The seeded application check is still pending.” [C05–C06] |
+| 1:30–2:00 | Hold on source and limitation card. | “NASA’s sleep report describes vigilance testing in sleep research. Our local response-time task and thresholds are prototype choices. The detector panel shows source readings. The crew scenario uses synthetic records. We’re preparing the integrated offline rehearsal.” [C01, C07–C12] |
 
-*Click **Sleep and vigilance** → **Fresh run** → **09:00**. Show the missing result, then click **09:01** for the labeled sample. Make no form submissions in this run. Open **Why?** and point to the baseline rows and timestamps.*
-
-- “At nine o’clock, the synthetic sleep history is present and the current reaction result is missing, so the assessment stays pending.” [C05, C06]
-- “One minute later, the seeded sample is 310 milliseconds against a 250-millisecond baseline, a 24 percent increase.” [C05, C06]
-- “Two recent nights were also at least an hour below the 450-minute demo baseline.” [C05, C06]
-- “Both conditions are now met, so the rule shows ‘Sleep and vigilance change.’” [C06]
-
-## 1:35–2:00 · Offline and evidence
-
-*Show the locally served build with Wi-Fi off and point to the rule reference.*
-
-- “Both scenarios run locally with the data and interface bundled on this laptop.” [C10]
-- “The detector readings come from the NASA archive, and the crew example uses synthetic data informed by published sleep and vigilance research.” [C02, C05, C11, C12]
-- “The windows and thresholds are prototype settings, and **Why?** shows the evidence behind the comparison.” [C08, C09]
-
-### Fixture preview opening
-
-Current fallback: retain the app's **Fixture preview** badge and use the two contract snapshots. Replay buttons are disabled; do not demonstrate sample arrival or recovery using the fixed snapshots. A gallery/fake callback is also a preview, not proof of persistence or offline acceptance.
-
-- “This is a preview of two contract examples: the detector state at 23:20 and the synthetic crew state at 09:00.” [C03, C05, C06]
-- "The canonical synthetic fixture passes engine checks: at 09:01 its 310-millisecond sample is 24 percent above the 250-millisecond baseline. Loading those seeds into fresh app runs is still pending." [C05, C06]
-- "Historical recovery and the full offline walkthrough remain unverified in this build." [C04, C10]
+The two-minute recording is the team backup. Use the organizer’s confirmed
+format for the submission demo. [Submission draft](submission-draft.md).

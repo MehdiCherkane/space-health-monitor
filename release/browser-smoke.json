@@ -1,0 +1,21 @@
+{
+  "scope": "Browser smoke on isolated main 9c4a29e + PR11 d99c549 + El Mahdi archive/importer delivery; unmerged candidate",
+  "browser": "Headless Chromium",
+  "checks": [
+    "A02 browser checkpoint controls",
+    "A03 real values visible in Why",
+    "A04 recovery and rewind",
+    "B01 seeded pending screen",
+    "B02 seeded watch and baseline Why",
+    "Fresh crew run resets to 09:00 pending"
+  ],
+  "uncaught_page_errors": [],
+  "request_hosts": [
+    "127.0.0.1"
+  ],
+  "X01": "Not run: external network was not disabled before launch",
+  "screenshots": [
+    "/tmp/astro-real-radlab-why.png",
+    "/tmp/astro-real-crew-why.png"
+  ]
+}
