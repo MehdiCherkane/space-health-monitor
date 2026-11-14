@@ -8,14 +8,17 @@ export interface ReactionResultPanelProps {
   status: RequestStatus;
   onRetry: () => void;
   onRunAgain: () => void;
+  /** Latest engine availability. False keeps the measured result but blocks a restart. */
+  actionAvailable: boolean;
 }
 
 export function ReactionResultPanel(props: ReactionResultPanelProps) {
-  const { result, status, onRetry, onRunAgain } = props;
+  const { result, status, onRetry, onRunAgain, actionAvailable } = props;
   const headingRef = useRef<HTMLHeadingElement>(null);
   const pending = status.kind === "pending";
   const success = status.kind === "success";
   const failed = status.kind === "error";
+  const canRunAgain = actionAvailable && !pending && !failed;
 
   useEffect(() => {
     headingRef.current?.focus();
@@ -53,8 +56,12 @@ export function ReactionResultPanel(props: ReactionResultPanelProps) {
         <button
           className="crew-checkin__button crew-checkin__button--secondary"
           type="button"
-          onClick={onRunAgain}
-          disabled={pending || failed}
+          onClick={() => {
+            if (canRunAgain) {
+              onRunAgain();
+            }
+          }}
+          disabled={!canRunAgain}
         >
           Run reaction check again
         </button>
