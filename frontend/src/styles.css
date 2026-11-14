@@ -41,3 +41,57 @@ body {
   max-width: 42rem;
   color: #9fb0cc;
 }
+
+.toolbar {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  margin: 1rem 0;
+}
+
+.chip {
+  border: 1px solid #3a4a68;
+  border-radius: 999px;
+  background: #131d31;
+  color: #dbe4f2;
+  padding: 0.35rem 0.8rem;
+  font: inherit;
+  cursor: pointer;
+}
+
+.chip[aria-pressed='true'] {
+  border-color: #5f8bff;
+  background: #1c2c4d;
+  color: #ffffff;
+}
+
+.chip:focus-visible {
+  outline: 2px solid #8fb0ff;
+  outline-offset: 2px;
+}
+
+.state-list {
+  list-style: none;
+  padding: 0;
+}
+
+.state-list li {
+  padding: 0.15rem 0;
+}
+
+.shell-status {
+  border: 1px solid #a3534f;
+  border-radius: 0.5rem;
+  padding: 0.5rem 1rem;
+  margin: 1rem 0;
+}
+
+.badge[data-mode='integrated'] {
+  border-color: #4f9c74;
+  color: #b9e6cb;
+}
+
+.badge[data-mode='fixture-preview'] {
+  border-color: #b08b4f;
+  color: #f0d9ac;
+}

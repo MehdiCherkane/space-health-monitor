@@ -32,7 +32,7 @@ async function errorMessage(response: Response): Promise<string> {
   return `Request failed (${response.status})`
 }
 
-async function request<T>(path: string, init?: RequestInit): Promise<T> {
+async function send(path: string, init?: RequestInit): Promise<Response> {
   const response = await fetch(`/api/v1${path}`, {
     ...init,
     headers: { 'Content-Type': 'application/json', ...init?.headers },
@@ -40,7 +40,29 @@ async function request<T>(path: string, init?: RequestInit): Promise<T> {
   if (!response.ok) {
     throw new ApiError(response.status, await errorMessage(response))
   }
+  return response
+}
+
+async function request<T>(path: string, init?: RequestInit): Promise<T> {
+  const response = await send(path, init)
   return (await response.json()) as T
+}
+
+/** `fixture-preview` means the API served a contract example, not engine output. */
+export type DataMode = 'fixture-preview' | 'integrated' | 'unknown'
+
+export interface StateResult {
+  state: StateEnvelope
+  dataMode: DataMode
+}
+
+export async function getStateAt(runId: string, asOf: string): Promise<StateResult> {
+  const params = new URLSearchParams({ as_of: asOf })
+  const response = await send(`/runs/${encodeURIComponent(runId)}/state?${params}`)
+  const header = response.headers.get('X-Data-Mode')
+  const dataMode: DataMode =
+    header === 'fixture-preview' || header === 'integrated' ? header : 'unknown'
+  return { state: (await response.json()) as StateEnvelope, dataMode }
 }
 
 export function createRun(scenarioId: ScenarioId): Promise<Run> {
