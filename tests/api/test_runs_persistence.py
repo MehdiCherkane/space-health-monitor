@@ -92,7 +92,11 @@ def test_the_same_submission_id_is_allowed_in_another_run(client):
 
 
 def test_concurrent_identical_retries_store_one_batch(tmp_path):
-    app = create_app(tmp_path / 'concurrent.db')
+    app = create_app(
+        tmp_path / 'concurrent.db',
+        crew_fixture_path=tmp_path / 'absent-crew.json',
+        radlab_csv_path=tmp_path / 'absent-radlab.csv',
+    )
     with TestClient(app) as client:
         run_id = create_run(client)
 

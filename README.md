@@ -10,17 +10,93 @@ Long missions expose crews to radiation, isolation, altered gravity and a closed
 - **Crew autonomy.** The tool is designed to work offline and keep health data on the device, without waiting for a ground link.
 - **Actionable output.** Every out-of-range indicator should come with a next step: re-measure, hydrate, rest, or contact the flight surgeon.
 
-## Planned scope
+## What is in this repository
 
-- Daily check-in across vital signs and daily countermeasures.
-- Three-level assessment per indicator: **nominal**, **watch**, **alert**.
-- Overall mission-readiness status with prioritized guidance.
-- Local check-in history, with no health data leaving the device.
-- No build step, no dependencies, no network calls required to run.
+The working prototype is a React + TypeScript (Vite) front end served by a FastAPI
+backend with SQLite persistence. Both demo scenarios replay through a deterministic
+engine (`backend/engine/`, `rules/demo-v1.json`): a real RadLab detector replay when the
+pinned archive is present, and a synthetic crew sleep/vigilance scenario whose canonical
+input is `fixtures/crew/sleep-vigilance.json`.
 
-## Planned assessment rules
+- Daily check-in, optional fatigue/mood/stress self-reports and a local reaction-time task.
+- Two replay scenarios with an explicit clock, source freshness and incident recovery.
+- Provenance stays visible: `REAL_HISTORICAL`, `SYNTHETIC` and `LIVE_MEASURED` are never mixed.
+- Everything runs from locally bundled assets on loopback; no health data leaves the machine.
 
-Each indicator is compared to a nominal range and a wider watch range. Inside nominal → **nominal**; inside watch only → **watch**; outside watch → **alert**. The overall status is the worst individual status.
+## Run the demo (loopback only)
+
+Prerequisites: Python 3.11+ and Node.js 20+. On Windows use `npm.cmd` if `npm` is not on PATH.
+
+```bash
+# 1. Install the runtime (network available)
+python -m venv .venv
+.venv/Scripts/python -m pip install -r backend/requirements.txt   # Windows
+.venv/bin/python -m pip install -r backend/requirements.txt       # macOS / Linux
+npm --prefix frontend ci
+
+# 2. Build the front end once, while the network is available
+npm --prefix frontend run build
+
+# 3. Launch the API *and* the built shell from one loopback process
+python run.py --no-build
+#    -> http://127.0.0.1:8000
+```
+
+`python run.py` builds automatically only when `frontend/dist/index.html` is missing. A
+failed or unproductive build stops with a nonzero exit and never serves a stale bundle;
+`--no-build` with missing assets prints the exact preparation command instead.
+
+Useful flags:
+
+| Command | Result |
+|---|---|
+| `python run.py --no-build` | Serve the prepared bundle (use this for the offline rehearsal) |
+| `python run.py --build` | Force a rebuild before serving |
+| `python run.py --check-archive` | Report RadLab archive status (A01); exit `0` only when verified, `2` when Blocked |
+| `python run.py --host 127.0.0.1 --port 8000` | Explicit loopback address (non-loopback hosts are refused) |
+
+Disable the reaction task (B04) for any launch:
+
+```bash
+# Windows PowerShell
+$env:ASTRO_VITAL_RESOURCES='{"local_reaction_task": false}'; python run.py --no-build
+# macOS / Linux
+ASTRO_VITAL_RESOURCES='{"local_reaction_task": false}' python run.py --no-build
+```
+
+### Offline rehearsal (X01)
+
+X01 is a **browser** check, not a build or API check: disable Wi-Fi/Ethernet after step 2,
+launch with `--no-build`, open `http://127.0.0.1:8000`, and follow
+[acceptance/manual-checklist.md](acceptance/manual-checklist.md). Nothing in this
+repository marks X01 as passed until a person records that run.
+
+## Checks
+
+```bash
+python -m pytest tests -q          # backend, API, persistence, loader, launcher, E2E gate
+npm --prefix frontend test         # Vitest + node --test
+npm --prefix frontend run build    # tsc --noEmit && vite build
+python tests/e2e/test_e2e.py       # combined runtime gate; A01/A02-A04 Blocked without the archive
+python run.py --check-archive      # A01 only
+```
+
+`tests/e2e/test_e2e.py` separates the RadLab archive gate (A01/A02-A04, Blocked until the
+pinned CSV is supplied), the crew checkpoints (B01/B02/B04/B05), a static asset preflight
+(AF01) and the offline browser rehearsal (X01: always `Not run` here). A required-check
+failure exits nonzero; a blocked archive is reported separately.
+
+## Planned scope (original concept)
+
+These product ideas remain on the roadmap and are not part of the implemented demo rules;
+the rules that actually run are versioned in `rules/demo-v1.json` and described in
+[contracts/v1.md](contracts/v1.md).
+
+### Original assessment concept
+
+Each indicator was compared to a nominal range and a wider watch range. Inside nominal →
+**nominal**; inside watch only → **watch**; outside watch → **alert**. None of these
+vital-sign ranges are implemented in the demo engine; they are listed here as concept.
 
 | Indicator | Nominal | Watch | Alert |
 | --- | --- | --- | --- |
@@ -33,7 +109,7 @@ Each indicator is compared to a nominal range and a wider watch range. Inside no
 | Exercise (minutes/day) | ≥ 30 | 15–29 | < 15 |
 | Stress (1–10) | 1–4 | 5–6 | ≥ 7 |
 
-Ranges will be kept in one place so the interface and the tests cannot drift apart.
+
 
 ## Limitations
 

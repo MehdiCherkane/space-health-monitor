@@ -35,7 +35,7 @@ def synthetic_rows():
 
 
 def test_synthetic_assertions_check_boundaries_recovery_and_rewind():
-    policy = json.loads((ROOT / "rules/demo-v1.json").read_text())
+    policy = json.loads((ROOT / "rules/demo-v1.json").read_text(encoding="utf-8"))
     rows = synthetic_rows()
     states = {time: evaluate("radlab_stale", "synthetic-test", f"2022-04-01T{time}Z",
                             rows, policy["resources"], policy) for time in gate.CHECKPOINTS}

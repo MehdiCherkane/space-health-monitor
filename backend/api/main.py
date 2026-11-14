@@ -5,8 +5,11 @@ only observations visible at `as_of` to the merged evaluator and returns its env
 A run with no observations yet returns its contract example labeled **Fixture preview**;
 that label disappears as soon as the run holds real observations.
 
-HZ-05/HZ-11 still own the seed data (RadLab CSV, crew fixture). Until they land, runs
-start empty and the rules report missing inputs; nothing is invented here.
+Seeds are resolved once per run creation, before anything is persisted: the canonical
+crew fixture or the verified RadLab archive when it is present on disk. A missing seed
+file selects the explicit fixture preview; a present but invalid seed fails the request
+instead of being silently replaced by preview data. The `X-Data-Mode` response header
+reports what the run actually holds.
 """
 
 from __future__ import annotations
@@ -27,7 +30,13 @@ from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel, Field
 
 from backend.engine import evaluate
-from backend.storage import Storage, SubmissionConflict
+from backend.replay import (
+    DEFAULT_RADLAB_CSV,
+    CrewFixtureError,
+    load_crew_fixture,
+    load_radlab_archive,
+)
+from backend.storage import Storage, DuplicateSeedError, SubmissionConflict
 
 ROOT = Path(__file__).resolve().parents[2]
 EXAMPLES = ROOT / "contracts" / "examples"
@@ -202,8 +211,43 @@ def _resources(override: dict[str, bool] | None) -> dict[str, bool]:
     return resources
 
 
+def _seed_for(
+    scenario_id: str,
+    crew_fixture_path: str | Path | None,
+    radlab_csv_path: str | Path | None,
+) -> list[dict[str, Any]] | None:
+    """Validate the scenario seed before any run row exists.
+
+    `None` means the seed file is absent, so the caller may serve the explicit preview.
+    A present but invalid seed raises `HTTPException(500)` with the failing file and
+    reason; it is never downgraded to preview data.
+    """
+    if scenario_id == "sleep_vigilance":
+        try:
+            return load_crew_fixture(crew_fixture_path)
+        except CrewFixtureError as error:
+            raise HTTPException(500, f"Crew fixture is invalid: {error}") from error
+
+    seed = load_radlab_archive(radlab_csv_path)
+    if seed is not None:
+        return seed
+    target = Path(
+        radlab_csv_path or os.environ.get("ASTRO_VITAL_RADLAB_CSV") or DEFAULT_RADLAB_CSV
+    )
+    if target.is_file():
+        raise HTTPException(
+            500,
+            f"RadLab archive at {target} exists but failed verification; "
+            "refusing to serve the fixture preview as historical replay",
+        )
+    return None
+
+
 def create_app(
-    db_path: str | Path | None = None, resources: dict[str, bool] | None = None
+    db_path: str | Path | None = None,
+    resources: dict[str, bool] | None = None,
+    crew_fixture_path: str | Path | None = None,
+    radlab_csv_path: str | Path | None = None,
 ) -> FastAPI:
     """Build the app around one SQLite file (tests use their own temporary database)."""
     resources = _resources(resources)
@@ -225,6 +269,8 @@ def create_app(
     @app.post("/api/v1/runs", status_code=201)
     def create_run(request: RunRequest, response: Response) -> dict[str, str]:
         config = SCENARIOS[request.scenario_id]
+        # Load and validate first: an invalid seed must not leave an orphan run behind.
+        seed = _seed_for(request.scenario_id, crew_fixture_path, radlab_csv_path)
         run = {
             "run_id": uuid4().hex,
             "scenario_id": request.scenario_id,
@@ -232,8 +278,13 @@ def create_app(
             "range_start": config["range_start"],
             "range_end": config["range_end"],
         }
-        store.create_run(run)
-        response.headers["X-Data-Mode"] = INTEGRATED_MODE
+        try:
+            store.create_run(run, seed)
+        except DuplicateSeedError as error:
+            raise HTTPException(500, f"Seed data for this run is invalid: {error}") from error
+
+        # Truthful at creation time: claim integrated only when seeds were written.
+        response.headers["X-Data-Mode"] = INTEGRATED_MODE if seed else PREVIEW_MODE
         return run
 
     @app.get("/api/v1/runs/{run_id}/state")
