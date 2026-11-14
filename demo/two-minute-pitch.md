@@ -1,6 +1,6 @@
 # Astro Vital · two-minute pitch
 
-**Walkthrough draft.** Use on the integrated build after A01, B02 and X01 pass. The bracketed IDs link the script to the [claim/source table](../evidence/demo-claims.md) and are presenter notes.
+**Integrated walkthrough draft — Blocked.** Use only after A01, A03-A04, B01-B02 and X01 pass on the recorded build. The canonical fixture's engine checks pass; the fresh API path still returns a preview. Follow the [recording sheet](recording-checklist.md). The bracketed IDs link the script to the [claim/source table](../evidence/demo-claims.md) and are presenter notes.
 
 ## 0:00–0:20 · Opening
 
@@ -10,7 +10,7 @@
 
 ## 0:20–0:55 · Detector replay
 
-*Select the RadLab scenario, seek to 23:20 UTC and open **Why?**. Point to the two source timestamps. Advance to 23:30 UTC and show the incident history.*
+*Click **Detector gap (RadLab)** → **23:20:00** → **Why?**. Point to the two source timestamps. Close the drawer, click **23:30:00**, and show **Incident history**.*
 
 - “These are archived readings from two detectors in the ISS Columbus module.” [C01, C02]
 - “At 23:20 UTC, DosTel1’s last reading is seven minutes and thirty-five seconds old, while DosTel2 has just reported.” [C03]
@@ -19,7 +19,7 @@
 
 ## 0:55–1:35 · Crew check-in
 
-*Switch to the crew scenario at 09:00 UTC. Show the missing result, then seek to 09:01 for the labeled sample. Open **Why?** and point to the baseline rows and timestamps.*
+*Click **Sleep and vigilance** → **Fresh run** → **09:00**. Show the missing result, then click **09:01** for the labeled sample. Make no form submissions in this run. Open **Why?** and point to the baseline rows and timestamps.*
 
 - “At nine o’clock, the synthetic sleep history is present and the current reaction result is missing, so the assessment stays pending.” [C05, C06]
 - “One minute later, the seeded sample is 310 milliseconds against a 250-millisecond baseline, a 24 percent increase.” [C05, C06]
@@ -36,7 +36,8 @@
 
 ### Fixture preview opening
 
-If the integrated checks are blocked, label the screen **Fixture preview** and use the two checked contract snapshots.
+Current fallback: retain the app's **Fixture preview** badge and use the two contract snapshots. Replay buttons are disabled; do not demonstrate sample arrival or recovery using the fixed snapshots. A gallery/fake callback is also a preview, not proof of persistence or offline acceptance.
 
 - “This is a preview of two contract examples: the detector state at 23:20 and the synthetic crew state at 09:00.” [C03, C05, C06]
-- “The planned sample result and recovery are later checkpoints in the team’s walkthrough.” [C04, C06]
+- "The canonical synthetic fixture passes engine checks: at 09:01 its 310-millisecond sample is 24 percent above the 250-millisecond baseline. Loading those seeds into fresh app runs is still pending." [C05, C06]
+- "Historical recovery and the full offline walkthrough remain unverified in this build." [C04, C10]
