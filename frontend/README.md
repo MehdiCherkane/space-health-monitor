@@ -72,13 +72,20 @@ minting a new ID. The server treats a changed payload under the same ID as a con
 `review_available_inputs` when `local_reaction_task` is disabled, and the shell routes
 it to the evidence drawer.
 
-## Fixture preview
+## Fixture preview and seeded runs
 
-An empty run returns its contract example labeled `X-Data-Mode: fixture-preview`, with the
-example's own `as_of` (a fixed snapshot, not the requested clock). The shell moves the clock
-to that snapshot time, keeps the **Fixture preview** badge and a snapshot note visible, and
-disables checkpoints, because the example cannot be replayed. Once the run holds stored
-observations, responses are `integrated` engine output and replay works.
+A run reports `X-Data-Mode: integrated` only when the backend actually loaded seed rows:
+the canonical crew fixture (`fixtures/crew/sleep-vigilance.json`, 14 synthetic rows) for
+`sleep_vigilance`, or the verified RadLab archive for `radlab_stale`. With those inputs the
+state is real engine output and replay works.
+
+An empty run instead returns its contract example labeled `X-Data-Mode: fixture-preview`,
+with the example's own `as_of` (a fixed snapshot, not the requested clock). The shell moves
+the clock to that snapshot time, keeps the **Fixture preview** badge and a snapshot note
+visible, and disables checkpoints, because the example cannot be replayed.
+
+To run the whole app on one loopback origin, build once and launch from the repository
+root: `npm --prefix frontend run build && python run.py --no-build`.
 
 To exercise B04 (reaction resource disabled) start the API with
 `ASTRO_VITAL_RESOURCES='{"local_reaction_task": false}'`; tests pass
