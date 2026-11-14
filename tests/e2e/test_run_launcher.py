@@ -192,3 +192,34 @@ def test_invalid_crew_fixture_stops_the_launcher(paths, started, monkeypatch, ca
     assert started == []
     err = capsys.readouterr().err
     assert "Crew fixture is invalid" in err
+
+
+@pytest.mark.parametrize(('argv', 'exit_code'), [(['--no-build'], 1), (['--check-archive'], 2)])
+def test_invalid_archive_never_promises_preview(
+    paths, started, monkeypatch, capsys, tmp_path, argv, exit_code
+):
+    paths.write_text("<!doctype html><title>built</title>", encoding="utf-8")
+    archive = tmp_path / "invalid.csv"
+    archive.write_text("corrupted archive\n", encoding="utf-8")
+    monkeypatch.setenv("ASTRO_VITAL_RADLAB_CSV", str(archive))
+
+    assert run.main(argv) == exit_code
+    assert started == []
+    captured = capsys.readouterr()
+    output = captured.out + captured.err
+    assert str(archive) in output
+    assert "hash mismatch" in output
+    assert "Fix or remove" in output or "fix or remove" in output
+    assert "fixture preview only" not in output
+    assert "only the labeled preview" not in output
+
+
+def test_missing_archive_still_launches_with_explicit_preview(
+    paths, started, monkeypatch, capsys, tmp_path
+):
+    paths.write_text("<!doctype html><title>built</title>", encoding="utf-8")
+    monkeypatch.setenv("ASTRO_VITAL_RADLAB_CSV", str(tmp_path / "absent.csv"))
+
+    assert run.main(['--no-build']) == 0
+    assert len(started) == 1
+    assert "RadLab archive : Blocked - fixture preview only" in capsys.readouterr().out

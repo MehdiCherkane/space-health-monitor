@@ -113,7 +113,10 @@ def archive_report() -> int:
     print(f"Expected SHA-256: {report['expected_sha256']}")
     if report.get("observed_sha256"):
         print(f"Observed SHA-256: {report['observed_sha256']}")
-    print("A02-A04 and the RadLab scenario stay Blocked; only the labeled preview is shown.")
+    if Path(report["path"]).exists():
+        print("RadLab scenario unavailable: fix or remove the invalid archive before launching.")
+    else:
+        print("A02-A04 stay Blocked; the missing archive selects the labeled fixture preview.")
     return 2
 
 
@@ -173,7 +176,14 @@ def main(argv: list[str] | None = None) -> int:
     if exit_code is not None:
         return exit_code
 
-    archive_status = verify_radlab_archive()["status"]
+    archive = verify_radlab_archive()
+    if archive["status"] != "Pass" and Path(archive["path"]).exists():
+        print(
+            f"RadLab archive at {archive['path']} is invalid: {archive.get('reason', 'verification failed')}",
+            file=sys.stderr,
+        )
+        print("Fix or remove the invalid archive before launching.", file=sys.stderr)
+        return 1
     try:
         crew_rows = len(load_crew_fixture() or [])
     except CrewFixtureError as error:
@@ -181,7 +191,7 @@ def main(argv: list[str] | None = None) -> int:
         print("Fix or remove fixtures/crew/sleep-vigilance.json before launching.", file=sys.stderr)
         return 1
 
-    print(banner(args.host, args.port, crew_rows, archive_status))
+    print(banner(args.host, args.port, crew_rows, archive["status"]))
     app = create_app()
     uvicorn.run(app, host=args.host, port=args.port, log_level="info")
     return 0

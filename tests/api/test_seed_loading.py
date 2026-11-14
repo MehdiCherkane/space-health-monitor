@@ -7,6 +7,7 @@ injection seam for missing-night and missing-baseline scenarios.
 """
 
 import json
+import sqlite3
 from pathlib import Path
 
 import pytest
@@ -191,6 +192,33 @@ def test_loader_reports_the_missing_field_for_a_present_bad_file(tmp_path):
     path = write_variant(tmp_path, _set_unit)
     with pytest.raises(CrewFixtureError, match='unsupported source/metric/unit'):
         load_crew_fixture(path)
+
+
+@pytest.mark.parametrize('literal', ['NaN', 'Infinity', '-Infinity', '1e999'])
+@pytest.mark.parametrize('observation_id', ['sleep-08', 'reaction-10'])
+def test_nonfinite_nested_metadata_is_rejected_before_persistence(
+    tmp_path, literal, observation_id
+):
+    data = canonical_data()
+    row = next(row for row in data['observations'] if row['id'] == observation_id)
+    row.setdefault('metadata', {})['extra'] = [{'value': 'NONFINITE_NUMBER'}]
+    path = tmp_path / 'nonfinite-metadata.json'
+    path.write_text(
+        json.dumps(data).replace('"NONFINITE_NUMBER"', literal), encoding='utf-8'
+    )
+    with pytest.raises(CrewFixtureError) as error:
+        load_crew_fixture(path)
+    assert str(path) in str(error.value)
+    assert f'Observation {observation_id} metadata.extra[0].value must be a finite number' in str(error.value)
+
+    db_path = tmp_path / 'nonfinite.db'
+    with TestClient(create_app(db_path, crew_fixture_path=path)) as client:
+        response = client.post('/api/v1/runs', json={'scenario_id': 'sleep_vigilance'})
+        assert response.status_code == 500
+        assert 'metadata.extra[0].value must be a finite number' in response.json()['detail']
+    assert Storage(db_path).count_runs() == 0
+    with sqlite3.connect(db_path) as connection:
+        assert connection.execute('SELECT COUNT(*) FROM observations').fetchone()[0] == 0
 
 
 def test_missing_night_variant_reaches_the_evaluator(tmp_path):

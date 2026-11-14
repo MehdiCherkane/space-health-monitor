@@ -71,6 +71,18 @@ def _number(value: Any, field: str) -> int | float:
     return int(value) if value.is_integer() else value
 
 
+def _require_finite_metadata(value: Any, field: str) -> None:
+    """Reject non-finite JSON numbers, including nested extras and exponent overflow."""
+    if isinstance(value, float) and not math.isfinite(value):
+        raise CrewFixtureError(f"{field} must be a finite number, got {value!r}")
+    if isinstance(value, dict):
+        for key, item in value.items():
+            _require_finite_metadata(item, f"{field}.{key}")
+    elif isinstance(value, list):
+        for index, item in enumerate(value):
+            _require_finite_metadata(item, f"{field}[{index}]")
+
+
 def _validate_reaction_metadata(observation_id: str, metadata: Any) -> dict[str, Any]:
     if not isinstance(metadata, dict):
         raise CrewFixtureError(
@@ -172,6 +184,7 @@ def _validate_observation(raw: Any) -> dict[str, Any]:
     metadata = raw.get("metadata")
     if metadata is not None and not isinstance(metadata, dict):
         raise CrewFixtureError(f"Observation {observation_id} metadata must be an object")
+    _require_finite_metadata(metadata, f"Observation {observation_id} metadata")
     if pair[1] == "reaction_time":
         row["metadata"] = _validate_reaction_metadata(observation_id, metadata)
     elif metadata is not None:
