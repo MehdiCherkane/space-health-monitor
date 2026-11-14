@@ -166,7 +166,8 @@ are never treated as a conflict here.
 ## Verification
 
 Run on the implementation commit `9ec8f6d` (2026-11-14, UTC), Node 24.22.1,
-npm 11.19.1, Python 3.14.9:
+npm 11.19.1, Python 3.14.9. The same suites were re-run on the final PR head after
+documentation and copy-only polish; the counts below are unchanged:
 
 | Command | Result |
 |---|---|

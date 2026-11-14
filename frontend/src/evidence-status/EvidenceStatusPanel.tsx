@@ -73,7 +73,7 @@ export function EvidenceStatusPanel({
       )}
       {model.phase === 'error' && (
         <p className="evidence-status__pending" role="alert">
-          Evidence status is unavailable for this time.
+          Evidence status is unavailable for this time. Retry the replay to reload it.
         </p>
       )}
       {model.phase === 'unavailable' && (

@@ -128,6 +128,10 @@
   border-left-color: var(--border-strong);
 }
 
+.evidence-status__row[data-source-state='current'] {
+  border-left-color: var(--ok-line);
+}
+
 .evidence-status__row[data-source-state='stale'] {
   border-left-color: var(--watch-line);
 }
@@ -227,9 +231,15 @@
   display: flex;
   align-items: center;
   min-height: var(--target);
+  padding: 0 var(--space-1);
   font-weight: 600;
   cursor: pointer;
+  touch-action: manipulation;
   overflow-wrap: anywhere;
+}
+
+.evidence-status__details summary:hover {
+  background: var(--surface-hover);
 }
 
 .evidence-status__limits {
