@@ -185,6 +185,44 @@ class Storage:
         rows.reverse()
         return rows
 
+    def seed_observations(self, run_id: str, observations: list[dict[str, Any]]) -> None:
+        """Insert seed observations for a run atomically."""
+        if not observations:
+            return
+        connection = self._connect()
+        try:
+            connection.execute("BEGIN IMMEDIATE")
+            connection.executemany(
+                "INSERT OR IGNORE INTO observations (run_id, id, subject_id, metric, value, unit,"
+                " observed_at, source_id, provenance, source_timestamp, metadata)"
+                " VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)",
+                [
+                    (
+                        run_id,
+                        row["id"],
+                        row.get("subject_id"),
+                        row["metric"],
+                        row["value"],
+                        row["unit"],
+                        row["observed_at"],
+                        row["source_id"],
+                        row["provenance"],
+                        row.get("source_timestamp"),
+                        json.dumps(row["metadata"]) if row.get("metadata") is not None else None,
+                    )
+                    for row in observations
+                ],
+            )
+            connection.execute("COMMIT")
+        except BaseException:
+            try:
+                connection.execute("ROLLBACK")
+            except sqlite3.Error:
+                pass
+            raise
+        finally:
+            connection.close()
+
     def add_submission(
         self,
         run_id: str,

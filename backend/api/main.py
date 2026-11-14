@@ -5,8 +5,8 @@ only observations visible at `as_of` to the merged evaluator and returns its env
 A run with no observations yet returns its contract example labeled **Fixture preview**;
 that label disappears as soon as the run holds real observations.
 
-HZ-05/HZ-11 still own the seed data (RadLab CSV, crew fixture). Until they land, runs
-start empty and the rules report missing inputs; nothing is invented here.
+HZ-05/HZ-11 own the seed data (RadLab CSV, crew fixture). When present on disk, runs
+are seeded with those observations and evaluated dynamically.
 """
 
 from __future__ import annotations
@@ -27,6 +27,7 @@ from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel, Field
 
 from backend.engine import evaluate
+from backend.replay import load_crew_fixture, load_radlab_archive
 from backend.storage import Storage, SubmissionConflict
 
 ROOT = Path(__file__).resolve().parents[2]
@@ -203,7 +204,10 @@ def _resources(override: dict[str, bool] | None) -> dict[str, bool]:
 
 
 def create_app(
-    db_path: str | Path | None = None, resources: dict[str, bool] | None = None
+    db_path: str | Path | None = None,
+    resources: dict[str, bool] | None = None,
+    crew_fixture_path: str | Path | None = None,
+    radlab_csv_path: str | Path | None = None,
 ) -> FastAPI:
     """Build the app around one SQLite file (tests use their own temporary database)."""
     resources = _resources(resources)
@@ -233,6 +237,17 @@ def create_app(
             "range_end": config["range_end"],
         }
         store.create_run(run)
+
+        # Seed run observations if fixture / archive is present
+        if request.scenario_id == "sleep_vigilance":
+            crew_seed = load_crew_fixture(crew_fixture_path)
+            if crew_seed:
+                store.seed_observations(run["run_id"], crew_seed)
+        elif request.scenario_id == "radlab_stale":
+            radlab_seed = load_radlab_archive(radlab_csv_path)
+            if radlab_seed:
+                store.seed_observations(run["run_id"], radlab_seed)
+
         response.headers["X-Data-Mode"] = INTEGRATED_MODE
         return run
 
