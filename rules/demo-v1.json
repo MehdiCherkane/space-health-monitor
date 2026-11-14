@@ -1,0 +1,58 @@
+{
+  "schema_version": 1,
+  "resources": {"local_reaction_task": true},
+  "scenarios": {
+    "radlab_stale": {
+      "rule_id": "SOURCE_FRESHNESS",
+      "rule_version": 1,
+      "assessment_id": "demo-radlab-status",
+      "sources": ["DosTel1", "DosTel2"],
+      "metric": "absorbed_dose_rate",
+      "unit": "µGy/h",
+      "current_through_seconds": 300,
+      "range_start": "2022-04-01T23:00:00Z",
+      "range_end": "2022-04-02T01:04:59Z"
+    },
+    "sleep_vigilance": {
+      "rule_id": "SLEEP_VIGILANCE",
+      "rule_version": 1,
+      "assessment_id": "demo-sleep-vigilance",
+      "subject_id": "crew-demo-1",
+      "range_start": "2026-01-10T09:00:00Z",
+      "range_end": "2026-01-10T10:00:00Z",
+      "sleep": {
+        "source_id": "crew_sleep_log",
+        "metric": "sleep_duration",
+        "unit": "min",
+        "minimum": 0,
+        "maximum": 1440,
+        "baseline_id": "crew-demo-sleep-v1",
+        "baseline_slots": [
+          "2026-01-01T07:00:00Z", "2026-01-02T07:00:00Z",
+          "2026-01-03T07:00:00Z", "2026-01-04T07:00:00Z",
+          "2026-01-05T07:00:00Z"
+        ],
+        "recent_days": ["2026-01-08", "2026-01-09", "2026-01-10"],
+        "short_by_minutes": 60,
+        "required_short_nights": 2
+      },
+      "reaction": {
+        "source_id": "reaction_task",
+        "metric": "reaction_time",
+        "unit": "ms",
+        "baseline_id": "crew-demo-reaction-v1",
+        "baseline_slots": [
+          "2026-01-01T09:00:00Z", "2026-01-02T09:00:00Z",
+          "2026-01-03T09:00:00Z", "2026-01-04T09:00:00Z",
+          "2026-01-05T09:00:00Z"
+        ],
+        "session_start": "2026-01-10T09:00:00Z",
+        "session_end": "2026-01-10T10:00:00Z",
+        "slower_by_percent": 20,
+        "task_version": "demo-rt-v1",
+        "input_profile": "seeded-demo",
+        "resource_id": "local_reaction_task"
+      }
+    }
+  }
+}

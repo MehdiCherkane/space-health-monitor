@@ -1,5 +1,9 @@
 # El Mahdi kickoff handoff
 
+Update after kickoff: PR #1 is merged at `533309242e58985dfa919225b9c2d515c7585872`.
+El Mahdi confirmed the interface in the working session. The initial statuses below
+describe the kickoff review; see [engine handoff](engine-handoff.md) for current progress.
+
 Branch: `build/engine`
 
 Upstream base: `c7d389c5fa6152e3936024335c6b52724b30b40c`
