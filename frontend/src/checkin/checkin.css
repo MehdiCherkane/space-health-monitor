@@ -1,0 +1,275 @@
+/* Crew check-in styles, scoped to the feature. No global selectors and no external assets. */
+
+.crew-checkin {
+  --checkin-ink: #10202b;
+  --checkin-muted: #4a5b66;
+  --checkin-surface: #f7fafc;
+  --checkin-border: #c8d3dc;
+  --checkin-accent: #0b5c8f;
+  --checkin-accent-ink: #ffffff;
+  --checkin-danger: #a32020;
+  --checkin-success: #186a3b;
+  --checkin-wait: #8a5a00;
+  --checkin-wait-surface: #fff4d6;
+  --checkin-go-surface: #d9f2e2;
+  --checkin-radius: 10px;
+
+  box-sizing: border-box;
+  max-width: 46rem;
+  padding: 1rem 1.25rem 1.5rem;
+  border: 1px solid var(--checkin-border);
+  border-radius: var(--checkin-radius);
+  background: var(--checkin-surface);
+  color: var(--checkin-ink);
+  font: inherit;
+  line-height: 1.45;
+}
+
+.crew-checkin *,
+.crew-checkin *::before,
+.crew-checkin *::after {
+  box-sizing: inherit;
+}
+
+.crew-checkin__header {
+  margin-bottom: 0.75rem;
+}
+
+.crew-checkin h2,
+.crew-checkin h3 {
+  margin: 0 0 0.25rem;
+  line-height: 1.25;
+}
+
+.crew-checkin h2 {
+  font-size: 1.3rem;
+}
+
+.crew-checkin h3 {
+  font-size: 1.05rem;
+  margin-top: 1.25rem;
+}
+
+.crew-checkin h3:focus {
+  outline: 3px solid var(--checkin-accent);
+  outline-offset: 2px;
+}
+
+.crew-checkin__mission {
+  margin: 0;
+  color: var(--checkin-muted);
+  font-size: 0.9rem;
+}
+
+.crew-checkin__disclaimer,
+.crew-checkin__hint {
+  margin: 0.25rem 0;
+  color: var(--checkin-muted);
+  font-size: 0.9rem;
+}
+
+.crew-checkin__form {
+  display: block;
+  margin-top: 0.75rem;
+}
+
+.crew-checkin__field-group {
+  margin: 0 0 1rem;
+  padding: 0;
+  border: 0;
+}
+
+fieldset.crew-checkin__field-group {
+  min-width: 0;
+}
+
+.crew-checkin__label {
+  display: block;
+  margin-bottom: 0.25rem;
+  font-weight: 600;
+}
+
+.crew-checkin__input {
+  width: 9rem;
+  max-width: 100%;
+  min-height: 2.5rem;
+  padding: 0.4rem 0.5rem;
+  border: 1px solid var(--checkin-border);
+  border-radius: 0.4rem;
+  background: #ffffff;
+  color: var(--checkin-ink);
+  font: inherit;
+}
+
+.crew-checkin__input:focus-visible {
+  outline: 3px solid var(--checkin-accent);
+  outline-offset: 1px;
+}
+
+.crew-checkin__subfield {
+  margin-top: 0.6rem;
+}
+
+.crew-checkin__field-error {
+  margin: 0.25rem 0 0;
+  color: var(--checkin-danger);
+  font-size: 0.9rem;
+  font-weight: 600;
+}
+
+.crew-checkin__actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.6rem;
+  margin-top: 0.75rem;
+}
+
+.crew-checkin__button {
+  min-height: 2.6rem;
+  padding: 0.5rem 1rem;
+  border: 1px solid var(--checkin-accent);
+  border-radius: 0.45rem;
+  background: var(--checkin-accent);
+  color: var(--checkin-accent-ink);
+  font: inherit;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.crew-checkin__button:hover:not(:disabled) {
+  background: #084a75;
+}
+
+.crew-checkin__button:focus-visible {
+  outline: 3px solid var(--checkin-ink);
+  outline-offset: 2px;
+}
+
+.crew-checkin__button:disabled {
+  cursor: not-allowed;
+  opacity: 0.55;
+}
+
+.crew-checkin__button--secondary {
+  background: transparent;
+  color: var(--checkin-accent);
+}
+
+.crew-checkin__button--secondary:hover:not(:disabled) {
+  background: #e4eef5;
+}
+
+.crew-checkin__status {
+  margin-top: 0.5rem;
+  font-size: 0.95rem;
+}
+
+.crew-checkin__status p {
+  margin: 0.25rem 0;
+}
+
+.crew-checkin__success {
+  color: var(--checkin-success);
+  font-weight: 600;
+}
+
+.crew-checkin__request-error {
+  margin-top: 0.75rem;
+  padding: 0.6rem 0.75rem;
+  border: 1px solid var(--checkin-danger);
+  border-left-width: 0.35rem;
+  border-radius: 0.4rem;
+  background: #fdf0f0;
+  color: var(--checkin-danger);
+}
+
+.crew-checkin__request-error p {
+  margin: 0 0 0.4rem;
+}
+
+.crew-checkin__stimulus {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 6rem;
+  margin: 0.75rem 0;
+  padding: 1rem;
+  border: 2px solid var(--checkin-wait);
+  border-radius: var(--checkin-radius);
+  background: var(--checkin-wait-surface);
+  color: var(--checkin-wait);
+  font-size: 1.15rem;
+  font-weight: 700;
+  text-align: center;
+}
+
+.crew-checkin__stimulus--go {
+  border-color: var(--checkin-success);
+  background: var(--checkin-go-surface);
+  color: var(--checkin-success);
+}
+
+.crew-checkin__list {
+  margin: 0.5rem 0;
+  padding-left: 1.25rem;
+}
+
+.crew-checkin__badge {
+  display: inline-block;
+  margin: 0.25rem 0;
+  padding: 0.15rem 0.5rem;
+  border: 1px solid var(--checkin-border);
+  border-radius: 999px;
+  background: #eef5fa;
+  color: var(--checkin-ink);
+  font-size: 0.85rem;
+  font-weight: 600;
+}
+
+.crew-checkin__result-list {
+  display: grid;
+  gap: 0.5rem;
+  margin: 0.75rem 0;
+}
+
+.crew-checkin__result-list div {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  gap: 0.5rem;
+  padding: 0.4rem 0.6rem;
+  border: 1px solid var(--checkin-border);
+  border-radius: 0.4rem;
+  background: #ffffff;
+}
+
+.crew-checkin__result-list dt {
+  color: var(--checkin-muted);
+}
+
+.crew-checkin__result-list dd {
+  margin: 0;
+  font-weight: 700;
+}
+
+.crew-checkin__unavailable {
+  margin-top: 0.5rem;
+  padding: 0.6rem 0.75rem;
+  border: 1px solid var(--checkin-wait);
+  border-left-width: 0.35rem;
+  border-radius: 0.4rem;
+  background: var(--checkin-wait-surface);
+}
+
+.crew-checkin__unavailable p {
+  margin: 0 0 0.5rem;
+  font-weight: 700;
+  color: var(--checkin-wait);
+}
+
+.crew-checkin__reaction {
+  margin-top: 1.5rem;
+  padding-top: 0.5rem;
+  border-top: 1px solid var(--checkin-border);
+}
