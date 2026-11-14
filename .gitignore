@@ -22,5 +22,10 @@ frontend/dist/
 __pycache__/
 .pytest_cache/
 
+# Local runtime data
+backend/storage/*.db
+backend/storage/*.db-wal
+backend/storage/*.db-shm
+
 # Agent workspace
 .superpowers/

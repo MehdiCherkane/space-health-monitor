@@ -129,4 +129,6 @@ export interface CheckInProps {
   missionTime: string
   actions: Action[]
   onSubmit(submission: SubmissionRequest): Promise<SubmissionResponse>
+  /** Shell route for the `review_available_inputs` fallback when the task is disabled. */
+  onAction?(actionId: string): void
 }
