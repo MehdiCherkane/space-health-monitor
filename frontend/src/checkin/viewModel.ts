@@ -8,13 +8,13 @@ import {
   START_REACTION_CHECK_ACTION_ID,
   CHECK_IN_SCENARIO_ID,
 } from "./constants.ts";
-import type { CheckInAction } from "./types.ts";
+import type { Action } from "./types.ts";
 
 /** Find one action by id; null when the engine did not return it. */
 export function findAction(
-  actions: CheckInAction[] | undefined,
+  actions: Action[] | undefined,
   actionId: string,
-): CheckInAction | null {
+): Action | null {
   if (!actions) {
     return null;
   }
@@ -23,15 +23,15 @@ export function findAction(
 
 export interface ReactionAvailability {
   /** The engine's `start_reaction_check` action, or null when it was not returned. */
-  action: CheckInAction | null;
+  action: Action | null;
   available: boolean;
   /** Engine-provided unavailable reason text, rendered exactly; null when available. */
   unavailableReason: string | null;
   /** The fallback action returned with an unavailable reaction resource. */
-  reviewAction: CheckInAction | null;
+  reviewAction: Action | null;
 }
 
-export function reactionAvailability(actions: CheckInAction[] | undefined): ReactionAvailability {
+export function reactionAvailability(actions: Action[] | undefined): ReactionAvailability {
   const action = findAction(actions, START_REACTION_CHECK_ACTION_ID);
   return {
     action,

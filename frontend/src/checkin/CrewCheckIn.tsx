@@ -10,14 +10,10 @@ import {
 import { buildCheckInSubmission, buildReactionSubmission } from "./payload.ts";
 import type { ReactionResult } from "./reactionMachine.ts";
 import { SubmissionSession } from "./submission.ts";
-import type { ObservationSubmission, CrewCheckInProps } from "./types.ts";
+import type { CrewCheckInProps, SubmissionRequest } from "./types.ts";
 import type { RequestStatus } from "./status.ts";
 import type { CheckInField, CheckInFormValues, RawCheckInForm } from "./validation.ts";
-import {
-  checkInSnapshot,
-  hasCheckInEntries,
-  validateCheckInForm,
-} from "./validation.ts";
+import { checkInSnapshot, hasCheckInEntries, validateCheckInForm } from "./validation.ts";
 import { checkInSupported, reactionAvailability } from "./viewModel.ts";
 import "./checkin.css";
 
@@ -45,7 +41,7 @@ function CheckInUnsupported() {
 }
 
 export function CrewCheckIn(props: CrewCheckInProps) {
-  const { scenarioId, asOf, actions, onSubmit, onAction } = props;
+  const { scenarioId, missionTime, actions, onSubmit, onAction } = props;
   const [raw, setRaw] = useState<RawCheckInForm>(EMPTY_FORM);
   const [hasEdited, setHasEdited] = useState(false);
   const [status, setStatus] = useState<RequestStatus>({ kind: "idle" });
@@ -53,22 +49,25 @@ export function CrewCheckIn(props: CrewCheckInProps) {
   const [reactionView, setReactionView] = useState<"form" | "task">("form");
   const [reactionResult, setReactionResult] = useState<ReactionResult | null>(null);
 
-  const formSessionRef = useRef<SubmissionSession<CheckInSubmitInput, ObservationSubmission> | null>(
+  const formSessionRef = useRef<SubmissionSession<CheckInSubmitInput, SubmissionRequest> | null>(
     null,
   );
   if (formSessionRef.current === null) {
-    formSessionRef.current = new SubmissionSession<CheckInSubmitInput, ObservationSubmission>({
+    formSessionRef.current = new SubmissionSession<CheckInSubmitInput, SubmissionRequest>({
       build: (input, submissionId) =>
         buildCheckInSubmission(input.values, submissionId, input.observedAt),
       snapshot: (input) => checkInSnapshot(input.values),
     });
   }
 
-  const reactionSessionRef = useRef<
-    SubmissionSession<ReactionSubmitInput, ObservationSubmission> | null
-  >(null);
+  const reactionSessionRef = useRef<SubmissionSession<ReactionSubmitInput, SubmissionRequest> | null>(
+    null,
+  );
   if (reactionSessionRef.current === null) {
-    reactionSessionRef.current = new SubmissionSession<ReactionSubmitInput, ObservationSubmission>({
+    reactionSessionRef.current = new SubmissionSession<
+      ReactionSubmitInput,
+      SubmissionRequest
+    >({
       build: (input, submissionId) =>
         buildReactionSubmission(submissionId, input.observedAt, input.result),
       snapshot: (input) => JSON.stringify(input.result),
@@ -85,6 +84,11 @@ export function CrewCheckIn(props: CrewCheckInProps) {
   const formPending = status.kind === "pending";
   const reactionPending = reactionStatus.kind === "pending";
 
+  // The shell's callback publishes SubmissionResponse; the lifecycle only needs completion.
+  const sendSubmission = async (payload: SubmissionRequest): Promise<void> => {
+    await onSubmit(payload);
+  };
+
   const handleChange = (field: CheckInField, value: string) => {
     setRaw((previous) => ({ ...previous, [field]: value }));
     setHasEdited(true);
@@ -100,7 +104,10 @@ export function CrewCheckIn(props: CrewCheckInProps) {
       return;
     }
     setStatus({ kind: "pending" });
-    const outcome = await formSessionRef.current!.submit({ values, observedAt: asOf }, onSubmit);
+    const outcome = await formSessionRef.current!.submit(
+      { values, observedAt: missionTime },
+      sendSubmission,
+    );
     if (outcome.status === "submitted") {
       setStatus({ kind: "success" });
     } else if (outcome.status === "rejected") {
@@ -113,8 +120,8 @@ export function CrewCheckIn(props: CrewCheckInProps) {
   const submitReactionResult = async (result: ReactionResult) => {
     setReactionStatus({ kind: "pending" });
     const outcome = await reactionSessionRef.current!.submit(
-      { result, observedAt: asOf },
-      onSubmit,
+      { result, observedAt: missionTime },
+      sendSubmission,
     );
     if (outcome.status === "submitted") {
       setReactionStatus({ kind: "success" });
@@ -155,7 +162,7 @@ export function CrewCheckIn(props: CrewCheckInProps) {
       <header className="crew-checkin__header">
         <h2 id="crew-checkin-title">Crew check-in</h2>
         <p className="crew-checkin__mission">
-          Mission time <time dateTime={asOf}>{asOf}</time>
+          Mission time <time dateTime={missionTime}>{missionTime}</time>
         </p>
       </header>
 

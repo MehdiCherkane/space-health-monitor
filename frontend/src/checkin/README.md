@@ -5,10 +5,12 @@ Owner: Mohsine. Write scope: `frontend/src/checkin/` (tests colocated here).
 
 **Status at this handoff:** the standalone feature source is complete and its pure logic is
 covered by committed tests. **Integrated checks B01, B04 and B05 are Blocked** until Hamza's
-shell and API land (HZ-03/HZ-04/HZ-12/HZ-13). No shared entry point, dependency manifest,
-lockfile or file outside this folder was changed.
+shell and API are merged and wired (HZ-03/HZ-04/HZ-12/HZ-13). No shared entry point,
+dependency manifest, lockfile or file outside this folder was changed.
 
-Base commit: `fd1da9690a5d3b28af5c7353a87114be977a6589` (main after the engine merge).
+Branch base: `8dc32b970...` (latest `main`, after the demo-QA docs merge). The contract types
+are mirrored from the published HZ-03 shell, `build/replay-api` at
+`bd2f71bd6f9724c2559c9a48517cf71300e0e883`.
 Contract base: `contracts/v1.md` (kickoff PR #1, `533309242e58985dfa919225b9c2d515c7585872`).
 
 ## What it does
@@ -43,31 +45,45 @@ from `frontend/src/checkin/index.ts`.
 import { CrewCheckIn } from "./checkin";
 
 <CrewCheckIn
-  runId={runId}
-  scenarioId={scenarioId}
-  asOf={state.as_of}                 // current mission clock from the shell
+  run={run}                          // Run returned by the shell
+  scenarioId={state.scenario_id}
+  missionTime={state.as_of}          // current mission clock from the shell
   actions={state.actions}            // engine actions (reaction availability + fallback)
-  onSubmit={(payload) => submitObservations(runId, payload)}
+  onSubmit={(payload) => submitObservations(run.run_id, payload)}
   onAction={(actionId) => routeAction(actionId)}   // review_available_inputs -> evidence drawer
 />
 ```
 
 The shell routes `start_reaction_check` to this component (it is mounted here); the
-component exposes `review_available_inputs` through `onAction`.
+component calls `onAction("review_available_inputs")` for the fallback.
 
-### Props (local stub — Hamza's HZ-03 types are not published yet)
+### Props (mirrored from HZ-03, plus one requested extension)
 
-| Prop | Type | Meaning |
+Hamza published the shared shell and `frontend/src/api/types.ts` on `build/replay-api`
+(commit `bd2f71b`) after this branch started. `types.ts` in this folder mirrors the
+published names and shapes so the shell mount can later swap to imports without renaming
+call sites.
+
+| Prop | Published type | Meaning |
 |---|---|---|
-| `runId` | `string` | Opaque run id; the shell's submit callback scopes the request to it. |
-| `scenarioId` | `string` | Contract scenario id. Only `sleep_vigilance` renders the form. |
-| `asOf` | `string` | Current mission clock, UTC ISO whole-second; used as `observed_at`. |
-| `actions` | `CheckInAction[] \| undefined` | Engine actions. The component reads `start_reaction_check` and `review_available_inputs`; missing `actions` means no reaction check is offered. |
-| `onSubmit` | `(payload) => Promise<void>` | Wired by Hamza to `POST /api/v1/runs/{run_id}/observations`. Resolve on 200/201; reject with an `Error` whose message is safe to display (server `422` text passes through). |
-| `onAction` | `(actionId: string) => void` | Shell-owned action routing (evidence drawer for `review_available_inputs`). **Required** so the unavailable-reaction fallback is always clickable (B04). |
+| `run` | `Run` | Run metadata returned when the shell creates the run; the callback uses `run.run_id`. |
+| `scenarioId` | `ScenarioId` | Contract scenario id. Only `sleep_vigilance` renders the form. |
+| `missionTime` | `string` | Current mission clock, UTC ISO whole-second; used as `observed_at`. |
+| `actions` | `Action[]` | Engine actions. The component reads `start_reaction_check` and `review_available_inputs`; a missing action means no reaction check is offered. |
+| `onSubmit` | `(submission: SubmissionRequest) => Promise<SubmissionResponse>` | Wired by Hamza to `POST /api/v1/runs/{run_id}/observations`. Reject with an `Error` whose message is safe to display (server `422` text passes through). |
+| `onAction` | `(actionId: string) => void` | **Requested extension, not yet in published `CheckInProps`**: shell-owned route for `review_available_inputs`. Without it the B04 fallback would not be clickable. |
 
-These names and the rejection contract are a **local, labeled stub**; replace them when the
-shell publishes its types. Report any difference to Hamza.
+**Interface deltas to settle with Hamza/El Mahdi:**
+
+1. **`onAction`** is not in the published `CheckInProps`. Add it (or route the fallback from
+   the shell's action list and tell this component to render the reason only).
+2. **`submission_id` ownership (D8).** Hamza's frontend README says the shell generates the
+   id; this component generates and reuses it to preserve MO-07 retry semantics (retry reuses
+   the original id, payload and mission timestamp; edited input gets a new id). Smallest
+   resolution: the shell forwards the client payload unchanged (recommended), or
+   `CheckInProps` exposes a `createSubmissionId` callback.
+3. **Import swap.** When the shell merges, replace the mirrored declarations in `types.ts`
+   with imports from `../api/types.ts`; call sites keep the same names.
 
 ## Payloads (contract shapes)
 
@@ -151,7 +167,7 @@ mission time in `observed_at`:
 | Area | Visible text |
 |---|---|
 | Section heading | **Crew check-in** |
-| Mission clock | **Mission time** `<asOf>` |
+| Mission clock | **Mission time** `<missionTime>` |
 | Sleep field | **Sleep duration (minutes)**; hint **Sample entry — stored as synthetic.** |
 | Self-reports | legend **Sample entry (synthetic) — optional self-reports**; **Fatigue (0–10, optional)**, **Mood (0–10, optional)**, **Stress (0–10, optional)** |
 | Submit | **Submit check-in** |
@@ -204,8 +220,9 @@ were added and no manifests changed. Coverage:
 
 ### Local harness evidence (NOT reproducible from this branch yet)
 
-A temporary Vite/Vitest project outside the repository (installed under the OS temp folder,
-importing this folder with a `react` alias) was used while building the feature:
+The shared Vite/Vitest toolchain now exists on `build/replay-api` but is not on this
+standalone branch, so a temporary Vite/Vitest project outside the repository (installed under
+the OS temp folder, importing this folder with a `react` alias) was used while building it:
 
 | Check | Result |
 |---|---|
@@ -224,9 +241,9 @@ the same id and payload; unmount mid-task clears timers and submits nothing; Rad
 does not render the form.
 
 **This is recorded for transparency, not claimed as a Pass in the repo.** It is not
-reproducible from the branch because the shared toolchain, test runner and dependency
-manifests do not exist yet (D10/HZ-03 are Hamza's). Once they land, port these DOM tests into
-this folder and run them with the shared runner.
+reproducible from this standalone branch because the shell toolchain and manifests live on
+Hamza's branch. After the shell merges, port these DOM tests into this folder and run them
+with the shared Vitest runner.
 
 ### Engine regression (unchanged by this branch)
 
@@ -243,9 +260,9 @@ check needs the shared shell/toolchain or API that is not in this checkout (plan
 
 | Check | Status | Evidence |
 |---|---|---|
-| MO-01 inspect branch/contract, local prop stub | **Pass** | Branch `build/checkin`; contract and plan read; stub labeled in `types.ts`. |
+| MO-01 inspect branch/contract, prop types | **Pass** | Branch `build/checkin`; contract and plan read; HZ-03 types mirrored and labeled in `types.ts`. |
 | MO-02 component export and preview-harness source | **Pass** | `CrewCheckIn` export from `index.ts`; `preview/FixturePreview.tsx` committed. |
-| MO-02 preview runs in a shell | **Blocked** | No frontend shell/toolchain in the repo (HZ-03); local harness evidence only. |
+| MO-02 preview runs in a shell | **Blocked** | Shell is published on `build/replay-api`, not merged into this standalone branch; local harness evidence only. |
 | MO-03/04/05 client validation, payload, server-message display (pure logic) | **Pass** | `validation.test.mjs`, `payload.test.mjs`; message/retry code inspected. |
 | MO-03/04/05 rendered form behavior | **Blocked** | Needs HZ-03 toolchain; local DOM evidence only. |
 | MO-06 payload builders as pure functions | **Pass** | `payload.test.mjs`. |
@@ -257,7 +274,7 @@ check needs the shared shell/toolchain or API that is not in this checkout (plan
 | MO-12 availability logic + engine reason + fallback data | **Pass** | `viewModel.test.mjs`. |
 | MO-12 rendered fallback click | **Blocked** | Needs shell wiring/onAction; local DOM evidence only. |
 | MO-13 committed spy checks (blanks absent, zero kept, retry id, duplicate in-flight, changed input new id) | **Pass** | `submission.test.mjs` + `payload.test.mjs`. |
-| MO-13 component-level spy checks (cancel zero calls, one completed task submits once, available/unavailable rendering) | **Blocked** | Local harness 13/13, not reproducible from branch until HZ-03. |
+| MO-13 component-level spy checks (cancel zero calls, one completed task submits once, available/unavailable rendering) | **Blocked** | Local harness 13/13, not reproducible from this branch until the shell toolchain merges. |
 | MO-14 integrated verification B01/B04/B05 | **Blocked** | No shell/API or merged build in this checkout. |
 | MO-15 PR handoff | **Pass** | This README + PR text below. |
 | B01 insufficient-data view at 09:00Z | **Blocked** | Needs Hamza shell + Hajar seeded run. |
@@ -266,20 +283,25 @@ check needs the shared shell/toolchain or API that is not in this checkout (plan
 
 ## Open items and smallest decisions needed
 
-1. **Props/types (HZ-03) — Hamza.** Publish the exact prop names, `actions` shape and
-   submit-callback rejection contract; this folder uses the labeled local stub in
-   `types.ts`. `onAction` is required by the stub so B04's fallback cannot silently be
-   disabled. Smallest decision: confirm the six props above and that a rejected promise
-   carries a displayable message.
-2. **Frontend shell/toolchain (HZ-03/HZ-04, D10) — Hamza.** No manifests, Vite config or
-   test runner exist in this checkout. Smallest decision: publish the shared runner and
-   tsconfig; confirm `.ts`-extension imports (Vite-style `allowImportingTsExtensions`),
-   that a feature may import its own CSS, and whether the DOM harness from the temporary
-   verification should be committed under this folder.
+1. **Shared-file integration requests — Hamza.** The shell/toolchain now exists on
+   `build/replay-api`, so merging this folder into the shell needs two shared-file edits
+   (owner Hamza; requested, not made here):
+   - `frontend/tsconfig.json`: add `"allowImportingTsExtensions": true` (valid with
+     `noEmit`). This feature imports its own modules with `.ts` extensions so the committed
+     `node --test` suite runs without a bundler; without the option, `tsc --noEmit` fails
+     once the shell and this folder are on the same branch.
+   - `frontend/src/api/types.ts`: add `onAction(actionId: string): void` to
+     `CheckInProps` (or route the B04 fallback differently; see the props deltas above).
+2. **Import swap and DOM harness — Hamza/Mohsine.** After the shell merges: replace the
+   mirrored types in `types.ts` with imports from `../api/types.ts`; delete the local
+   `env.d.ts` CSS declaration if `vite/client` already covers it; and port the temporary
+   DOM tests to the shell's Vitest runner under this folder.
 3. **API endpoints (HZ-04/HZ-12/HZ-13) — Hamza.** Needed to run B01/B04/B05 end to end; the
    component is ready to mount.
-4. **Submission id format (D8) — Hamza.** Client uses a non-empty opaque id
-   (`crypto.randomUUID()`, with a fallback). Confirm any extra validation.
+4. **Submission id (D8) — Hamza/El Mahdi.** See the props delta above: the shell's README
+   says the shell generates the id, while MO-07 needs the component to retain it across
+   retries. Recommended: shell forwards the client payload unchanged, or publishes a
+   `createSubmissionId` callback.
 5. **Labels (D11) — Fadoua/Amine.** The table above is the published click-path vocabulary;
    confirm or request wording changes.
 6. **Automatic reaction submission — El Mahdi/Hamza.** The plan's Part A says "a complete
@@ -295,8 +317,6 @@ check needs the shared shell/toolchain or API that is not in this checkout (plan
 9. **Empty-action view wording.** When the engine returns no `start_reaction_check` action,
    the component shows "No reaction check is offered for this view." Confirm with Amine/
    Fadoua or hide the section.
-10. **`env.d.ts` cleanup.** Remove the local `*.css` wildcard declaration once the shared
-    Vite toolchain declares it (HZ-03), to avoid duplicate declarations.
 
 ## Files in this feature
 
@@ -304,7 +324,7 @@ check needs the shared shell/toolchain or API that is not in this checkout (plan
 frontend/src/checkin/
   README.md                  this handoff
   index.ts                   public export (CrewCheckIn + types)
-  types.ts                   local labeled prop/contract type stub
+  types.ts                   mirrored HZ-03 contract types + requested onAction extension
   constants.ts               contract ids/units/labels + prototype reaction settings
   validation.ts              client-side field validation
   payload.ts                 pure submission payload builders
@@ -327,7 +347,7 @@ frontend/src/checkin/
 
 ```
 Branch: build/checkin
-Base (kickoff commit SHA): fd1da9690a5d3b28af5c7353a87114be977a6589
+Base: 8dc32b970 (main after PR #3); contract types mirrored from HZ-03 build/replay-api bd2f71b
 Changed files: frontend/src/checkin/** (all files above; nothing outside the folder)
 How to verify (exact command or click path):
   cd frontend/src/checkin && node --test         (41 tests, Node v24.21.0)
@@ -345,7 +365,11 @@ Preview vs integrated: component behaviour was exercised in a temporary local Vi
   is not reproducible from this branch until the shared toolchain lands, so no integrated
   run is claimed.
 Open questions / blockers (owner + smallest decision needed): see the list above.
-Shared-file changes requested: none.
+Shared-file changes requested (owner Hamza, not made on this branch):
+  - frontend/tsconfig.json: add "allowImportingTsExtensions": true (this folder imports .ts
+    extensions so the committed node --test suite needs no bundler)
+  - frontend/src/api/types.ts: add onAction(actionId: string): void to CheckInProps
+  - after merge: swap mirrored types for imports from ../api/types.ts and drop local env.d.ts
 ```
 
 ## Disclaimer

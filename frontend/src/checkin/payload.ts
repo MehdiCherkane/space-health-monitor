@@ -19,12 +19,12 @@ import {
   SLEEP_UNIT,
 } from "./constants.ts";
 import type { ReactionResult } from "./reactionMachine.ts";
-import type { ObservationEntry, ObservationSubmission } from "./types.ts";
+import type { SubmissionEntry, SubmissionRequest } from "./types.ts";
 import type { CheckInFormValues } from "./validation.ts";
 
 /** Build the observation entries for the sample sleep/self-report form (blanks omitted, 0 kept). */
-export function buildCheckInEntries(values: CheckInFormValues): ObservationEntry[] {
-  const entries: ObservationEntry[] = [];
+export function buildCheckInEntries(values: CheckInFormValues): SubmissionEntry[] {
+  const entries: SubmissionEntry[] = [];
   if (values.sleepMinutes !== null) {
     entries.push({
       source_id: SLEEP_SOURCE_ID,
@@ -65,7 +65,7 @@ export function buildCheckInSubmission(
   values: CheckInFormValues,
   submissionId: string,
   observedAt: string,
-): ObservationSubmission {
+): SubmissionRequest {
   return {
     submission_id: submissionId,
     observed_at: observedAt,
@@ -81,7 +81,7 @@ export function buildReactionSubmission(
   submissionId: string,
   observedAt: string,
   result: ReactionResult,
-): ObservationSubmission {
+): SubmissionRequest {
   return {
     submission_id: submissionId,
     observed_at: observedAt,

@@ -1,13 +1,8 @@
 import { useRef, useState } from "react";
 import { FIXTURE_PREVIEW_BADGE } from "../constants.ts";
 import { CrewCheckIn } from "../CrewCheckIn.tsx";
-import type { ObservationSubmission } from "../types.ts";
-import {
-  PREVIEW_AS_OF,
-  PREVIEW_RUN_ID,
-  PREVIEW_SCENARIO_ID,
-  previewActions,
-} from "./fixtures.ts";
+import type { SubmissionRequest, SubmissionResponse } from "../types.ts";
+import { PREVIEW_MISSION_TIME, PREVIEW_RUN, previewActions } from "./fixtures.ts";
 
 type SubmitBehaviour = "resolve" | "reject" | "slow";
 
@@ -24,13 +19,13 @@ const BEHAVIOUR_LABEL: Record<SubmitBehaviour, string> = {
 export function FixturePreview() {
   const [behaviour, setBehaviour] = useState<SubmitBehaviour>("resolve");
   const [reactionAvailable, setReactionAvailable] = useState(true);
-  const [submissions, setSubmissions] = useState<ObservationSubmission[]>([]);
+  const [submissions, setSubmissions] = useState<SubmissionRequest[]>([]);
   const [lastAction, setLastAction] = useState<string | null>(null);
   const [resetCount, setResetCount] = useState(0);
   const behaviourRef = useRef(behaviour);
   behaviourRef.current = behaviour;
 
-  const fakeSubmit = async (payload: ObservationSubmission): Promise<void> => {
+  const fakeSubmit = async (payload: SubmissionRequest): Promise<SubmissionResponse> => {
     setSubmissions((previous) => [...previous, payload]);
     const mode = behaviourRef.current;
     if (mode === "slow") {
@@ -39,6 +34,10 @@ export function FixturePreview() {
     if (mode === "reject") {
       throw new Error("Fixture preview: the fake submit callback rejected this batch.");
     }
+    return {
+      submission_id: payload.submission_id,
+      observation_ids: payload.entries.map((_, index) => `preview-observation-${index + 1}`),
+    };
   };
 
   return (
@@ -89,9 +88,9 @@ export function FixturePreview() {
 
       <CrewCheckIn
         key={`${behaviour}-${reactionAvailable}-${resetCount}`}
-        runId={PREVIEW_RUN_ID}
-        scenarioId={PREVIEW_SCENARIO_ID}
-        asOf={PREVIEW_AS_OF}
+        run={PREVIEW_RUN}
+        scenarioId={PREVIEW_RUN.scenario_id}
+        missionTime={PREVIEW_MISSION_TIME}
         actions={previewActions(reactionAvailable)}
         onSubmit={fakeSubmit}
         onAction={(actionId) => setLastAction(actionId)}

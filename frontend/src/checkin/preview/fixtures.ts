@@ -2,15 +2,23 @@
  * Fixture-preview props for the standalone harness.
  * Labeled preview data only: synthetic sample entries and a fake submit callback.
  * This is not an integrated run and does not call the API.
+ *
+ * Shapes mirror the published shell contract (HZ-03) for the preview mount.
  */
 
-import type { CheckInAction } from "../types.ts";
+import type { Action, Run } from "../types.ts";
 
-export const PREVIEW_RUN_ID = "fixture-preview-run";
-export const PREVIEW_SCENARIO_ID = "sleep_vigilance";
-export const PREVIEW_AS_OF = "2026-01-10T09:00:00Z";
+export const PREVIEW_RUN: Run = {
+  run_id: "fixture-preview-run",
+  scenario_id: "sleep_vigilance",
+  initial_as_of: "2026-01-10T09:00:00Z",
+  range_start: "2026-01-10T09:00:00Z",
+  range_end: "2026-01-10T10:00:00Z",
+};
 
-const START_ACTION: CheckInAction = {
+export const PREVIEW_MISSION_TIME = "2026-01-10T09:00:00Z";
+
+const START_ACTION: Action = {
   id: "start_reaction_check",
   label: "Run reaction check",
   required_resource_ids: ["local_reaction_task"],
@@ -18,13 +26,13 @@ const START_ACTION: CheckInAction = {
   unavailable_reason: null,
 };
 
-const UNAVAILABLE_ACTION: CheckInAction = {
+const UNAVAILABLE_ACTION: Action = {
   ...START_ACTION,
   available: false,
   unavailable_reason: "Reaction check unavailable",
 };
 
-const REVIEW_INPUTS_ACTION: CheckInAction = {
+const REVIEW_INPUTS_ACTION: Action = {
   id: "review_available_inputs",
   label: "Review available inputs",
   required_resource_ids: [],
@@ -33,7 +41,7 @@ const REVIEW_INPUTS_ACTION: CheckInAction = {
 };
 
 /** Engine-shaped action lists for the two preview states (available / disabled resource). */
-export function previewActions(reactionAvailable: boolean): CheckInAction[] {
+export function previewActions(reactionAvailable: boolean): Action[] {
   if (reactionAvailable) {
     return [START_ACTION];
   }

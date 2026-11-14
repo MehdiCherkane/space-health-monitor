@@ -1,39 +1,23 @@
 /**
- * LOCAL PROP/TYPE STUB — temporary.
+ * Contract types mirrored from Hamza's published shell contract (HZ-03).
  *
- * Hamza's shared frontend shell and published prop types (task HZ-03) are not in this
- * repository yet. The check-in feature keeps a local, explicitly labeled copy of the
- * contract shapes it consumes so the form and reaction task can be built and tested
- * standalone. Replace these imports with the shell's published types when they land and
- * report the prop-type gap to Hamza.
+ * Source: `frontend/src/api/types.ts` on `origin/build/replay-api` at commit
+ * `bd2f71bd6f9724c2559c9a48517cf71300e0e883` (the shared shell is not merged into this
+ * branch yet). Names and shapes below are copied from that published contract. When the
+ * shell lands, replace these declarations with imports from `../api/types.ts`; call sites
+ * keep the same type names.
  *
- * Shapes follow contracts/v1.md and plans/04-mohsine-crew-checkin.md.
+ * Local deltas and open decisions are recorded in README.md:
+ * - `CrewCheckInProps` adds required `onAction` because MO-12/B04 needs a clickable
+ *   `review_available_inputs` fallback; it is not in the published `CheckInProps` yet.
+ * - The component generates and reuses `submission_id` to preserve MO-07 retry semantics;
+ *   Hamza's D8 note says the shell generates it. See README open item 1.
  */
 
-/** Primitive metadata values accepted by an observation entry. */
-export type SubmissionMetadataValue = string | number | boolean;
+export type ScenarioId = "radlab_stale" | "sleep_vigilance";
 
-/** One entry of a check-in batch: metric, value and unit plus provenance ids chosen by the contract. */
-export interface ObservationEntry {
-  metric: string;
-  value: number;
-  unit: string;
-  source_id: string;
-  metadata?: Record<string, SubmissionMetadataValue>;
-}
-
-/**
- * Request body for POST /api/v1/runs/{run_id}/observations.
- * The server adds observation ids, subject and provenance; the client must not send them.
- */
-export interface ObservationSubmission {
-  submission_id: string;
-  observed_at: string;
-  entries: ObservationEntry[];
-}
-
-/** Action shape from the state envelope in contracts/v1.md. */
-export interface CheckInAction {
+/** State-envelope action shape from contracts/v1.md and the published shell types. */
+export interface Action {
   id: string;
   label: string;
   required_resource_ids: string[];
@@ -41,35 +25,52 @@ export interface CheckInAction {
   unavailable_reason: string | null;
 }
 
+/** Run metadata returned by `POST /api/v1/runs`. */
+export interface Run {
+  run_id: string;
+  scenario_id: ScenarioId;
+  initial_as_of: string;
+  range_start: string;
+  range_end: string;
+}
+
+/** One entry of a check-in submission batch. */
+export interface SubmissionEntry {
+  metric: string;
+  value: number;
+  unit: string;
+  source_id: string;
+  metadata?: Record<string, unknown>;
+}
+
+/** Request body for `POST /api/v1/runs/{run_id}/observations`. */
+export interface SubmissionRequest {
+  submission_id: string;
+  observed_at: string;
+  entries: SubmissionEntry[];
+}
+
+/** Response from `POST /api/v1/runs/{run_id}/observations`. */
+export interface SubmissionResponse {
+  submission_id: string;
+  observation_ids: string[];
+}
+
+/** Props published by Hamza's shell (HZ-03) for the crew check-in. */
+export interface CheckInProps {
+  run: Run;
+  scenarioId: ScenarioId;
+  missionTime: string;
+  actions: Action[];
+  onSubmit(submission: SubmissionRequest): Promise<SubmissionResponse>;
+}
+
 /**
- * Props for the crew check-in (local stub; pending HZ-03).
- *
- * The shell owns the mission clock and the API adapter. It passes the current mission
- * time, the engine actions that control reaction-task availability, and an async submit
- * callback scoped to {@link runId}.
+ * Props used by this component: the published contract plus the action router needed for
+ * the unavailable-reaction fallback (MO-12/B04). Ask Hamza to add `onAction` to the
+ * published `CheckInProps` when he mounts this export.
  */
-export interface CrewCheckInProps {
-  /** Opaque run identifier the submission is scoped to; the shell's callback enforces it. */
-  runId: string;
-  /** Scenario id from the contract. The check-in only serves `sleep_vigilance`. */
-  scenarioId: string;
-  /** Current mission clock as a UTC ISO whole-second timestamp, supplied by the shell. */
-  asOf: string;
-  /**
-   * Engine actions for the current state. The check-in reads the reaction action
-   * (`start_reaction_check`) and the input-review fallback (`review_available_inputs`)
-   * from this list; it never computes availability itself.
-   */
-  actions?: CheckInAction[];
-  /**
-   * Async submit callback wired by Hamza to POST /api/v1/runs/{run_id}/observations.
-   * Resolve on 200/201. Reject with an Error whose message is safe to display
-   * (for example a 422 validation message).
-   */
-  onSubmit: (payload: ObservationSubmission) => Promise<void>;
-  /**
-   * Shell-owned action router, e.g. `review_available_inputs` opens the evidence drawer.
-   * Required so the unavailable-reaction fallback is always clickable (B04).
-   */
+export interface CrewCheckInProps extends CheckInProps {
+  /** Shell-owned route for `review_available_inputs` (evidence drawer). */
   onAction: (actionId: string) => void;
 }
