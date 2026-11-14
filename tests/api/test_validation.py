@@ -105,7 +105,12 @@ def test_valid_metadata_is_kept_intact(client):
 
 
 def test_disabled_reaction_resource_keeps_the_action_visible_with_a_fallback(tmp_path):
-    app = create_app(tmp_path / 'b04.db', resources={'local_reaction_task': False})
+    app = create_app(
+        tmp_path / 'b04.db',
+        resources={'local_reaction_task': False},
+        crew_fixture_path=tmp_path / 'absent-crew.json',
+        radlab_csv_path=tmp_path / 'absent-radlab.csv',
+    )
     with TestClient(app) as client:
         run_id = create_run(client)
         response = client.post(
@@ -135,7 +140,11 @@ def test_resource_override_rejects_unknown_resources(tmp_path):
 
 def test_resource_override_from_environment(tmp_path, monkeypatch):
     monkeypatch.setenv('ASTRO_VITAL_RESOURCES', json.dumps({'local_reaction_task': False}))
-    app = create_app(tmp_path / 'env.db')
+    app = create_app(
+        tmp_path / 'env.db',
+        crew_fixture_path=tmp_path / 'absent-crew.json',
+        radlab_csv_path=tmp_path / 'absent-radlab.csv',
+    )
     with TestClient(app) as client:
         run_id = create_run(client)
         client.post(

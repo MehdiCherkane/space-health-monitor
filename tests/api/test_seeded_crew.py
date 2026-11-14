@@ -1,228 +1,151 @@
-"""Tests for seeded crew behavioral run, submission idempotency, and isolation (B01-B05)."""
+"""Integrated crew scenario against the committed canonical fixture (B01, B02, B04, B05).
 
-import json
-from fastapi.testclient import TestClient
+These tests load `fixtures/crew/sleep-vigilance.json` from disk — the same file the demo
+ships — and evaluate it through the real engine and SQLite persistence. They deliberately
+do not build a look-alike fixture in code: a broken canonical file must fail here.
+
+Empty-run and preview behavior lives in the other API tests through the `client` fixture,
+which passes explicit absent seed paths.
+"""
+
 import pytest
+from fastapi.testclient import TestClient
 
 from backend.api.main import create_app
 
-
-def canonical_14_observations():
-    """Canonical 14 rows defined by contract D2 and D3."""
-    sleep_baseline_values = [450, 440, 450, 460, 445]
-    reaction_baseline_values = [245, 250, 255, 248, 252]
-
-    observations = []
-    # 5 sleep baseline rows
-    for i, val in enumerate(sleep_baseline_values, 1):
-        observations.append({
-            "id": f"base-sleep-{i}",
-            "subject_id": "crew-demo-1",
-            "metric": "sleep_duration",
-            "value": val,
-            "unit": "min",
-            "observed_at": f"2026-01-0{i}T07:00:00Z",
-            "source_id": "crew_sleep_log",
-            "provenance": "SYNTHETIC",
-        })
-
-    # 3 recent sleep rows
-    for day, val in [("08", 380), ("09", 370), ("10", 420)]:
-        observations.append({
-            "id": f"sleep-{day}",
-            "subject_id": "crew-demo-1",
-            "metric": "sleep_duration",
-            "value": val,
-            "unit": "min",
-            "observed_at": f"2026-01-{day}T07:00:00Z",
-            "source_id": "crew_sleep_log",
-            "provenance": "SYNTHETIC",
-        })
-
-    # 5 reaction baseline rows
-    for i, val in enumerate(reaction_baseline_values, 1):
-        observations.append({
-            "id": f"base-reaction-{i}",
-            "subject_id": "crew-demo-1",
-            "metric": "reaction_time",
-            "value": val,
-            "unit": "ms",
-            "observed_at": f"2026-01-0{i}T09:00:00Z",
-            "source_id": "reaction_task",
-            "provenance": "SYNTHETIC",
-            "metadata": {
-                "task_version": "demo-rt-v1",
-                "input_profile": "seeded-demo",
-                "trial_count": 5,
-                "false_starts": 0,
-                "completed": True,
-            },
-        })
-
-    # 1 seeded current reaction sample at 09:01:00Z (+24%)
-    observations.append({
-        "id": "reaction-10",
-        "subject_id": "crew-demo-1",
-        "metric": "reaction_time",
-        "value": 310,
-        "unit": "ms",
-        "observed_at": "2026-01-10T09:01:00Z",
-        "source_id": "reaction_task",
-        "provenance": "SYNTHETIC",
-        "metadata": {
-            "task_version": "demo-rt-v1",
-            "input_profile": "seeded-demo",
-            "trial_count": 5,
-            "false_starts": 0,
-            "completed": True,
-        },
-    })
-    return observations
+B01_CLOCK = '2026-01-10T09:00:00Z'
+B02_CLOCK = '2026-01-10T09:01:00Z'
 
 
-@pytest.fixture
-def crew_fixture_file(tmp_path):
-    fixture_path = tmp_path / "sleep-vigilance.json"
-    content = {
-        "schema_version": 1,
-        "fixture_id": "crew-demo-sleep-vigilance-v1",
-        "scenario_id": "sleep_vigilance",
-        "subject_id": "crew-demo-1",
-        "observations": canonical_14_observations(),
+def create_run(client, scenario_id: str = 'sleep_vigilance'):
+    response = client.post('/api/v1/runs', json={'scenario_id': scenario_id})
+    assert response.status_code == 201, response.text
+    return response
+
+
+def history(client, run_id: str, as_of: str, **params):
+    response = client.get(
+        f'/api/v1/runs/{run_id}/observations', params={'as_of': as_of, **params}
+    )
+    assert response.status_code == 200, response.text
+    return response.json()['observations']
+
+
+def state(client, run_id: str, as_of: str):
+    response = client.get(f'/api/v1/runs/{run_id}/state', params={'as_of': as_of})
+    assert response.status_code == 200, response.text
+    return response
+
+
+def test_seeded_crew_run_evaluates_integrated_state_at_0900_and_0901(seeded_client):
+    created = create_run(seeded_client)
+    assert created.headers['x-data-mode'] == 'integrated'
+    run_id = created.json()['run_id']
+
+    # B01 — 09:00:00Z: reaction-10 (09:01) is not visible yet, so vigilance is missing.
+    b01 = state(seeded_client, run_id, B01_CLOCK)
+    assert b01.headers['x-data-mode'] == 'integrated'
+    body = b01.json()
+    assert body['scenario_id'] == 'sleep_vigilance'
+    assert body['as_of'] == B01_CLOCK
+    [assessment] = body['assessments']
+    assert assessment['state'] == 'insufficient_data'
+    assert assessment['title'] == 'Vigilance data missing'
+    assert assessment['missing_inputs'] == ['reaction_time']
+    assert 'start_reaction_check' in assessment['action_ids']
+
+    visible_ids = {row['id'] for row in body['observations']}
+    assert 'reaction-10' not in visible_ids
+    assert 'sleep-10' in visible_ids
+    b01_history = history(seeded_client, run_id, B01_CLOCK)
+    assert len(b01_history) == 13
+    assert 'reaction-10' not in {row['id'] for row in b01_history}
+
+    # B02 — 09:01:00Z: the seeded 310 ms sample is visible and triggers watch.
+    b02 = state(seeded_client, run_id, B02_CLOCK)
+    assert b02.headers['x-data-mode'] == 'integrated'
+    body = b02.json()
+    assert body['as_of'] == B02_CLOCK
+    [assessment] = body['assessments']
+    assert assessment['state'] == 'watch'
+    assert assessment['title'] == 'Sleep and vigilance change'
+    assert len(assessment['supporting_evidence']) == 2
+    baseline_ids = {
+        evidence.get('baseline_id') for evidence in assessment['supporting_evidence']
     }
-    fixture_path.write_text(json.dumps(content), encoding="utf-8")
-    return fixture_path
+    assert baseline_ids == {'crew-demo-sleep-v1', 'crew-demo-reaction-v1'}
+    assert 'reaction-10' in {row['id'] for row in body['observations']}
+
+    b02_history = history(seeded_client, run_id, B02_CLOCK)
+    assert len(b02_history) == 14
+    assert 'reaction-10' in {row['id'] for row in b02_history}
+    # Chronological, and the last visible row is the seeded sample.
+    assert b02_history[-1]['id'] == 'reaction-10'
+    assert b02_history[-1]['value'] == 310
 
 
-def test_seeded_crew_run_evaluates_integrated_state_at_0900_and_0901(tmp_path, crew_fixture_file):
+def test_b04_resource_disabled_fallback_action(tmp_path, crew_fixture_path):
     app = create_app(
-        db_path=tmp_path / "seeded.db",
-        crew_fixture_path=crew_fixture_file,
+        db_path=tmp_path / 'b04.db',
+        resources={'local_reaction_task': False},
+        crew_fixture_path=crew_fixture_path,
+        radlab_csv_path=tmp_path / 'absent-radlab.csv',
     )
     with TestClient(app) as client:
-        # Create run
-        res = client.post("/api/v1/runs", json={"scenario_id": "sleep_vigilance"})
-        assert res.status_code == 201
-        run_id = res.json()["run_id"]
-        assert res.headers["x-data-mode"] == "integrated"
-
-        # B01 Checkpoint: 09:00:00Z (reaction-10 not yet visible)
-        state_0900_res = client.get(f"/api/v1/runs/{run_id}/state", params={"as_of": "2026-01-10T09:00:00Z"})
-        assert state_0900_res.status_code == 200
-        assert state_0900_res.headers["x-data-mode"] == "integrated"
-        state_0900 = state_0900_res.json()
-        assert state_0900["scenario_id"] == "sleep_vigilance"
-        assert state_0900["as_of"] == "2026-01-10T09:00:00Z"
-        assert len(state_0900["assessments"]) == 1
-        assessment_0900 = state_0900["assessments"][0]
-        assert assessment_0900["state"] == "insufficient_data"
-        assert assessment_0900["title"] == "Vigilance data missing"
-        assert assessment_0900["missing_inputs"] == ["reaction_time"]
-        assert "start_reaction_check" in assessment_0900["action_ids"]
-        # Ensure reaction-10 is not in returned observations
-        obs_ids_0900 = {o["id"] for o in state_0900["observations"]}
-        assert "reaction-10" not in obs_ids_0900
-        assert "sleep-10" in obs_ids_0900
-
-        # B02 Checkpoint: 09:01:00Z (reaction-10 is visible -> watch)
-        state_0901_res = client.get(f"/api/v1/runs/{run_id}/state", params={"as_of": "2026-01-10T09:01:00Z"})
-        assert state_0901_res.status_code == 200
-        assert state_0901_res.headers["x-data-mode"] == "integrated"
-        state_0901 = state_0901_res.json()
-        assert len(state_0901["assessments"]) == 1
-        assessment_0901 = state_0901["assessments"][0]
-        assert assessment_0901["state"] == "watch"
-        assert assessment_0901["title"] == "Sleep and vigilance change"
-        assert len(assessment_0901["supporting_evidence"]) == 2
-        obs_ids_0901 = {o["id"] for o in state_0901["observations"]}
-        assert "reaction-10" in obs_ids_0901
+        run_id = create_run(client).json()['run_id']
+        state_body = state(client, run_id, B01_CLOCK).json()
+        action_map = {action['id']: action for action in state_body['actions']}
+        assert 'start_reaction_check' in action_map
+        assert action_map['start_reaction_check']['available'] is False
+        assert (
+            action_map['start_reaction_check']['unavailable_reason']
+            == 'Reaction check unavailable'
+        )
+        assert 'review_available_inputs' in action_map
+        assert action_map['review_available_inputs']['available'] is True
+        assert state_body['assessments'][0]['state'] == 'insufficient_data'
 
 
-def test_b04_resource_disabled_fallback_action(tmp_path, crew_fixture_file):
-    app = create_app(
-        db_path=tmp_path / "b04.db",
-        resources={"local_reaction_task": False},
-        crew_fixture_path=crew_fixture_file,
+def test_b05_submission_idempotency_conflict_and_isolation(seeded_client):
+    run1 = create_run(seeded_client).json()['run_id']
+    payload = {
+        'submission_id': 'sub-b05-01',
+        'observed_at': '2026-01-10T09:05:00Z',
+        'entries': [
+            {
+                'metric': 'sleep_duration',
+                'value': 410,
+                'unit': 'min',
+                'source_id': 'crew_sleep_log',
+            }
+        ],
+    }
+
+    first = seeded_client.post(f'/api/v1/runs/{run1}/observations', json=payload)
+    assert first.status_code == 201, first.text
+    observation_ids = first.json()['observation_ids']
+    assert len(observation_ids) == 1
+
+    retry = seeded_client.post(f'/api/v1/runs/{run1}/observations', json=payload)
+    assert retry.status_code == 200
+    assert retry.json()['observation_ids'] == observation_ids
+
+    conflict = seeded_client.post(
+        f'/api/v1/runs/{run1}/observations',
+        json={**payload, 'entries': [{**payload['entries'][0], 'value': 395}]},
     )
-    with TestClient(app) as client:
-        res = client.post("/api/v1/runs", json={"scenario_id": "sleep_vigilance"})
-        run_id = res.json()["run_id"]
+    assert conflict.status_code == 409
+    assert 'different payload' in conflict.json()['detail']
 
-        state_res = client.get(f"/api/v1/runs/{run_id}/state", params={"as_of": "2026-01-10T09:00:00Z"})
-        state = state_res.json()
-        action_map = {a["id"]: a for a in state["actions"]}
-        assert "start_reaction_check" in action_map
-        assert action_map["start_reaction_check"]["available"] is False
-        assert action_map["start_reaction_check"]["unavailable_reason"] == "Reaction check unavailable"
-        assert "review_available_inputs" in action_map
-        assert action_map["review_available_inputs"]["available"] is True
+    run2 = create_run(seeded_client).json()['run_id']
+    assert run1 != run2
 
-
-def test_b05_submission_idempotency_conflict_and_isolation(tmp_path, crew_fixture_file):
-    app = create_app(
-        db_path=tmp_path / "b05.db",
-        crew_fixture_path=crew_fixture_file,
-    )
-    with TestClient(app) as client:
-        # Create first run
-        run1 = client.post("/api/v1/runs", json={"scenario_id": "sleep_vigilance"}).json()["run_id"]
-
-        payload = {
-            "submission_id": "sub-b05-01",
-            "observed_at": "2026-01-10T09:05:00Z",
-            "entries": [
-                {
-                    "metric": "sleep_duration",
-                    "value": 410,
-                    "unit": "min",
-                    "source_id": "crew_sleep_log",
-                }
-            ],
-        }
-
-        # 1. First submission -> 201 Created
-        first_post = client.post(f"/api/v1/runs/{run1}/observations", json=payload)
-        assert first_post.status_code == 201
-        first_data = first_post.json()
-        assert first_data["submission_id"] == "sub-b05-01"
-        obs_ids = first_data["observation_ids"]
-        assert len(obs_ids) == 1
-
-        # 2. Identical retry with same submission_id -> 200 OK with same IDs
-        retry_post = client.post(f"/api/v1/runs/{run1}/observations", json=payload)
-        assert retry_post.status_code == 200
-        retry_data = retry_post.json()
-        assert retry_data["submission_id"] == "sub-b05-01"
-        assert retry_data["observation_ids"] == obs_ids
-
-        # 3. Changed payload with same submission_id -> 409 Conflict
-        changed_payload = {
-            "submission_id": "sub-b05-01",
-            "observed_at": "2026-01-10T09:05:00Z",
-            "entries": [
-                {
-                    "metric": "sleep_duration",
-                    "value": 395,  # Changed value!
-                    "unit": "min",
-                    "source_id": "crew_sleep_log",
-                }
-            ],
-        }
-        conflict_post = client.post(f"/api/v1/runs/{run1}/observations", json=changed_payload)
-        assert conflict_post.status_code == 409
-        assert "different payload" in conflict_post.json()["detail"]
-
-        # 4. Reset isolation: create a fresh run
-        run2 = client.post("/api/v1/runs", json={"scenario_id": "sleep_vigilance"}).json()["run_id"]
-        assert run1 != run2
-
-        # Check history of run1 vs run2
-        hist1 = client.get(f"/api/v1/runs/{run1}/observations", params={"as_of": "2026-01-10T09:10:00Z"}).json()["observations"]
-        hist2 = client.get(f"/api/v1/runs/{run2}/observations", params={"as_of": "2026-01-10T09:10:00Z"}).json()["observations"]
-
-        # run1 has 14 seed observations + 1 submitted observation = 15
-        assert len(hist1) == 15
-        # run2 has only its own 14 seed observations
-        assert len(hist2) == 14
-        assert obs_ids[0] in {o["id"] for o in hist1}
-        assert obs_ids[0] not in {o["id"] for o in hist2}
+    run1_history = history(seeded_client, run1, '2026-01-10T09:10:00Z')
+    run2_history = history(seeded_client, run2, '2026-01-10T09:10:00Z')
+    assert len(run1_history) == 15
+    assert len(run2_history) == 14
+    assert observation_ids[0] in {row['id'] for row in run1_history}
+    assert observation_ids[0] not in {row['id'] for row in run2_history}
+    assert {row['id'] for row in run2_history} == {
+        row['id'] for row in history(seeded_client, run1, B02_CLOCK)
+    }
