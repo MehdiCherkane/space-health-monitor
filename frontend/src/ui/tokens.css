@@ -1,0 +1,124 @@
+/*
+ * Astro Vital design tokens. Derived from the Stitch "Orbital Bio-Telemetry" system
+ * (navy primary, amber advisory instead of alarm red, hairline borders, 4px radius),
+ * mapped to system fonts so nothing loads from the network.
+ * Every status colour pairs with an icon + text in components; colour is never the only cue.
+ */
+:root {
+  --font-sans: system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+  --font-mono: ui-monospace, SFMono-Regular, Menlo, Consolas, 'Liberation Mono', monospace;
+
+  --canvas: #f4f6f8;
+  --surface: #ffffff;
+  --surface-sunken: #f8fafb;
+  --surface-hover: #eef2f6;
+  --border: #d2d9df;
+  --border-strong: #9aa6b2;
+
+  --ink: #111d27;
+  --ink-muted: #42505e;   /* 8.4:1 on white */
+  --ink-subtle: #5a6875;  /* 5.7:1 on white */
+
+  --primary: #1f4e79;
+  --primary-hover: #163a5a;
+  --on-primary: #ffffff;
+  --focus: #1f4e79;
+
+  /* Source / assessment / incident states. Text colours are AA on their tint. */
+  --ok-ink: #1d5e3a;
+  --ok-tint: #edf6f0;
+  --ok-line: #9cc9ad;
+  --watch-ink: #7a4306;
+  --watch-tint: #fdf6ed;
+  --watch-line: #e5a960;
+  --muted-ink: #42505e;
+  --muted-tint: #f0f3f6;
+  --muted-line: #c3ccd5;
+  --danger-ink: #8f1d1d;
+  --danger-tint: #fcefef;
+  --danger-line: #e2a3a3;
+  --info-ink: #1f4e79;
+  --info-tint: #edf3fa;
+  --info-line: #a9c3dd;
+
+  /* Provenance: three distinct hues + distinct icons. */
+  --prov-historical-ink: #1f4e79;
+  --prov-historical-tint: #e8f0f8;
+  --prov-synthetic-ink: #5b3a8c;
+  --prov-synthetic-tint: #f2edf9;
+  --prov-device-ink: #0f5f5c;
+  --prov-device-tint: #e6f4f3;
+
+  --space-1: 0.25rem;
+  --space-2: 0.5rem;
+  --space-3: 0.75rem;
+  --space-4: 1rem;
+  --space-5: 1.5rem;
+  --space-6: 2rem;
+
+  --radius: 4px;
+  --radius-lg: 8px;
+  --shadow-pop: 0 2px 4px rgba(31, 78, 121, 0.06), 0 0 1px rgba(90, 107, 124, 0.2);
+  --shadow-drawer: -8px 0 24px rgba(17, 29, 39, 0.12);
+
+  /* 13px floor for captions/badges, 14–16px for reading text. */
+  --text-xs: 0.8125rem;
+  --text-sm: 0.875rem;
+  --text-md: 1rem;
+  --text-lg: 1.125rem;
+  --text-xl: 1.375rem;
+  --text-2xl: 1.75rem;
+
+  --duration: 160ms;
+  --target: 44px; /* minimum touch target */
+
+  color-scheme: light;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  :root {
+    --duration: 0ms;
+  }
+}
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+html {
+  font-family: var(--font-sans);
+  font-size: 100%;
+  line-height: 1.5;
+  color: var(--ink);
+  background: var(--canvas);
+  -webkit-text-size-adjust: 100%;
+}
+
+body {
+  margin: 0;
+  background: var(--canvas);
+}
+
+:focus-visible {
+  outline: 3px solid var(--focus);
+  outline-offset: 2px;
+}
+
+.visually-hidden {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  margin: -1px;
+  padding: 0;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+.mono {
+  font-family: var(--font-mono);
+  font-variant-numeric: tabular-nums;
+}

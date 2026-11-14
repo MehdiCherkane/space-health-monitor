@@ -40,6 +40,16 @@ observations shows **Fixture preview**. Tests: `.venv/Scripts/python -m pytest t
 Every submission observation ID is `{submission_id}:{position}`; the format is not fixed
 by `contracts/v1.md` and needs confirmation with El Mahdi.
 
+Timestamps (`as_of`, `observed_at`) must be canonical whole-second UTC ending in `Z` and
+are parsed before range checks, so impossible times such as `09:99:00Z` return `422`.
+Entry metadata is checked recursively; `NaN`/`Infinity` anywhere returns `422` and the
+batch is not written. A fixture-preview response keeps the example's own `as_of` (a fixed
+snapshot) instead of echoing the requested clock.
+
+Resource override for B04: `ASTRO_VITAL_RESOURCES='{"local_reaction_task": false}'` (or
+`create_app(resources=...)` in tests). Only resources named in `rules/demo-v1.json` with
+boolean values are accepted.
+
 ## Data modes
 
 ```

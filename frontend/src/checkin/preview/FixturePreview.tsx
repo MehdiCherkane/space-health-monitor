@@ -1,7 +1,7 @@
 import { useRef, useState } from "react";
 import { FIXTURE_PREVIEW_BADGE } from "../constants.ts";
 import { CrewCheckIn } from "../CrewCheckIn.tsx";
-import type { SubmissionRequest, SubmissionResponse } from "../types.ts";
+import type { SubmissionRequest, SubmissionResponse } from "../../api/types.ts";
 import { PREVIEW_MISSION_TIME, PREVIEW_RUN, previewActions } from "./fixtures.ts";
 
 type SubmitBehaviour = "resolve" | "reject" | "slow";

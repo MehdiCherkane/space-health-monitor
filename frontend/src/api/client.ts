@@ -48,8 +48,8 @@ async function request<T>(path: string, init?: RequestInit): Promise<T> {
   return (await response.json()) as T
 }
 
-/** `fixture-preview` means the API served a contract example, not engine output. */
-export type DataMode = 'fixture-preview' | 'integrated' | 'unknown'
+import type { DataMode } from './types'
+export type { DataMode } from './types'
 
 export interface StateResult {
   state: StateEnvelope

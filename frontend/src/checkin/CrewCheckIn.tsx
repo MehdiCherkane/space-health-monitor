@@ -10,11 +10,12 @@ import {
 import { buildCheckInSubmission, buildReactionSubmission } from "./payload.ts";
 import type { ReactionResult } from "./reactionMachine.ts";
 import { SubmissionSession } from "./submission.ts";
-import type { CrewCheckInProps, SubmissionRequest } from "./types.ts";
+import type { CheckInProps, SubmissionRequest } from "../api/types.ts";
 import type { RequestStatus } from "./status.ts";
 import type { CheckInField, CheckInFormValues, RawCheckInForm } from "./validation.ts";
 import { checkInSnapshot, hasCheckInEntries, validateCheckInForm } from "./validation.ts";
 import { checkInSupported, reactionAvailability } from "./viewModel.ts";
+import { formatUtc } from "../ui/format.ts";
 import "./checkin.css";
 
 const EMPTY_FORM: RawCheckInForm = { sleep: "", fatigue: "", mood: "", stress: "" };
@@ -40,7 +41,7 @@ function CheckInUnsupported() {
   );
 }
 
-export function CrewCheckIn(props: CrewCheckInProps) {
+export function CrewCheckIn(props: CheckInProps) {
   const { scenarioId, missionTime, actions, onSubmit, onAction } = props;
   const [raw, setRaw] = useState<RawCheckInForm>(EMPTY_FORM);
   const [hasEdited, setHasEdited] = useState(false);
@@ -162,7 +163,7 @@ export function CrewCheckIn(props: CrewCheckInProps) {
       <header className="crew-checkin__header">
         <h2 id="crew-checkin-title">Crew check-in</h2>
         <p className="crew-checkin__mission">
-          Mission time <time dateTime={missionTime}>{missionTime}</time>
+          Mission time <time dateTime={missionTime}>{formatUtc(missionTime)}</time>
         </p>
       </header>
 

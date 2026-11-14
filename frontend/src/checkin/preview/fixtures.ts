@@ -6,7 +6,7 @@
  * Shapes mirror the published shell contract (HZ-03) for the preview mount.
  */
 
-import type { Action, Run } from "../types.ts";
+import type { Action, Run } from "../../api/types.ts";
 
 export const PREVIEW_RUN: Run = {
   run_id: "fixture-preview-run",

@@ -1,18 +1,19 @@
 /* Crew check-in styles, scoped to the feature. No global selectors and no external assets. */
 
 .crew-checkin {
-  --checkin-ink: #10202b;
-  --checkin-muted: #4a5b66;
-  --checkin-surface: #f7fafc;
-  --checkin-border: #c8d3dc;
-  --checkin-accent: #0b5c8f;
-  --checkin-accent-ink: #ffffff;
-  --checkin-danger: #a32020;
-  --checkin-success: #186a3b;
-  --checkin-wait: #8a5a00;
-  --checkin-wait-surface: #fff4d6;
-  --checkin-go-surface: #d9f2e2;
-  --checkin-radius: 10px;
+  /* Mapped onto the shared tokens in src/ui/tokens.css; fallbacks keep the standalone preview readable. */
+  --checkin-ink: var(--ink, #10202b);
+  --checkin-muted: var(--ink-muted, #4a5b66);
+  --checkin-surface: var(--surface, #f7fafc);
+  --checkin-border: var(--border, #c8d3dc);
+  --checkin-accent: var(--primary, #0b5c8f);
+  --checkin-accent-ink: var(--on-primary, #ffffff);
+  --checkin-danger: var(--danger-ink, #a32020);
+  --checkin-success: var(--ok-ink, #186a3b);
+  --checkin-wait: var(--watch-ink, #8a5a00);
+  --checkin-wait-surface: var(--watch-tint, #fff4d6);
+  --checkin-go-surface: var(--ok-tint, #d9f2e2);
+  --checkin-radius: var(--radius-lg, 10px);
 
   box-sizing: border-box;
   max-width: 46rem;
@@ -92,11 +93,12 @@ fieldset.crew-checkin__field-group {
 .crew-checkin__input {
   width: 9rem;
   max-width: 100%;
-  min-height: 2.5rem;
+  min-height: var(--target, 2.75rem);
+  font-size: 1rem; /* 16px avoids mobile zoom-on-focus */
   padding: 0.4rem 0.5rem;
   border: 1px solid var(--checkin-border);
   border-radius: 0.4rem;
-  background: #ffffff;
+  background: var(--surface, #ffffff);
   color: var(--checkin-ink);
   font: inherit;
 }
@@ -126,7 +128,8 @@ fieldset.crew-checkin__field-group {
 }
 
 .crew-checkin__button {
-  min-height: 2.6rem;
+  min-height: var(--target, 2.75rem);
+  touch-action: manipulation;
   padding: 0.5rem 1rem;
   border: 1px solid var(--checkin-accent);
   border-radius: 0.45rem;
@@ -138,7 +141,7 @@ fieldset.crew-checkin__field-group {
 }
 
 .crew-checkin__button:hover:not(:disabled) {
-  background: #084a75;
+  background: var(--primary-hover, #084a75);
 }
 
 .crew-checkin__button:focus-visible {
@@ -157,7 +160,7 @@ fieldset.crew-checkin__field-group {
 }
 
 .crew-checkin__button--secondary:hover:not(:disabled) {
-  background: #e4eef5;
+  background: var(--surface-hover, #e4eef5);
 }
 
 .crew-checkin__status {
@@ -180,7 +183,7 @@ fieldset.crew-checkin__field-group {
   border: 1px solid var(--checkin-danger);
   border-left-width: 0.35rem;
   border-radius: 0.4rem;
-  background: #fdf0f0;
+  background: var(--danger-tint, #fdf0f0);
   color: var(--checkin-danger);
 }
 
@@ -241,7 +244,7 @@ fieldset.crew-checkin__field-group {
   padding: 0.4rem 0.6rem;
   border: 1px solid var(--checkin-border);
   border-radius: 0.4rem;
-  background: #ffffff;
+  background: var(--surface, #ffffff);
 }
 
 .crew-checkin__result-list dt {

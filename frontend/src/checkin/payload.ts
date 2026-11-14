@@ -19,7 +19,7 @@ import {
   SLEEP_UNIT,
 } from "./constants.ts";
 import type { ReactionResult } from "./reactionMachine.ts";
-import type { SubmissionEntry, SubmissionRequest } from "./types.ts";
+import type { SubmissionEntry, SubmissionRequest } from "../api/types.ts";
 import type { CheckInFormValues } from "./validation.ts";
 
 /** Build the observation entries for the sample sleep/self-report form (blanks omitted, 0 kept). */

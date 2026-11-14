@@ -56,14 +56,14 @@ def test_empty_run_state_is_labeled_fixture_preview(client):
         assert state[key] == expected[key]
 
 
-def test_preview_state_echoes_the_requested_clock(client):
+def test_preview_state_keeps_its_snapshot_clock(client):
     run = create_run(client, 'sleep_vigilance')
     response = client.get(
         f"/api/v1/runs/{run['run_id']}/state",
         params={'as_of': '2026-01-10T09:30:00Z'},
     )
     assert response.status_code == 200
-    assert response.json()['as_of'] == '2026-01-10T09:30:00Z'
+    assert response.json()['as_of'] == '2026-01-10T09:00:00Z'
 
 
 def test_state_rejects_unknown_run(client):
