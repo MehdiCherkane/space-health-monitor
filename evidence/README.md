@@ -9,6 +9,16 @@ only reuses that project's metric names where they exist.
 
 ---
 
+## Demo acceptance handoff
+
+For the November 14, 2026 canonical crew fixture, start with the
+[executed validation record](crew-fixture-validation.md), [claim table](demo-claims.md),
+[integrated acceptance checklist](../acceptance/manual-checklist.md) and
+[recording procedure](../demo/recording-checklist.md). The fixture passes engine
+checks; fresh API runs still need Hamza's seed loader. Keep engine results, fixed
+previews, and observed integrated runs distinct. The [kickoff cross-check](kickoff-cross-check.md)
+is a historical record of its named older build.
+
 ## 1. What is here
 
 ```text

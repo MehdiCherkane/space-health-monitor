@@ -1,0 +1,10 @@
+{
+  "create_status": 201,
+  "state_status": 200,
+  "requested_as_of": "2026-01-10T09:01:00Z",
+  "data_mode": "fixture-preview",
+  "data_source": "contracts/examples",
+  "returned_as_of": "2026-01-10T09:00:00Z",
+  "assessment": "insufficient_data",
+  "stored_history_count": 0
+}

@@ -1,0 +1,69 @@
+test_b01_0900_exact_contract_response_and_no_future_sample (test_crew_fixture.CrewFixtureTests.test_b01_0900_exact_contract_response_and_no_future_sample) ... ok
+test_b02_0901_watch_math_and_traceable_evidence (test_crew_fixture.CrewFixtureTests.test_b02_0901_watch_math_and_traceable_evidence) ... ok
+test_b03_comparable_270_is_observed_not_missing (test_crew_fixture.CrewFixtureTests.test_b03_comparable_270_is_observed_not_missing) ... ok
+test_b03_each_required_sleep_night_missing_is_insufficient (test_crew_fixture.CrewFixtureTests.test_b03_each_required_sleep_night_missing_is_insufficient) ... ok
+test_b03_incomparable_result_remains_current_but_insufficient (test_crew_fixture.CrewFixtureTests.test_b03_incomparable_result_remains_current_but_insufficient) ... ok
+test_b04_resource_off_keeps_missing_pending_and_complete_watch (test_crew_fixture.CrewFixtureTests.test_b04_resource_off_keeps_missing_pending_and_complete_watch) ... ok
+test_d2_envelope_and_exact_fourteen_rows (test_crew_fixture.CrewFixtureTests.test_d2_envelope_and_exact_fourteen_rows) ... ok
+test_exact_reaction_cutoff (test_crew_fixture.CrewFixtureTests.test_exact_reaction_cutoff) ... ok
+test_exact_sleep_cutoff (test_crew_fixture.CrewFixtureTests.test_exact_sleep_cutoff) ... ok
+test_missing_each_baseline_row_is_insufficient (test_crew_fixture.CrewFixtureTests.test_missing_each_baseline_row_is_insufficient) ... ok
+test_order_repeat_and_rewind_do_not_mutate_fixture (test_crew_fixture.CrewFixtureTests.test_order_repeat_and_rewind_do_not_mutate_fixture) ... ok
+test_reaction_rows_match_d2_d3_exactly (test_crew_fixture.CrewFixtureTests.test_reaction_rows_match_d2_d3_exactly) ... ok
+test_sleep_rows_match_example_b_verbatim (test_crew_fixture.CrewFixtureTests.test_sleep_rows_match_example_b_verbatim) ... ok
+
+----------------------------------------------------------------------
+Ran 13 tests in 0.015s
+
+OK
+test_b02_seeded_watch_has_both_baseline_references (test_engine.BehavioralTests.test_b02_seeded_watch_has_both_baseline_references) ... ok
+test_b03_comparable_270_is_observed (test_engine.BehavioralTests.test_b03_comparable_270_is_observed) ... ok
+test_b04_unavailable_resource_keeps_pending_and_fallback (test_engine.BehavioralTests.test_b04_unavailable_resource_keeps_pending_and_fallback) ... ok
+test_both_conditions_are_required (test_engine.BehavioralTests.test_both_conditions_are_required) ... ok
+test_empty_observations_do_not_invent_baselines (test_engine.BehavioralTests.test_empty_observations_do_not_invent_baselines) ... ok
+test_exact_example_b_from_full_fixture (test_engine.BehavioralTests.test_exact_example_b_from_full_fixture) ... ok
+test_incomparable_baseline_is_missing (test_engine.BehavioralTests.test_incomparable_baseline_is_missing) ... ok
+test_incomparable_result_is_retained_but_not_compared (test_engine.BehavioralTests.test_incomparable_result_is_retained_but_not_compared) ... ok
+test_interrupted_task_creates_no_current_result (test_engine.BehavioralTests.test_interrupted_task_creates_no_current_result) ... ok
+test_invalid_completed_reaction_cannot_trigger_watch (test_engine.BehavioralTests.test_invalid_completed_reaction_cannot_trigger_watch) ... ok
+test_later_sleep_does_not_change_fixed_baseline (test_engine.BehavioralTests.test_later_sleep_does_not_change_fixed_baseline) ... ok
+test_latest_incomparable_result_does_not_fall_back_to_old_sample (test_engine.BehavioralTests.test_latest_incomparable_result_does_not_fall_back_to_old_sample) ... ok
+test_missing_each_baseline_stays_insufficient (test_engine.BehavioralTests.test_missing_each_baseline_stays_insufficient) ... ok
+test_missing_required_night_is_insufficient (test_engine.BehavioralTests.test_missing_required_night_is_insufficient) ... ok
+test_other_subject_and_optional_self_reports_cannot_change_assessment (test_engine.BehavioralTests.test_other_subject_and_optional_self_reports_cannot_change_assessment) ... ok
+test_policy_parameters_change_behavior (test_engine.BehavioralTests.test_policy_parameters_change_behavior) ... ok
+test_prior_session_result_is_not_current (test_engine.BehavioralTests.test_prior_session_result_is_not_current) ... ok
+test_reaction_boundary_20_vs_19_9_percent (test_engine.BehavioralTests.test_reaction_boundary_20_vs_19_9_percent) ... ok
+test_resource_unavailable_does_not_erase_existing_evidence (test_engine.BehavioralTests.test_resource_unavailable_does_not_erase_existing_evidence) ... ok
+test_session_end_is_inclusive (test_engine.BehavioralTests.test_session_end_is_inclusive) ... ok
+test_sleep_boundary_60_vs_59_minutes (test_engine.BehavioralTests.test_sleep_boundary_60_vs_59_minutes) ... ok
+test_tie_break_current_reaction (test_engine.BehavioralTests.test_tie_break_current_reaction) ... ok
+test_zero_sleep_is_real_and_latest_valid_value_wins (test_engine.BehavioralTests.test_zero_sleep_is_real_and_latest_valid_value_wins) ... ok
+test_as_of_requires_canonical_utc_whole_seconds (test_engine.DeterminismAndBoundaryTests.test_as_of_requires_canonical_utc_whole_seconds) ... ok
+test_clock_range_and_unknown_scenario (test_engine.DeterminismAndBoundaryTests.test_clock_range_and_unknown_scenario) ... ok
+test_duplicate_ids_are_rejected (test_engine.DeterminismAndBoundaryTests.test_duplicate_ids_are_rejected) ... ok
+test_future_bad_value_does_not_affect_earlier_state (test_engine.DeterminismAndBoundaryTests.test_future_bad_value_does_not_affect_earlier_state) ... ok
+test_invalid_run_and_policy_version (test_engine.DeterminismAndBoundaryTests.test_invalid_run_and_policy_version) ... ok
+test_nonfinite_visible_input_is_rejected_without_fabricating_value (test_engine.DeterminismAndBoundaryTests.test_nonfinite_visible_input_is_rejected_without_fabricating_value) ... ok
+test_repetition_permutation_and_no_input_or_output_aliasing (test_engine.DeterminismAndBoundaryTests.test_repetition_permutation_and_no_input_or_output_aliasing) ... ok
+test_rewind_excludes_sample_and_new_capture (test_engine.DeterminismAndBoundaryTests.test_rewind_excludes_sample_and_new_capture) ... ok
+test_selection_orders_equal_times_by_id (test_engine.DeterminismAndBoundaryTests.test_selection_orders_equal_times_by_id) ... ok
+test_a02_exact_300_301_boundary (test_engine.FreshnessTests.test_a02_exact_300_301_boundary) ... ok
+test_a03_a04_recovery_rewind_and_stable_identity (test_engine.FreshnessTests.test_a03_a04_recovery_rewind_and_stable_identity) ... ok
+test_equal_time_tie_break_and_input_order (test_engine.FreshnessTests.test_equal_time_tie_break_and_input_order) ... ok
+test_exact_example_a (test_engine.FreshnessTests.test_exact_example_a) ... ok
+test_fresh_reading_on_opening_second_prevents_incident (test_engine.FreshnessTests.test_fresh_reading_on_opening_second_prevents_incident) ... ok
+test_future_readings_do_not_affect_state (test_engine.FreshnessTests.test_future_readings_do_not_affect_state) ... ok
+test_invalid_latest_reading_is_not_reported_current (test_engine.FreshnessTests.test_invalid_latest_reading_is_not_reported_current) ... ok
+test_multiple_gaps_keep_preceding_readings (test_engine.FreshnessTests.test_multiple_gaps_keep_preceding_readings) ... ok
+test_no_readings_mean_missing_without_fabricated_age (test_engine.FreshnessTests.test_no_readings_mean_missing_without_fabricated_age) ... ok
+test_policy_controls_freshness_and_incident_opening (test_engine.FreshnessTests.test_policy_controls_freshness_and_incident_opening) ... ok
+test_wrong_unit_and_subject_are_not_usable_detector_data (test_engine.FreshnessTests.test_wrong_unit_and_subject_are_not_usable_detector_data) ... ok
+
+----------------------------------------------------------------------
+Ran 43 tests in 0.043s
+
+OK
+{'fastapi': True, 'uvicorn': True, 'pytest': False, 'httpx': True, 'httpx2': True}
+v26.13.1
+11.20.0
