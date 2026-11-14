@@ -1,7 +1,21 @@
-"""One-command offline launch for Astro Vital (HZ-14, X01).
+"""One-command offline launch for Astro Vital.
 
-Builds the frontend once (if needed) and serves the API and static frontend assets
-from the same FastAPI process on loopback (127.0.0.1:8000). All assets are local.
+Serves the API and the *prebuilt* React/Vite bundle from one FastAPI process on loopback
+(127.0.0.1:8000). The browser only talks to this process; nothing is fetched remotely at
+runtime.
+
+Preparation (do it while the network is available)::
+
+    npm --prefix frontend ci
+    npm --prefix frontend run build
+
+Then, with the network disabled for the X01 rehearsal::
+
+    python run.py --no-build
+
+`python run.py` builds only when `frontend/dist/index.html` is missing. A failed or
+unproductive build exits nonzero instead of serving a stale or absent bundle, and
+`--no-build` with missing assets stops with the preparation command.
 """
 
 from __future__ import annotations
@@ -17,60 +31,161 @@ if str(ROOT) not in sys.path:
 
 import uvicorn
 from backend.api.main import create_app
-from backend.replay import verify_radlab_archive, load_crew_fixture
+from backend.replay import CrewFixtureError, load_crew_fixture, verify_radlab_archive
+
+FRONTEND_DIR = ROOT / "frontend"
+FRONTEND_DIST = ROOT / "frontend" / "dist"
+FRONTEND_INDEX = FRONTEND_DIST / "index.html"
+PREPARE = "npm --prefix frontend ci && npm --prefix frontend run build"
+LOOPBACK_HOSTS = {"127.0.0.1", "localhost", "::1"}
+
+
+def _tail(text: str | None, lines: int = 8) -> str:
+    if not text:
+        return ""
+    return "\n".join(text.strip().splitlines()[-lines:])
 
 
 def build_frontend() -> bool:
-    """Run frontend build to generate static bundle in frontend/dist."""
-    frontend_dir = ROOT / "frontend"
-    print("Building frontend assets in frontend/dist...")
+    """Run the production build once; return False on any failure, never raise."""
+    print("Building frontend assets into frontend/dist ...")
+    cmd = ["npm.cmd", "run", "build"] if sys.platform == "win32" else ["npm", "run", "build"]
     try:
-        cmd = ["npm.cmd", "run", "build"] if sys.platform == "win32" else ["npm", "run", "build"]
-        result = subprocess.run(cmd, cwd=frontend_dir, capture_output=True, text=True, check=True)
-        print("Frontend build complete.")
-        return True
-    except (subprocess.CalledProcessError, FileNotFoundError) as exc:
-        print(f"Warning: Failed to build frontend: {exc}", file=sys.stderr)
+        result = subprocess.run(cmd, cwd=FRONTEND_DIR, capture_output=True, text=True, check=True)
+    except FileNotFoundError:
+        print("npm was not found on PATH; install Node.js and retry.", file=sys.stderr)
         return False
+    except subprocess.CalledProcessError as error:
+        print(f"Frontend build failed (exit code {error.returncode}).", file=sys.stderr)
+        output = _tail(error.stdout) or _tail(error.stderr)
+        if output:
+            print(output, file=sys.stderr)
+        return False
+    print("Frontend build complete.")
+    return True
 
 
-def main() -> None:
-    parser = argparse.ArgumentParser(description="Start Astro Vital offline local demo")
+def ensure_assets(no_build: bool, force_build: bool) -> int | None:
+    """Return None when a built bundle is ready, else the process exit code."""
+    if no_build:
+        if not FRONTEND_INDEX.is_file():
+            print(
+                f"--no-build requires an existing frontend bundle; missing {FRONTEND_INDEX}",
+                file=sys.stderr,
+            )
+            print(f"Prepare the production bundle first: {PREPARE}", file=sys.stderr)
+            print("Then relaunch with --no-build.", file=sys.stderr)
+            return 1
+        return None
+
+    if force_build or not FRONTEND_INDEX.is_file():
+        if not build_frontend():
+            print(
+                "Frontend build failed; refusing to start the server on stale or missing assets.",
+                file=sys.stderr,
+            )
+            print(f"Prepare the production bundle first: {PREPARE}", file=sys.stderr)
+            return 1
+        if not FRONTEND_INDEX.is_file():
+            print(
+                f"Build reported success but {FRONTEND_INDEX} is still missing; "
+                "refusing to advertise a ready application.",
+                file=sys.stderr,
+            )
+            print(f"Check the Vite build output and retry: {PREPARE}", file=sys.stderr)
+            return 1
+    return None
+
+
+def archive_report() -> int:
+    """`--check-archive`: print A01. Exit 0 only on a verified archive, 2 when Blocked."""
+    report = verify_radlab_archive()
+    print(f"RadLab archive (A01): {report['status']}")
+    print(f"Path: {report['path']}")
+    if report["status"] == "Pass":
+        print(
+            f"Records: DosTel1={report.get('dostel1_count')} "
+            f"DosTel2={report.get('dostel2_count')}"
+        )
+        print(f"SHA-256: {report['observed_sha256']}")
+        return 0
+    print(f"Reason: {report.get('reason', 'archive not verified')}")
+    print(f"Expected SHA-256: {report['expected_sha256']}")
+    if report.get("observed_sha256"):
+        print(f"Observed SHA-256: {report['observed_sha256']}")
+    print("A02-A04 and the RadLab scenario stay Blocked; only the labeled preview is shown.")
+    return 2
+
+
+def banner(host: str, port: int, crew_rows: int, archive_status: str) -> str:
+    crew = (
+        f"Loaded - {crew_rows} synthetic rows (integrated behavior)"
+        if crew_rows
+        else "Missing - fixture preview only"
+    )
+    archive = (
+        "Pass - documented replay archive present"
+        if archive_status == "Pass"
+        else "Blocked - fixture preview only (python run.py --check-archive)"
+    )
+    return "\n".join(
+        [
+            "=" * 74,
+            "  ASTRO VITAL - OFFLINE REPLAY PROTOTYPE",
+            f"  Loopback URL   : http://{host}:{port}",
+            f"  Frontend bundle: {FRONTEND_DIST} (prebuilt, served by this process)",
+            f"  Crew fixture   : {crew}",
+            f"  RadLab archive : {archive}",
+            "  X01 rehearsal  : Not run - this banner is not evidence. Disable the network,",
+            "                   follow acceptance/manual-checklist.md, and record the",
+            "                   observed browser result before claiming X01.",
+            "=" * 74,
+        ]
+    )
+
+
+def main(argv: list[str] | None = None) -> int:
+    parser = argparse.ArgumentParser(description="Start the Astro Vital offline demo")
     parser.add_argument("--host", default="127.0.0.1", help="Loopback host (default: 127.0.0.1)")
     parser.add_argument("--port", type=int, default=8000, help="Loopback port (default: 8000)")
-    parser.add_argument("--build", action="store_true", help="Force rebuild frontend assets before starting")
-    parser.add_argument("--no-build", action="store_true", help="Skip rebuilding frontend even if missing")
-    parser.add_argument("--check-archive", action="store_true", help="Audit RadLab archive status and exit")
-    args = parser.parse_args()
+    mode = parser.add_mutually_exclusive_group()
+    mode.add_argument("--build", action="store_true", help="Force a frontend rebuild before starting")
+    mode.add_argument(
+        "--no-build", action="store_true", help="Never build; require existing built assets"
+    )
+    parser.add_argument(
+        "--check-archive", action="store_true", help="Report RadLab archive status (A01) and exit"
+    )
+    args = parser.parse_args(argv)
 
-    # Archive check CLI shortcut
     if args.check_archive:
-        report = verify_radlab_archive()
-        print(f"RadLab archive status: {report['status']}")
-        print(f"Reason: {report.get('reason', 'OK')}")
-        if report.get("observed_sha256"):
-            print(f"Observed SHA-256: {report['observed_sha256']}")
-        print(f"Expected SHA-256: {report['expected_sha256']}")
-        sys.exit(0 if report["status"] == "Pass" else 2)
+        return archive_report()
 
-    frontend_dist = ROOT / "frontend" / "dist"
-    if args.build or (not args.no_build and not (frontend_dist / "index.html").is_file()):
-        build_frontend()
+    if args.host not in LOOPBACK_HOSTS:
+        print(
+            f"Refusing to serve on {args.host!r}: this demo is loopback-only. "
+            f"Use one of {sorted(LOOPBACK_HOSTS)}.",
+            file=sys.stderr,
+        )
+        return 2
 
-    radlab_status = verify_radlab_archive()["status"]
-    crew_fixture_loaded = load_crew_fixture() is not None
+    exit_code = ensure_assets(no_build=args.no_build, force_build=args.build)
+    if exit_code is not None:
+        return exit_code
 
-    print("=" * 65)
-    print("  ASTRO VITAL — OFFLINE REPLAY PROTOTYPE")
-    print(f"  Loopback URL : http://{args.host}:{args.port}")
-    print(f"  RadLab Archive : {radlab_status} ({'Ready' if radlab_status == 'Pass' else 'Preview stub fallback'})")
-    print(f"  Crew Fixture   : {'Loaded (Integrated)' if crew_fixture_loaded else 'Missing (Preview stub fallback)'}")
-    print("  Runtime Mode   : Loopback only · Offline-ready · No external CDN")
-    print("=" * 65)
+    archive_status = verify_radlab_archive()["status"]
+    try:
+        crew_rows = len(load_crew_fixture() or [])
+    except CrewFixtureError as error:
+        print(f"Crew fixture is invalid: {error}", file=sys.stderr)
+        print("Fix or remove fixtures/crew/sleep-vigilance.json before launching.", file=sys.stderr)
+        return 1
 
+    print(banner(args.host, args.port, crew_rows, archive_status))
     app = create_app()
     uvicorn.run(app, host=args.host, port=args.port, log_level="info")
+    return 0
 
 
 if __name__ == "__main__":
-    main()
+    sys.exit(main())
