@@ -7,7 +7,7 @@
     "dev": "vite",
     "build": "tsc --noEmit && vite build",
     "preview": "vite preview",
-    "test": "vitest run"
+    "test": "vitest run && node --test \"src/checkin/*.test.mjs\""
   },
   "dependencies": {
     "react": "^19.3.1",
