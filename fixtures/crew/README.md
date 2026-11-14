@@ -52,8 +52,11 @@ by `as_of`; do not discard baseline rows merely because they precede the replay 
 Do not send seeds through the check-in POST: its timestamp range excludes baselines,
 it creates submission IDs, and reaction submissions are `LIVE_MEASURED`.
 
-Ready for El Mahdi's independent verification and Hamza's loader. The current API
-does not read this file automatically. A data-mode header alone is insufficient:
-verify the expected values, time, seed history and fresh-run isolation. See the
-[validation record](../../evidence/crew-fixture-validation.md) and
-[integrated checklist](../../acceptance/manual-checklist.md).
+PR #10 merged this fixture. The independent review passed before merge and the
+fixture and engine suites passed again on reviewed main `9c4a29e`. A fresh-run
+probe on that SHA still returned a fixed preview and zero history. Hamza's
+seeded candidate remains a separate verification step. Check the expected
+values, time, seed history and fresh-run isolation in addition to data mode.
+[Independent review](../../plans/rescue/PR10-INDEPENDENT-REVIEW.md) ·
+[Acceptance baseline](../../evidence/acceptance-baseline-2026-11-14.md) ·
+[Acceptance ledger](../../acceptance/manual-checklist.md).

@@ -1,9 +1,11 @@
 # Offline rehearsal and recording sheet
 
 Owner: Fadoua; runtime Hamza; dashboard Amine; visual review Nassim; check-in Mohsine.
-Current **X01: Blocked**. [Acceptance status](../acceptance/manual-checklist.md) and
-[executed engine evidence](../evidence/crew-fixture-validation.md) are the authority.
-This is a source-checked shot list, not a recording or a visual pass.
+Current **X01: Blocked** on a frozen seeded candidate and verified archive.
+The labels below were checked in main `9c4a29e` source. Confirm them on the
+rendered release build with Amine, Mohsine and Nassim.
+[Acceptance ledger](../acceptance/manual-checklist.md) ·
+[Executed baseline evidence](../evidence/acceptance-baseline-2026-11-14.md).
 
 ## Prepare before disconnecting
 
@@ -18,19 +20,23 @@ npm --prefix frontend ci
 npm --prefix frontend run build
 ```
 
-These setup commands have **Not run** in this fixture handoff. Local pytest,
-frontend node_modules and .venv are missing. Do not change shared manifests to
-work around them without Hamza. First resolve HZ-11 (load canonical crew seeds)
-and A01 (checksum-matched archive and importer); preserve the canonical fixture.
+Run those steps before disconnecting. Confirm the full backend and frontend
+checks and save the successful build output. Hamza supplies the frozen launch
+recipe and confirms it serves the prepared assets. El Mahdi confirms the archive
+hash and rehearsal scope. Nassim confirms the browser and viewport. The current
+main probe was a TestClient run with no built frontend.
 
 Record build SHA, local diff, fixture SHA-256, imported archive hash/counts,
 dependency/build success, tester and date. Prepare a separate SQLite database
 per rehearsal via `ASTRO_VITAL_DB`; Hamza's loader must seed fresh runs. Do not
 modify a previous recording's database. Configure resources before launch.
 
-Disconnect Wi-Fi and other external network connections before starting the
-prepared server. Record the disconnection, rather than inferring it from cached
-pages. The server uses loopback:
+On the rehearsal machine, disconnect Wi-Fi, Ethernet and any other external
+network connection before starting the prepared server. Keep loopback enabled.
+Capture Windows showing the disconnected external interfaces, or record the
+platform equivalent and time. Verify the browser can reach the local server
+after launch. Use the frozen candidate’s documented command. The baseline
+runtime README uses this loopback invocation after assets are built:
 
 ```powershell
 .venv/Scripts/python -m uvicorn backend.api.main:create_app --factory --host 127.0.0.1 --port 8000
@@ -47,7 +53,7 @@ Do the seeded crew sequence before any form submission in that run.
 
 | Shot / acceptance | Click path | Expected screen / proof to capture | Current status |
 | --- | --- | --- | --- |
-| 1 / mode gate | Open loopback root | **Astro Vital**, data-mode badge, run ID and clock; confirm integrated header plus actual seeds. A preview badge stops the integrated take | **Blocked** — loader/import pending |
+| 1 / mode gate | Open loopback root | **Astro Vital**, data-mode badge, run ID and clock; confirm integrated header plus actual seeds. A preview badge limits the take to clearly labeled preview coverage | **Blocked** — loader/import pending |
 | 2 / A03 | **Detector gap (RadLab)** → **23:20:00** → **Why?** | **Why? Evidence**, DosTel1 455 s vs DosTel2 0 s, both readings/timestamps, rule and one open incident. Keep **Historical NASA telemetry** visible | **Blocked** — archive |
 | 3 / A04 | Close drawer → **23:30:00** → **Incident history** → **23:20:00** | Both current, resolved incident, then rewind to open with same ID. Gap cause remains unknown | **Blocked** — archive |
 | 4 / B01 | **Sleep and vigilance** → **Fresh run** → **09:00** → **Why?** | **Vigilance data missing**, sleep evidence and missing reaction, **Synthetic crew scenario** | **Blocked** — loader |
@@ -72,8 +78,11 @@ take labeled integrated.
 
 Say: “These are fixed contract previews. The canonical synthetic crew fixture
 passes engine checks at 09:00 and 09:01. The seeded API path and offline rehearsal
-remain pending.” Show the test output as **Engine validation**, not as an app run.
-No screenshot or recording has been captured in this handoff.
+remain pending on this build.” Show the test output as **Engine validation**, not as an app run.
+The media inventory below remains pending. If a seeded candidate is available
+but the archive is blocked, get El Mahdi’s approval for the reduced script.
+Record any crew-only disconnected result on its own row. Full X01 stays Blocked
+while either required scenario is unavailable.
 
 ## Record actual outcomes
 
@@ -92,3 +101,23 @@ Export screenshots/recording locally with build, scenario and checkpoint in the
 filename. Show provenance, clock and mode in frame. Mark the pitch's C02/C04/C10
 claims usable only after archive/recovery/offline checks pass. Use the
 [claim table](../evidence/demo-claims.md) for every spoken factual claim.
+
+## Media inventory for the release packet
+
+Use `demo/artifacts/<short-SHA>/` in a local capture folder or a separate
+team-approved local media directory. Capture at a readable viewport with
+mode, label, and replay time visible. Record actual local paths and SHA-256
+after export. The filenames here are targets.
+
+| Artifact | Target filename | Status |
+| --- | --- | --- |
+| Two-minute backup | `<sha>-astro-vital-backup.mp4` | Blocked pending frozen app rehearsal and release scope |
+| Crew missing input | `<sha>-crew-0900-why.png` | Blocked pending seeded browser candidate |
+| Crew seeded watch | `<sha>-crew-0901-why.png` | Blocked pending seeded browser candidate |
+| Historical gap and recovery | `<sha>-radlab-232000-why.png`, `<sha>-radlab-233000-incidents.png` | Blocked pending verified archive and replay |
+| Connection, fresh launches and browser network record | `<sha>-disconnected.png`, `<sha>-launch-log.txt`, `<sha>-loopback.har` | Blocked pending X01 |
+| Portal-sized demo | `<sha>-submission-demo.mp4` or approved slide deck | Not run. Confirm the allowed format in the current Project tab |
+
+After capture, play the full backup locally, verify captions, clock and
+provenance at normal size, and save exact offsets with A/B IDs. Attach links
+only to reviewed media. [Submission draft](submission-draft.md).

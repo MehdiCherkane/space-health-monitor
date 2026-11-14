@@ -1,5 +1,9 @@
 # Crew fixture validation - November 14, 2026
 
+Historical PR #10 record for the pre-merge build described below. PR #10 is
+merged. The original raw probe is preserved. For the new main check, see the
+[acceptance baseline](acceptance-baseline-2026-11-14.md).
+
 Tester: Codex acting for Fadoua. Base: `60898075b5508a9d9e5b46da15e1637aefa67ee2`
 (latest `main` retrieved for validation), plus the fixture changes on
 `build/crew-fixture`. Python 3.14.10. No engine, policy, contract, API or UI edits.

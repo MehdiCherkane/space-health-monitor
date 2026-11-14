@@ -1,0 +1,39 @@
+{
+  "reviewed_sha": "9c4a29ecbba0a77564b2d6c792de8d96c5d91ae6",
+  "python": "3.14.10",
+  "fixture_present": true,
+  "transport": "FastAPI TestClient, isolated SQLite database",
+  "scenario_id": "sleep_vigilance",
+  "checkpoints": [
+    {
+      "requested_as_of": "2026-01-10T09:00:00Z",
+      "state_status": 200,
+      "history_status": 200,
+      "mode": "fixture-preview",
+      "source": "contracts/examples",
+      "returned_as_of": "2026-01-10T09:00:00Z",
+      "assessment": "insufficient_data",
+      "title": "Vigilance data missing",
+      "missing_inputs": [
+        "reaction_time"
+      ],
+      "history_rows": 0
+    },
+    {
+      "requested_as_of": "2026-01-10T09:01:00Z",
+      "state_status": 200,
+      "history_status": 200,
+      "mode": "fixture-preview",
+      "source": "contracts/examples",
+      "returned_as_of": "2026-01-10T09:00:00Z",
+      "assessment": "insufficient_data",
+      "title": "Vigilance data missing",
+      "missing_inputs": [
+        "reaction_time"
+      ],
+      "history_rows": 0
+    }
+  ],
+  "create_status": 201,
+  "run_id": "2447b0a14a3f41619cb192c4e0edd562"
+}
