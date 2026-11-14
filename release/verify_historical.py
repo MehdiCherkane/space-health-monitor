@@ -9,6 +9,7 @@ import argparse
 import inspect
 import json
 from pathlib import Path
+import sqlite3
 import sys
 from tempfile import TemporaryDirectory
 
@@ -20,6 +21,15 @@ from backend.engine import evaluate
 from backend.replay.importer import import_radlab_csv, verify_radlab_archive
 
 CHECKPOINTS = ("23:12:25", "23:17:25", "23:17:26", "23:20:00", "23:30:00")
+
+
+def database_snapshot(path):
+    """Read committed logical contents, including transactions still in SQLite WAL."""
+    connection = sqlite3.connect(path)
+    try:
+        return tuple(connection.iterdump())
+    finally:
+        connection.close()
 
 
 def check_states(states, rows):
@@ -106,10 +116,10 @@ def run_checks(csv_path=None, api=False):
                     return response.json()
                 observed = {time: snapshot(time) for time in CHECKPOINTS}
                 check_states(observed, rows)
-                before_reads = db.read_bytes()
+                before_reads = database_snapshot(db)
                 assert snapshot("23:20:00") == observed["23:20:00"], "API rewind changed earlier view"
                 assert snapshot("23:20:00") == observed["23:20:00"], "API repeated-read instability"
-                assert db.read_bytes() == before_reads, "GET mutated persisted database"
+                assert database_snapshot(db) == before_reads, "GET mutated persisted database"
                 result["api"] = "Pass"
                 result["api_run_id"] = run_id
     except (AssertionError, ValueError, KeyError, StopIteration) as exc:

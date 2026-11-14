@@ -15,7 +15,7 @@ Branch: `finish/archive-release`. Date: November 14, 2026.
 - `release/verify_historical.py` supplies explicit historical engine/API gates, structured
   JSON evidence and nonzero exit for failed or Blocked requested checks.
 - Real data verifies the 300/301-second cutoff, 455/0-second ages, one incident, recovery
-  at 23:30:00, rewind without future data, repeated-read stability and API read-only DB.
+  at 23:30:00, rewind without future data, repeated-read stability and API read-only DB (logical contents, including committed SQLite WAL transactions).
 
 See `fixtures/radlab/README.md` for provenance, exact hash, counts and checkpoints.
 `release/historical-verification.json` contains executed source/incident evidence.
@@ -24,12 +24,12 @@ See `fixtures/radlab/README.md` for provenance, exact hash, counts and checkpoin
 
 | Scope | Command | Result |
 |---|---|---|
-| Current main + this delivery | `python -m pytest tests -q` | Pass: 130 tests, 45 subtests; 1 skipped (seeded API not merged) |
+| Current main + this delivery | `python -m pytest tests -q` | Pass: 131 tests, 45 subtests; 1 skipped (seeded API not merged) |
 | Frontend locked setup | `npm --prefix frontend ci --offline --ignore-scripts` | Pass after populating missing locked npm tarballs; lockfile/manifests unchanged |
 | Frontend | `npm --prefix frontend test` | Pass: 33 Vitest + 41 Node tests |
 | Production frontend | `npm --prefix frontend run build` | Pass: TypeScript and Vite |
 | Isolated current main + PR11 d99c549 + delivery | `python release/verify_historical.py --api` | Pass: A01–A04 real engine + API, no checksum mocks |
-| Same isolated integration candidate | `python -m pytest tests/replay tests/engine tests/fixtures tests/api/test_seeded_crew.py -q` | Pass: 103 tests, 45 subtests |
+| Same isolated integration candidate | `python -m pytest tests/replay tests/engine tests/fixtures tests/api/test_seeded_crew.py -q` | Pass: 104 tests, 45 subtests |
 | Full isolated integration candidate, built frontend | `python -m pytest tests -q --tb=short` | Fail: 20 tests; 121 tests and 45 subtests Pass. Existing tests expect empty runs, now both archives auto-seed |
 | Production browser on isolated integrated candidate | Local Playwright + installed headless Chromium; `/tmp/astro-release-browser-smoke.cjs` | Pass: A02–A04 controls/Why/recovery/rewind, B01/B02 screens/Why, Fresh run, no uncaught page errors, loopback requests |
 | Offline browser X01 | Actual disconnected browser rehearsal | Not run; no final release approval |

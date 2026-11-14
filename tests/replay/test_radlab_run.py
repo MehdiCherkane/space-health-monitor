@@ -5,6 +5,7 @@ Missing archive is a skipped/Blocked historical check, not historical verificati
 
 import importlib.util
 import inspect
+import sqlite3
 from pathlib import Path
 
 import pytest
@@ -52,6 +53,22 @@ def test_missing_archive_never_promotes_to_historical_pass(tmp_path):
     assert report["checks"] == {"A01": "Blocked", "A02": "Blocked", "A03": "Blocked", "A04": "Blocked"}
     assert report["api"] == "Not run"
     assert report["X01"].startswith("Not run")
+
+
+def test_read_only_snapshot_detects_committed_wal_changes(tmp_path):
+    path = tmp_path / "wal-check.db"
+    writer = sqlite3.connect(path)
+    try:
+        writer.execute("PRAGMA journal_mode=WAL")
+        writer.execute("CREATE TABLE example (value INTEGER)")
+        writer.commit()
+        before = gate.database_snapshot(path)
+        assert gate.database_snapshot(path) == before
+        writer.execute("INSERT INTO example VALUES (1)")
+        writer.commit()
+        assert gate.database_snapshot(path) != before
+    finally:
+        writer.close()
 
 
 def test_actual_historical_archive_when_available():
