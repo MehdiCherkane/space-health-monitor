@@ -113,6 +113,8 @@ export interface Checkpoint {
 
 export interface DashboardProps {
   state: StateEnvelope
+  /** Chronological observations visible at `clock`; the shell owns the HTTP call (D7). */
+  history: Observation[]
   clock: string
   scenarioId: ScenarioId
   checkpoints: Checkpoint[]
