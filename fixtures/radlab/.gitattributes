@@ -1,0 +1,2 @@
+# Preserve the checksum-pinned download, including its CRLF line endings, on every OS.
+*.csv -text whitespace=cr-at-eol
