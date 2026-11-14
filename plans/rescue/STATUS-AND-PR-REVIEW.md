@@ -1,5 +1,11 @@
 # Readiness and open PR review
 
+**Follow-up verification:** The environment restrictions have since changed and the
+full backend runs now execute. Main + PR10: **93 passed, 45 subtests passed**.
+Combined main + PR10 + PR11: **19 failed, 85 passed, 45 subtests passed**.
+See [the independent review](PR10-INDEPENDENT-REVIEW.md) for commands and diagnosis;
+the earlier environment limitation recorded below is historical, not the current result.
+
 Pinned main: `60898075b5508a9d9e5b46da15e1637aefa67ee2` (131 tracked files).
 The source checkout was downloaded through the connected GitHub app and all files
 verified against their Git blob hashes; the reconstructed Git tree matches upstream.

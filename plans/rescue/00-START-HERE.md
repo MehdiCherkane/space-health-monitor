@@ -5,6 +5,10 @@ Open candidates: PR #10 `f83a260285286dbdaeda9481a84bc1ec2ca33e5f` and
 PR #11 `d99c549bb281aaedc8676c5a8793c1b784067158`.
 Prepared November 14, 2026 after source review and independent agent audits.
 
+Follow-up: [PR10 independent review](PR10-INDEPENDENT-REVIEW.md) now records a fresh
+full backend pass for main + PR10 and the reproduced combined-candidate failures.
+[Hamza's exact session prompt](HAMZA-COPY-PASTE-PROMPT.md) is ready to paste.
+
 This is the current execution assignment for **six agents**, one session per member.
 It supersedes the old build-from-scratch task order and overlapping ownership in
 `plans/team-update.md` and the original role briefs. Use those documents for domain
