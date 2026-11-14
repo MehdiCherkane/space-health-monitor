@@ -37,10 +37,16 @@ visible at `clock`). The dashboard never fetches and never filters by time.
 ### D8 — `submission_id` format
 
 Caller-generated, opaque, `1–128` characters from `[A-Za-z0-9._:-]`, first
-character alphanumeric. Use `crypto.randomUUID()`. A retry after a network error
-reuses the same `submission_id`, `observed_at` and entry payload unchanged; the
-server treats a changed payload under the same ID as a conflict. The shell
-generates the ID, not the check-in form.
+character alphanumeric. Use `crypto.randomUUID()`. The feature that owns the retry
+(the check-in form) mints the ID and reuses it with the same `observed_at` and entry
+payload after a network error; the shell forwards the payload unchanged instead of
+minting a new ID. The server treats a changed payload under the same ID as a conflict.
+
+### Action fallback
+
+`CheckInProps.onAction` is optional: the check-in calls it with
+`review_available_inputs` when `local_reaction_task` is disabled, and the shell routes
+it to the evidence drawer.
 
 ## Fixture preview
 
