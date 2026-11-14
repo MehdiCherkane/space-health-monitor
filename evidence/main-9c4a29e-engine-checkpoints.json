@@ -1,0 +1,97 @@
+{
+  "reviewed_sha": "9c4a29ecbba0a77564b2d6c792de8d96c5d91ae6",
+  "layer": "direct engine evaluation",
+  "fixture": "fixtures/crew/sleep-vigilance.json",
+  "fixture_id": "crew-demo-sleep-vigilance-v1",
+  "results": [
+    {
+      "as_of": "2026-01-10T09:00:00Z",
+      "run_id": "engine-evidence",
+      "title": "Vigilance data missing",
+      "assessment": "insufficient_data",
+      "missing_inputs": [
+        "reaction_time"
+      ],
+      "supporting_evidence": [
+        {
+          "code": "repeated_short_sleep",
+          "observation_ids": [
+            "sleep-08",
+            "sleep-09",
+            "sleep-10",
+            "base-sleep-1",
+            "base-sleep-2",
+            "base-sleep-3",
+            "base-sleep-4",
+            "base-sleep-5"
+          ],
+          "detail": "Two of the last three logged nights were at least 60 minutes below the 450-minute demo baseline.",
+          "baseline_id": "crew-demo-sleep-v1"
+        }
+      ],
+      "referenced_observation_ids": [
+        "base-sleep-1",
+        "base-sleep-2",
+        "base-sleep-3",
+        "base-sleep-4",
+        "base-sleep-5",
+        "sleep-08",
+        "sleep-09",
+        "sleep-10"
+      ]
+    },
+    {
+      "as_of": "2026-01-10T09:01:00Z",
+      "run_id": "engine-evidence",
+      "title": "Sleep and vigilance change",
+      "assessment": "watch",
+      "missing_inputs": [],
+      "supporting_evidence": [
+        {
+          "code": "repeated_short_sleep",
+          "observation_ids": [
+            "sleep-08",
+            "sleep-09",
+            "sleep-10",
+            "base-sleep-1",
+            "base-sleep-2",
+            "base-sleep-3",
+            "base-sleep-4",
+            "base-sleep-5"
+          ],
+          "detail": "Two of the last three logged nights were at least 60 minutes below the 450-minute demo baseline.",
+          "baseline_id": "crew-demo-sleep-v1"
+        },
+        {
+          "code": "slower_reaction",
+          "observation_ids": [
+            "reaction-10",
+            "base-reaction-1",
+            "base-reaction-2",
+            "base-reaction-3",
+            "base-reaction-4",
+            "base-reaction-5"
+          ],
+          "detail": "Current reaction time is 310 ms against the 250 ms demo baseline (+24.0%).",
+          "baseline_id": "crew-demo-reaction-v1"
+        }
+      ],
+      "referenced_observation_ids": [
+        "base-sleep-1",
+        "base-reaction-1",
+        "base-sleep-2",
+        "base-reaction-2",
+        "base-sleep-3",
+        "base-reaction-3",
+        "base-sleep-4",
+        "base-reaction-4",
+        "base-sleep-5",
+        "base-reaction-5",
+        "sleep-08",
+        "sleep-09",
+        "sleep-10",
+        "reaction-10"
+      ]
+    }
+  ]
+}
