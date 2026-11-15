@@ -90,21 +90,3 @@ root: `npm --prefix frontend run build && python run.py --no-build`.
 To exercise B04 (reaction resource disabled) start the API with
 `ASTRO_VITAL_RESOURCES='{"local_reaction_task": false}'`; tests pass
 `create_app(resources={...})`. Unknown resources or non-boolean values are rejected.
-
-## Production entry-point browser regressions
-
-The blue observatory is launched by `index.html`; the component tests alone do not
-exercise that entry point. From the repository root, build it and run the real seeded
-API/Chrome regressions:
-
-```bash
-npm --prefix frontend run build
-uv run --python python3.12 --with-requirements backend/requirements.txt --with playwright python -m pytest tests/browser -q
-```
-
-These tests require installed Google Chrome (or an installed Playwright channel selected
-with `ASTRO_BROWSER_CHANNEL`). They cover repeated checkpoints, playback recovery,
-reaction availability/fallback, and task cancellation on a fresh run. Browser tests skip
-when Playwright is absent; the backend suite can be run separately with
-`python -m pytest tests --ignore=tests/browser -q`. Local browser tests do not establish
-Wi-Fi-off acceptance.
