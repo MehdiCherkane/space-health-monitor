@@ -49,6 +49,7 @@ body { margin:0; min-width:0; min-height:100vh; background:transparent!important
 .astro-app a:hover { color:var(--hover); }
 .astro-app .astro-skip { color:var(--hover); }
 .astro-app :where(code,time,.mono) { overflow-wrap:anywhere; }
+.astro-app code { font-size:max(13px,.875em); } /* IDs and rule names stay at the 13px secondary-text floor */
 .astro-app :where(p,figure,dl) { margin:0; }
 .astro-app h2 { margin:0 0 10px; font-size:19px; }
 .astro-app h3 { margin:0; font-size:16px; }
@@ -105,7 +106,12 @@ body { margin:0; min-width:0; min-height:100vh; background:transparent!important
 .astro-transport__row,.astro-checkpoints,.astro-actions { display:flex; align-items:center; gap:8px; flex-wrap:wrap; }
 .astro-transport__row input[type=range] { flex:1; min-width:120px; min-height:44px; accent-color:var(--blue); }
 .astro-transport .astro-reset { margin-left:auto; }
-.astro-banner { min-block-size:154px; display:grid; align-content:center; }
+.astro-banner { min-block-size:136px; display:grid; align-content:center; } /* fits the taller crew banner (132px), so switching scenarios does not move content */
+/* Wide screens: transport and checkpoints share one row so the central scene starts higher. */
+@media (min-width:1200px) {
+  .astro-transport { grid-template-columns:minmax(0,1fr) auto; column-gap:16px; align-items:center; }
+  .astro-transport > .secondary { grid-column:1 / -1; }
+}
 .astro-banner .ui-assessment { background:transparent; padding:0; display:grid; grid-template-columns:minmax(0,1fr) auto; gap:6px 18px; align-items:center; }
 .astro-banner .ui-assessment__title { margin:0; font-size:clamp(21px,2.4vw,30px); line-height:1.15; }
 .astro-banner .ui-assessment__top,.astro-banner .ui-assessment__missing { grid-column:1; }
@@ -133,6 +139,11 @@ body { margin:0; min-width:0; min-height:100vh; background:transparent!important
 .astro-hero header { display:flex; flex-wrap:wrap; align-items:baseline; justify-content:space-between; gap:3px 12px; }
 .astro-hero h2 { margin:0; }
 .astro-scene { width:100%; max-height:380px; display:block; color:var(--accent); }
+.astro-anatomy { max-height:460px; }
+.astro-anatomy-view { opacity:0; transition:opacity 260ms ease; }
+.astro-anatomy-view[data-active="true"] { opacity:1; }
+.astro-anatomy-view image { filter:drop-shadow(0 0 22px rgba(79,139,255,.35)); }
+@media (prefers-reduced-motion: reduce) { .astro-anatomy-view { transition:none; } }
 .astro-cabin-node[data-current=true] { color:var(--current); }
 .astro-cabin-node[data-current=false] { color:var(--unavailable); }
 .astro-cabin-node[data-stale=true] { color:var(--caution); }
@@ -698,14 +709,21 @@ function Cabin({ state, selected, select }) {
     h(DetectorComparison, { state }))
 }
 
+// Crops of the four views in /art/anatomy-study.webp (original generated asset, see .json);
+// cx = body centre and top = head top inside each crop, measured from the image alpha.
+const ANATOMY_VIEWS = {
+  'Male-Front':   { x:40,   w:455, cx:238, top:0 },
+  'Male-Back':    { x:495,  w:390, cx:192, top:1 },
+  'Female-Front': { x:885,  w:400, cx:207, top:6 },
+  'Female-Back':  { x:1285, w:425, cx:206, top:6 },
+}
+
 function CrewFigure({ selected, select, onAction, onWhy, actions }) {
   const [variant, setVariant] = useState('Male')
   const [side, setSide] = useState('Front')
-  const back = side === 'Back'
-  const narrow = variant === 'Female'
-  const outline = narrow
-    ? 'M141 86 137 96 114 109 104 136 94 175 83 209 90 215 106 180 119 151 125 175 119 203 127 229 134 260 147 259 148 225 152 205 157 225 158 259 171 260 178 229 185 204 179 175 185 150 198 178 214 215 221 209 210 175 200 136 189 109 166 96 162 86'
-    : 'M141 86 136 97 109 107 99 136 87 183 79 211 87 216 105 178 118 148 125 174 123 197 126 220 132 260 147 259 147 230 152 203 158 230 158 259 173 260 179 220 182 197 179 174 186 148 199 178 217 216 225 211 217 183 205 136 195 107 168 97 163 86'
+  const active = variant + '-' + side
+  const view = ANATOMY_VIEWS[active]
+  const ox = (600 - view.w) / 2
   const mark = useId()
   const reactionReasonId = useId()
   const reaction = actions.find((action) => action.id === 'start_reaction_check')
@@ -713,25 +731,22 @@ function CrewFigure({ selected, select, onAction, onWhy, actions }) {
   const reactionReason = reaction?.unavailable_reason ?? 'No reaction check is offered for this time.'
   return h('section', { className:'glass astro-hero', 'aria-labelledby':'crew-figure-title' },
     h('header', null, h('h2', { id:'crew-figure-title' }, 'Crew demo 01'), h('small', null, 'Synthetic crew scenario')),
-    h('svg', { className:'astro-scene', viewBox:'0 0 304 282', role:'img',
+    h('svg', { className:'astro-scene astro-anatomy', viewBox:'0 0 600 887', role:'img',
       'aria-label':variant + ' anatomy illustration, ' + side.toLowerCase() + ' view. Callouts point to the upper chest, vigilance region, and torso.' },
-      h('defs', null, h('pattern', { id:mark, width:15, height:15, patternUnits:'userSpaceOnUse' },
-        h('path', { d:'M15 0H0V15', fill:'none', stroke:'currentColor', opacity:.17 }))),
-      h('rect', { x:8, y:6, width:288, height:269, rx:13, fill:'url(#' + mark + ')' }),
-      h('g', { stroke:'currentColor', fill:'#10264b', strokeWidth:1.5, strokeLinejoin:'round' },
-        h('path', { d:'M127 55Q128 34 151 33Q176 34 177 55L174 73Q171 83 160 89H145Q134 85 130 74Z' }),
-        h('path', { d:outline })),
-      h('ellipse', { cx:152, cy:57, rx:20, ry:12, fill:'#4f8bff', opacity:.28 }),
-      h('g', { stroke:'currentColor', opacity:.78, fill:'none' },
-        h('path', { d:back ? 'M152 43V75M144 62H160' : 'M137 57l11 2m8 0 11-2M150 65l-2 7h7M145 78h14' }),
-        h('path', { d:back ? 'M152 99V200M127 111l20 36m31-36-20 36M130 156l22 12 22-12' : 'M152 99v79M120 121l19-6 13 5 13-5 19 6M127 145l25 8 25-8M126 177l26 12 26-12' }),
-        h('path', { d:'M129 209l15 27m30-27-14 27M98 149l-7 29m115-29 7 29' })),
-      [['01', 29, 107, 128, 122], ['02', 275, 49, 163, 58], ['03', 275, 177, 175, 169]].map(([label, x, y, tx, ty]) =>
-        h('g', { key:label },
-          h('path', { d:'M' + x + ' ' + y + 'H' + (x < 150 ? x+43 : x-43) + 'L' + tx + ' ' + ty, fill:'none', stroke:'currentColor' }),
-          h('circle', { cx:tx, cy:ty, r:3, fill:'#9dbeff' }),
-          h('rect', { x:x-12, y:y-11, width:24, height:22, rx:5, fill:'#142950', stroke:'currentColor' }),
-          h('text', { x, y:y+4, textAnchor:'middle', fill:'#f3f6fd', fontSize:13 }, label)))),
+      h('defs', null, h('pattern', { id:mark, width:44, height:44, patternUnits:'userSpaceOnUse' },
+        h('path', { d:'M44 0H0V44', fill:'none', stroke:'currentColor', opacity:.14 }))),
+      h('rect', { x:4, y:4, width:592, height:879, rx:28, fill:'url(#' + mark + ')' }),
+      // All four views stay mounted so switching crossfades; only the active one is visible.
+      Object.entries(ANATOMY_VIEWS).map(([key, v]) =>
+        h('svg', { key, x:(600 - v.w) / 2, y:0, width:v.w, height:887, viewBox:v.x + ' 0 ' + v.w + ' 887',
+          className:'astro-anatomy-view', 'data-active':key === active, 'aria-hidden':true },
+          h('image', { href:'/art/anatomy-study.webp', width:1774, height:887 }))),
+      [['01', 46, 300, view.cx, 215 + view.top], ['02', 554, 96, view.cx, 52 + view.top], ['03', 554, 470, view.cx, 330 + view.top]].map(([label, x, y, tx, ty]) =>
+        h('g', { key:label, className:'astro-anatomy-callout' },
+          h('path', { d:'M' + x + ' ' + y + 'H' + (x < 300 ? x + 70 : x - 70) + 'L' + (ox + tx) + ' ' + ty, fill:'none', stroke:'currentColor', strokeWidth:2.5 }),
+          h('circle', { cx:ox + tx, cy:ty, r:8, fill:'#9dbeff', stroke:'#040813', strokeWidth:3 }),
+          h('rect', { x:x - 30, y:y - 25, width:60, height:50, rx:12, fill:'#142950', stroke:'currentColor', strokeWidth:2 }),
+          h('text', { x, y:y + 10, textAnchor:'middle', fill:'#f3f6fd', fontSize:28, fontWeight:600 }, label)))),
     h('div', { className:'astro-callout-row' },
       iconButton(h(Fragment, null, '01 Sleep history', h('small', null, 'View recorded nights')), { 'aria-pressed':selected === 'crew_sleep_log', onClick:() => select('crew_sleep_log') }),
       iconButton(h(Fragment, null, '02 Reaction check', h('small', null, reaction?.available ? reaction.label : 'Unavailable')), {
