@@ -41,7 +41,7 @@ function CheckInUnsupported() {
   );
 }
 
-export function CrewCheckIn(props: CheckInProps) {
+export function CrewCheckIn(props: CheckInProps & { onTaskActiveChange?: (active: boolean) => void }) {
   const { scenarioId, missionTime, actions, onSubmit, onAction } = props;
   const [raw, setRaw] = useState<RawCheckInForm>(EMPTY_FORM);
   const [hasEdited, setHasEdited] = useState(false);
@@ -77,6 +77,12 @@ export function CrewCheckIn(props: CheckInProps) {
 
   const { values, errors } = useMemo(() => validateCheckInForm(raw), [raw]);
   const availability = useMemo(() => reactionAvailability(actions), [actions]);
+
+  const taskActive = reactionView === "task" && availability.available;
+  useEffect(() => {
+    props.onTaskActiveChange?.(taskActive);
+    return () => props.onTaskActiveChange?.(false);
+  }, [taskActive, props.onTaskActiveChange]);
 
   // Keep the newest availability reachable from callbacks. React events normally use the
   // latest handler, but a retained/stale button must still be rejected at the callback
@@ -194,6 +200,8 @@ export function CrewCheckIn(props: CheckInProps) {
         <ReactionTask onCompleted={handleReactionCompleted} onCancel={handleReactionCancel} />
       ) : (
         <>
+          <details className="crew-checkin__sample">
+            <summary>Optional sample check-in <span>Sleep & self-reports</span></summary>
           <CheckInForm
             raw={raw}
             errors={errors}
@@ -209,6 +217,8 @@ export function CrewCheckIn(props: CheckInProps) {
               void submitForm();
             }}
           />
+
+          </details>
 
           <section className="crew-checkin__reaction" aria-labelledby="reaction-title">
             <h3 id="reaction-title">Reaction check</h3>

@@ -10,6 +10,7 @@ import {
   MissingInputs,
   ProvenanceBadge,
   SourceCard,
+  StatusBadge,
   StateMessage,
   UtcTime,
   formatTime,
@@ -17,6 +18,9 @@ import {
   formatValue,
   indexObservations,
 } from '../ui'
+import { EvidenceStatusPanel } from '../evidence-status'
+import { ObservatoryScene } from './ObservatoryScene'
+import { HistoryPlot } from './HistoryPlot'
 import './dashboard.css'
 
 const SCENARIOS: { id: ScenarioId; label: string; provenance: string }[] = [
@@ -66,22 +70,27 @@ export function Dashboard(
           )}
           {state && <MainColumn {...props} state={state} />}
         </div>
+        {state && <ObservatoryScene state={state} selectedSource={props.historySourceId}
+          onSelectSource={props.onSelectHistorySource} onOpenEvidence={props.onOpenEvidence} onAction={props.onAction} />}
         <div className="dash-side">
-          {props.aside}
-          {state && <IncidentHistory state={state} />}
           {state && <SourceHistory {...props} state={state} />}
+          <EvidenceStatusPanel compact state={state} dataMode={dataMode} status={status}
+            onAction={props.onAction} onOpenEvidence={props.onOpenEvidence} />
+          {state && <IncidentHistory state={state} />}
         </div>
       </div>
 
+      {!props.hideControls && <CheckpointRail {...props} preview={preview} />}
+      {props.aside}
       <EvidenceDrawer {...props} />
     </div>
   )
 }
 
 function ReplayControls(props: DashboardProps & { preview: boolean }) {
-  const { scenarioId, checkpoints, clock, preview, status } = props
+  const { scenarioId, clock } = props
   return (
-    <section className="dash-controls ui-card" aria-labelledby="controls-title">
+    <section className="dash-controls" aria-labelledby="controls-title">
       <h2 id="controls-title" className="visually-hidden">
         Replay controls
       </h2>
@@ -114,6 +123,14 @@ function ReplayControls(props: DashboardProps & { preview: boolean }) {
         </p>
       </div>
 
+    </section>
+  )
+}
+
+function CheckpointRail(props: DashboardProps & { preview: boolean }) {
+  const { checkpoints, clock, preview, status } = props
+  return (
+    <section className="replay-rail" aria-label="Replay checkpoints">
       <div className="dash-controls__group dash-controls__wide">
         <p className="dash-label" id="checkpoint-label">
           Checkpoints
@@ -151,6 +168,7 @@ function MainColumn(props: DashboardProps & { state: StateEnvelope }) {
   const observations = indexObservations(state.observations)
   return (
     <>
+      <div className="dash-assessments">
       {state.assessments.length === 0 ? (
         <StateMessage kind="empty">No assessment was returned for this time.</StateMessage>
       ) : (
@@ -165,7 +183,9 @@ function MainColumn(props: DashboardProps & { state: StateEnvelope }) {
         ))
       )}
 
-      <section aria-labelledby="sources-title">
+      </div>
+
+      <section className="dash-readings" aria-labelledby="sources-title">
         <h2 id="sources-title" className="dash-section-title">
           Sources and latest readings
         </h2>
@@ -177,6 +197,8 @@ function MainColumn(props: DashboardProps & { state: StateEnvelope }) {
               <SourceCard
                 key={source.source_id}
                 source={source}
+                compact
+                selected={props.historySourceId === source.source_id}
                 lastObservation={
                   source.last_observation_id === null
                     ? undefined
@@ -265,10 +287,9 @@ function OtherActions(props: DashboardProps & { state: StateEnvelope }) {
 
 function IncidentHistory({ state }: { state: StateEnvelope }) {
   return (
-    <section className="ui-card" aria-labelledby="incidents-title">
-      <h2 id="incidents-title" className="dash-section-title">
-        Incident history
-      </h2>
+    <details className="ui-card dash-incidents">
+      <summary><span>Incident history</span>{state.incidents.length > 0 ? state.incidents.map((incident) => <StatusBadge key={incident.id} kind="incident" state={incident.state} />) : <span className="ui-empty">No incidents</span>}</summary>
+      <h2 className="visually-hidden">Incident history details</h2>
       {state.incidents.length === 0 ? (
         <p className="ui-empty">No incidents at this time.</p>
       ) : (
@@ -278,7 +299,7 @@ function IncidentHistory({ state }: { state: StateEnvelope }) {
           ))}
         </ul>
       )}
-    </section>
+    </details>
   )
 }
 
@@ -298,7 +319,7 @@ function SourceHistory(props: DashboardProps & { state: StateEnvelope }) {
             aria-pressed={historySourceId === source.source_id}
             onClick={() => props.onSelectHistorySource(source.source_id)}
           >
-            {source.source_id}
+            {source.source_id === 'crew_sleep_log' ? 'Sleep log' : source.source_id === 'reaction_task' ? 'Reaction task' : source.source_id}
           </button>
         ))}
       </div>
@@ -316,7 +337,10 @@ function SourceHistory(props: DashboardProps & { state: StateEnvelope }) {
               ' A fixture preview run holds no stored history.'}
           </p>
         ) : (
-          <HistoryTable observations={history} />
+          <>
+            <HistoryPlot observations={history} />
+            <details className="history-details"><summary>View data table <span>{history.length} rows</span></summary><HistoryTable observations={history} /></details>
+          </>
         ))}
     </section>
   )

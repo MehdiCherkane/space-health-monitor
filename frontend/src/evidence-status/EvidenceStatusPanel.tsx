@@ -20,6 +20,7 @@ import {
 import './evidence-status.css'
 
 export interface EvidenceStatusPanelProps {
+  compact?: boolean
   state: StateEnvelope | null
   dataMode: DataMode
   status: LoadStatus
@@ -33,6 +34,7 @@ export interface EvidenceStatusPanelProps {
  * does not compute another assessment.
  */
 export function EvidenceStatusPanel({
+  compact = false,
   state,
   dataMode,
   status,
@@ -43,9 +45,17 @@ export function EvidenceStatusPanel({
   const headingId = useId()
   const observations = indexObservations(state?.observations ?? [])
   const hasAssessment = model.assessments.length > 0
+  const inputDetails = (
+    <>
+      {model.assessments.map((assessment) => (
+        <AssessmentBlock key={assessment.id} assessment={assessment} observations={observations} />
+      ))}
+      {model.sources.length > 0 && <SourceList sources={model.sources} />}
+    </>
+  )
 
   return (
-    <section className="evidence-status ui-card" aria-labelledby={headingId}>
+    <section className={`evidence-status ui-card${compact ? " evidence-status--compact" : ""}`} aria-labelledby={headingId}>
       <header className="evidence-status__head">
         <h2 id={headingId} className="evidence-status__title">
           Evidence status
@@ -82,17 +92,22 @@ export function EvidenceStatusPanel({
 
       {model.phase === 'ready' && (
         <>
-          <p className="evidence-status__summary">{model.summary}</p>
+          {(!compact || !hasAssessment) && <p className="evidence-status__summary">{model.summary}</p>}
 
-          {model.assessments.map((assessment) => (
-            <AssessmentBlock
-              key={assessment.id}
-              assessment={assessment}
-              observations={observations}
-            />
-          ))}
-
-          {model.sources.length > 0 && <SourceList sources={model.sources} />}
+          {compact ? (
+            <>
+              {model.assessments.map((assessment) => (
+                <p key={assessment.id} className="evidence-status__meaning">{assessment.meaning}</p>
+              ))}
+              <details className="evidence-status__details">
+                <summary>Inspect inputs and sources</summary>
+                {inputDetails}
+                <ul className="evidence-status__limits">
+                  {model.limits.map((limit) => <li key={limit}>{limit}</li>)}
+                </ul>
+              </details>
+            </>
+          ) : inputDetails}
 
           {hasAssessment && !model.hasConflicts && (
             <p className="evidence-status__disagreement ui-empty">
@@ -100,7 +115,7 @@ export function EvidenceStatusPanel({
             </p>
           )}
 
-          {hasAssessment && (
+          {hasAssessment && !compact && (
             <section className="evidence-status__next" aria-label="What can we do next?">
               <h3 className="evidence-status__subhead">What can we do next?</h3>
               <div className="evidence-status__actions">
@@ -135,7 +150,7 @@ export function EvidenceStatusPanel({
             </section>
           )}
 
-          {model.limits.length > 0 && (
+          {!compact && model.limits.length > 0 && (
             <details className="evidence-status__details">
               <summary>What this means</summary>
               <ul className="evidence-status__limits">

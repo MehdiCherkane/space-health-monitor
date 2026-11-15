@@ -32,6 +32,18 @@ export function formatAge(seconds: number | null): string | null {
   return `${seconds} s · ${friendly}`
 }
 
+/**
+ * Display formatting only. Long fractional sensor values are rounded to six decimal
+ * places for compact reading surfaces; the stored observation and raw tables keep
+ * their full returned value.
+ */
+export function formatNumber(value: number): string {
+  if (!Number.isFinite(value)) return String(value)
+  if (Number.isInteger(value)) return String(value)
+  const rounded = Math.round(value * 1e6) / 1e6
+  return String(rounded === 0 && value !== 0 ? value : rounded)
+}
+
 export function formatValue(observation: Pick<Observation, 'value' | 'unit'>): string {
   return `${observation.value} ${observation.unit}`
 }

@@ -1,28 +1,25 @@
-/*
- * Astro Vital design tokens. Derived from the Stitch "Orbital Bio-Telemetry" system
- * (navy primary, amber advisory instead of alarm red, hairline borders, 4px radius),
- * mapped to system fonts so nothing loads from the network.
- * Every status colour pairs with an icon + text in components; colour is never the only cue.
- */
+@font-face { font-family: 'Fira Sans'; src: url('/fonts/FiraSans-Regular.ttf') format('truetype'); font-weight: 400; font-display: swap; }
+@font-face { font-family: 'Fira Sans'; src: url('/fonts/FiraSans-Medium.ttf') format('truetype'); font-weight: 500 800; font-display: swap; }
+/* Locally bundled type and an orbital/sage palette; every status retains text + icon. */
 :root {
-  --font-sans: system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+  --font-sans: 'Fira Sans', system-ui, sans-serif;
   --font-mono: ui-monospace, SFMono-Regular, Menlo, Consolas, 'Liberation Mono', monospace;
 
-  --canvas: #f4f6f8;
-  --surface: #ffffff;
-  --surface-sunken: #f8fafb;
-  --surface-hover: #eef2f6;
-  --border: #d2d9df;
-  --border-strong: #9aa6b2;
+  --canvas: #070d16;
+  --surface: #f4f6f2;
+  --surface-sunken: #eaf0e9;
+  --surface-hover: #e2eae0;
+  --border: #d4ded2;
+  --border-strong: #8d9f8b;
 
-  --ink: #111d27;
-  --ink-muted: #42505e;   /* 8.4:1 on white */
-  --ink-subtle: #5a6875;  /* 5.7:1 on white */
+  --ink: #18241f;
+  --ink-muted: #43564a;   /* 8.4:1 on white */
+  --ink-subtle: #536557;  /* 5.7:1 on white */
 
-  --primary: #1f4e79;
-  --primary-hover: #163a5a;
-  --on-primary: #ffffff;
-  --focus: #1f4e79;
+  --primary: #416951;
+  --primary-hover: #2f503c;
+  --on-primary: #f4f6f2;
+  --focus: #6e9b84;
 
   /* Source / assessment / incident states. Text colours are AA on their tint. */
   --ok-ink: #1d5e3a;
@@ -31,18 +28,18 @@
   --watch-ink: #7a4306;
   --watch-tint: #fdf6ed;
   --watch-line: #e5a960;
-  --muted-ink: #42505e;
+  --muted-ink: #43564a;
   --muted-tint: #f0f3f6;
   --muted-line: #c3ccd5;
   --danger-ink: #8f1d1d;
   --danger-tint: #fcefef;
   --danger-line: #e2a3a3;
-  --info-ink: #1f4e79;
+  --info-ink: #416951;
   --info-tint: #edf3fa;
   --info-line: #a9c3dd;
 
   /* Provenance: three distinct hues + distinct icons. */
-  --prov-historical-ink: #1f4e79;
+  --prov-historical-ink: #416951;
   --prov-historical-tint: #e8f0f8;
   --prov-synthetic-ink: #5b3a8c;
   --prov-synthetic-tint: #f2edf9;
@@ -56,8 +53,8 @@
   --space-5: 1.5rem;
   --space-6: 2rem;
 
-  --radius: 4px;
-  --radius-lg: 8px;
+  --radius: 12px;
+  --radius-lg: 16px;
   --shadow-pop: 0 2px 4px rgba(31, 78, 121, 0.06), 0 0 1px rgba(90, 107, 124, 0.2);
   --shadow-drawer: -8px 0 24px rgba(17, 29, 39, 0.12);
 
@@ -122,3 +119,8 @@ body {
   font-family: var(--font-mono);
   font-variant-numeric: tabular-nums;
 }
+
+::selection { background: #c1d5bc; color: #18241f; }
+* { scrollbar-color: #8d9f8b transparent; scrollbar-width: thin; }
+input, textarea { caret-color: var(--primary); }
+button { font-variant-numeric: tabular-nums; }

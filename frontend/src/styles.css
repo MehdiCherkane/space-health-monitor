@@ -1,63 +1,58 @@
-/* App shell layout. Tokens and primitives come from src/ui. */
-.app {
-  min-height: 100vh;
+/* The shell frames the observatory; reading surfaces carry their own light palette. */
+.app { position: relative; isolation: isolate; min-height: 100vh; color: #e8eee8; overflow: clip; }
+.app-skip { display:inline-flex; align-items:center; min-height:44px; position:absolute; left:20px; top:-5rem; z-index:20; padding:8px 16px; background:var(--surface); color:var(--ink); border-radius:12px; }
+.app-skip:focus { top:10px; }
+.app-header { max-width:1520px; margin:auto; display:flex; justify-content:space-between; align-items:center; gap:16px; padding:20px 32px 16px; border-bottom:1px solid #ffffff17; }
+.app-brand { display:flex; gap:13px; align-items:center; }
+.app-mark { width:40px; height:40px; flex:none; color:#c4dbbf; }
+.app-brand h1 { font-size:23px; font-weight:500; letter-spacing:-.03em; line-height:1.2; margin:0; }
+.app-brand p { margin:3px 0 0; font-size:13px; color:#b7c5c6; }
+.app-header__tools { display:flex; align-items:center; gap:18px; font-size:13px; }
+.app-prototype { color:#b7c5c6; }
+.app-header .ui-mode { border-radius:999px; padding:7px 12px; font-size:13px; }
+.app-header .ui-mode--integrated { color:#cce2ca; border-color:#6b8d7070; background:#21382b; }
+.motion-control { display:flex; align-items:center; gap:8px; min-height:44px; padding:8px 12px; border:1px solid #ffffff30; border-radius:12px; color:#e2eae2; background:#0b1622; cursor:pointer; font:inherit; font-size:13px; }
+.motion-control:hover { background:#1e3039; }
+.motion-control:disabled { cursor:default; color:#b7c5c6; }
+.app-main { max-width:1520px; margin:auto; padding:20px 32px 24px; }
+.app-main:focus { outline:none; }
+.app-footer { display:flex; flex-wrap:wrap; justify-content:space-between; gap:8px; max-width:1520px; margin:auto; padding:0 32px 24px; color:#b3c2c4; font-size:13px; }
+.app-checkin { scroll-margin:24px; color:var(--ink); }
+.app-checkin .crew-checkin { max-width:none; padding:24px; border:0; }
+.app-checkin .crew-checkin__form { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:16px 32px; }
+.app-checkin .crew-checkin__form > :not(.crew-checkin__field-group) { grid-column:1/-1; }
+.app-checkin .crew-checkin__field-group { margin-bottom:0; }
+.app-checkin .crew-checkin__reaction { margin-top:20px; }
+.cosmos { position:fixed; inset:0; z-index:-1; pointer-events:none; overflow:hidden; background:#070d16; }
+.cosmos__stars { position:absolute; inset:0; background-image:radial-gradient(1px 1px at 20% 30%,#c2d3d6 50%,transparent),radial-gradient(1px 1px at 70% 60%,#b1c8cd 50%,transparent),radial-gradient(1px 1px at 50% 90%,#b1c8cd 50%,transparent); background-size:229px 263px,419px 337px,313px 467px; opacity:.36; }
+.cosmos__plane { position:absolute; width:1150px; height:1150px; left:calc(50% - 620px); top:-210px; transform:rotate(-22deg) scaleY(.78); opacity:.8; }
+.cosmos__galaxy { width:100%; height:100%; animation:galaxy-turn 120s linear infinite; will-change:transform; }
+.cosmos[data-paused='true'] .cosmos__galaxy { animation-play-state:paused; }
+@keyframes galaxy-turn { to { transform:rotate(360deg); } }
+@keyframes observatory-arrive { from { transform:translateY(8px); } to { transform:none; } }
+.app-main { animation:observatory-arrive 500ms cubic-bezier(.16,1,.3,1) both; }
+.app[data-motion-paused='true'] * { transition-duration:0ms !important; }
+.app[data-motion-paused='true'] .app-main, .app[data-motion-paused='true'] .anatomy__figure svg, .app[data-motion-paused='true'] .ui-spinner { animation:none; }
+@media (prefers-reduced-motion:reduce) { *, *::before, *::after { animation:none !important; transition:none !important; scroll-behavior:auto !important; } }
+@media (max-width:768px) {
+ .app-header { padding:16px 20px; flex-wrap:wrap; }
+ .app-header__tools { gap:8px; justify-content:space-between; width:100%; }
+ .app-prototype { display:none; }
+ .app-main { padding:16px 20px 24px; }
+ .app-footer { padding:0 20px 24px; }
+ .app-checkin .crew-checkin__form { grid-template-columns:1fr; }
+ .cosmos__plane { left:calc(50% - 550px); top:0; }
 }
-
-.app-skip {
-  display: inline-flex;
-  align-items: center;
-  min-height: var(--target);
-  position: absolute;
-  left: var(--space-4);
-  top: -4rem;
-  z-index: 10;
-  padding: var(--space-2) var(--space-3);
-  background: var(--primary);
-  color: var(--on-primary);
-  border-radius: var(--radius);
-}
-.app-skip:focus {
-  top: var(--space-2);
-}
-
-.app-header {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: var(--space-3);
-  flex-wrap: wrap;
-  padding: var(--space-3) var(--space-6);
-  background: var(--surface);
-  border-bottom: 1px solid var(--border);
-}
-.app-brand h1 {
-  margin: 0;
-  font-size: var(--text-lg);
-  letter-spacing: 0.01em;
-}
-.app-brand p {
-  margin: 0;
-  font-size: var(--text-sm);
-  color: var(--ink-subtle);
-}
-
-.app-main {
-  max-width: 90rem;
-  margin: 0 auto;
-  padding: var(--space-5) var(--space-6) var(--space-6);
-}
-.app-main:focus {
-  outline: none;
-}
-
-.app-checkin {
-  border-radius: var(--radius-lg);
-}
-
-@media (max-width: 768px) {
-  .app-header,
-  .app-main {
-    padding-left: var(--space-4);
-    padding-right: var(--space-4);
-  }
-}
+/* Compact desktop chrome keeps the replay story together on a jury screen. */
+@media (min-width:961px) { .app-header { padding-top:14px; padding-bottom:14px; } .app-main { padding-top:16px; } }
+.app-checkin .crew-checkin__field-group:last-of-type { display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:12px; }
+.app-checkin .crew-checkin__field-group:last-of-type > legend,
+.app-checkin .crew-checkin__field-group:last-of-type > p { grid-column:1/-1; }
+@media (max-width:600px) { .app-checkin .crew-checkin__field-group:last-of-type { grid-template-columns:1fr; } }
+.crew-checkin__sample { border-top:1px solid var(--border); }
+.crew-checkin__sample > summary { display:flex; align-items:center; flex-wrap:wrap; gap:8px; min-height:56px; cursor:pointer; color:var(--primary); font-weight:500; }
+.crew-checkin__sample > summary > span { margin-left:auto; color:var(--ink-subtle); font-size:13px; font-weight:400; }
+.crew-checkin__sample > summary::after { content:'+'; margin-left:8px; }
+.crew-checkin__sample[open] > summary::after { content:'−'; }
+.app-checkin .crew-checkin__reaction { margin-top:0; padding-top:12px; }
+.app-checkin .crew-checkin__reaction h3 { margin-top:0; }
