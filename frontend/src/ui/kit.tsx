@@ -40,7 +40,7 @@ const SOURCE_TONE: Record<SourceState, [Tone, IconName]> = {
 const ASSESSMENT_TONE: Record<AssessmentState, [Tone, IconName]> = {
   observed: ['muted', 'observed'],
   watch: ['watch', 'watch'],
-  insufficient_data: ['info', 'insufficient'],
+  insufficient_data: ['muted', 'insufficient'],
 }
 const INCIDENT_TONE: Record<IncidentState, [Tone, IconName]> = {
   open: ['watch', 'open'],
@@ -126,21 +126,34 @@ export function ObservationLine({
   )
 }
 
+function readingDisplay(observation: Observation): { value: string; title: string } {
+  if (observation.unit === 'µGy/h') {
+    return {
+      value: observation.value.toFixed(2),
+      title: `${observation.value.toFixed(6)} µGy/h`,
+    }
+  }
+  return { value: formatNumber(observation.value), title: `${formatValue(observation)}` }
+}
+
 export function SourceCard({
   source,
   lastObservation,
   onHistory,
   compact = false,
   selected = false,
+  emptyAction,
 }: {
   source: SourceStatus
   lastObservation: Observation | undefined
   onHistory?: () => void
   compact?: boolean
   selected?: boolean
+  emptyAction?: ReactNode
 }) {
   const age = formatAge(source.age_seconds)
   const titleId = useId()
+  const reading = lastObservation ? readingDisplay(lastObservation) : null
   const reason = (
 <p className="ui-reason">
           {REASON_TEXT[source.reason_code] ?? humanize(source.reason_code)}
@@ -177,16 +190,28 @@ export function SourceCard({
       </header>
       <p className="ui-source__metric">{humanize(source.metric)}</p>
       {source.last_observation_id === null ? (
-        <p className="ui-source__empty">No reading</p>
-      ) : lastObservation ? (
         <>
-          <p className="ui-source__value mono"><span>{formatNumber(lastObservation.value)}</span> <small>{lastObservation.unit}</small></p>
-          {compact ? <details className="source-details"><summary>Reading details{age !== null && <span>{age}</span>}</summary>
-{metadata}
-            {reason}
-          </details> : <>
-{metadata}
-          </>}
+          <p className="ui-source__empty">No reading</p>
+          {compact && <p className="ui-source__empty-hint">No completed result for the current session.</p>}
+          {emptyAction !== undefined && <div className="ui-source__empty-action">{emptyAction}</div>}
+        </>
+      ) : lastObservation && reading ? (
+        <>
+          <p className="ui-source__value mono" title={reading.title}>
+            <span>{reading.value}</span> <small>{lastObservation.unit}</small>
+          </p>
+          {compact ? (
+            <details className="source-details">
+              <summary>
+                Reading age: {age === null ? 'unavailable' : age}
+                {age === '0 s' && ' (just now)'}
+              </summary>
+              {metadata}
+              {reason}
+            </details>
+          ) : (
+            <>{metadata}</>
+          )}
 
           {!compact && <ProvenanceBadge provenance={lastObservation.provenance} />}
         </>
@@ -328,20 +353,25 @@ export function AssessmentPanel({
         </p>
       )}
       <div className="ui-assessment__actions">
-        <button type="button" className="ui-button ui-button--primary" onClick={onWhy}>
-          <Icon name="why" />
-          Why?
-        </button>
         {assessment.action_ids.map((id) => {
           const action = byId.get(id)
           return action ? (
-            <ActionButton key={id} action={action} onAction={onAction} />
+            <ActionButton
+              key={id}
+              action={action}
+              onAction={onAction}
+              variant={action.available ? 'primary' : 'secondary'}
+            />
           ) : (
             <span key={id} className="ui-action__reason">
               Action <code>{id}</code> unavailable
             </span>
           )
         })}
+        <button type="button" className="ui-button ui-button--secondary" onClick={onWhy}>
+          <Icon name="why" />
+          Why?
+        </button>
       </div>
     </section>
   )

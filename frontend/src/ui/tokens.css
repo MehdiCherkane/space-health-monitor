@@ -1,50 +1,92 @@
-@font-face { font-family: 'Fira Sans'; src: url('/fonts/FiraSans-Regular.ttf') format('truetype'); font-weight: 400; font-display: swap; }
-@font-face { font-family: 'Fira Sans'; src: url('/fonts/FiraSans-Medium.ttf') format('truetype'); font-weight: 500 800; font-display: swap; }
-/* Locally bundled type and an orbital/sage palette; every status retains text + icon. */
+@font-face {
+  font-family: 'Fira Sans';
+  src: url('/fonts/FiraSans-Regular.ttf') format('truetype');
+  font-weight: 400;
+  font-display: swap;
+}
+@font-face {
+  font-family: 'Fira Sans';
+  src: url('/fonts/FiraSans-Medium.ttf') format('truetype');
+  font-weight: 500 800;
+  font-display: swap;
+}
+
+/*
+ * Deep-space blue system. Green is reserved for "current/ok" status; amber for
+ * caution; missing/insufficient data uses neutral slate-blue rather than alarm.
+ * Text pairings are checked for WCAG AA (4.5:1) on their surfaces.
+ */
 :root {
-  --font-sans: 'Fira Sans', system-ui, sans-serif;
+  --font-sans: 'Fira Sans', system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
   --font-mono: ui-monospace, SFMono-Regular, Menlo, Consolas, 'Liberation Mono', monospace;
 
-  --canvas: #070d16;
-  --surface: #f4f6f2;
-  --surface-sunken: #eaf0e9;
-  --surface-hover: #e2eae0;
-  --border: #d4ded2;
-  --border-strong: #8d9f8b;
+  /* Deep space. The canvas background lives on <html> only. */
+  --canvas: #040813;
+  --canvas-high: #0a1226;
+  --space-text: #e8eeff;
+  --space-muted: #a9b8d9;
+  --space-border: rgba(130, 170, 255, 0.25);
+  --space-panel: rgba(9, 17, 36, 0.58);
+  --space-panel-strong: rgba(7, 13, 28, 0.74);
+  --space-scrim: rgba(3, 7, 17, 0.58);
 
-  --ink: #18241f;
-  --ink-muted: #43564a;   /* 8.4:1 on white */
-  --ink-subtle: #536557;  /* 5.7:1 on white */
+  /* Light, cool reading surfaces. */
+  --surface: #f3f6fd;
+  --surface-sunken: #e9eef9;
+  --surface-hover: #e1e8f6;
+  --surface-glass: rgba(243, 246, 253, 0.92);
+  --border: #d5def0;
+  --border-strong: #8fa3c7;
 
-  --primary: #416951;
-  --primary-hover: #2f503c;
-  --on-primary: #f4f6f2;
-  --focus: #6e9b84;
+  --ink: #0e1a33;        /* 15.5:1 on --surface */
+  --ink-muted: #4a5878;  /* 7.3:1 on --surface */
+  --ink-subtle: #5a6885; /* 5.8:1 on --surface */
 
-  /* Source / assessment / incident states. Text colours are AA on their tint. */
-  --ok-ink: #1d5e3a;
-  --ok-tint: #edf6f0;
-  --ok-line: #9cc9ad;
-  --watch-ink: #7a4306;
-  --watch-tint: #fdf6ed;
-  --watch-line: #e5a960;
-  --muted-ink: #43564a;
-  --muted-tint: #f0f3f6;
-  --muted-line: #c3ccd5;
-  --danger-ink: #8f1d1d;
-  --danger-tint: #fcefef;
-  --danger-line: #e2a3a3;
-  --info-ink: #416951;
-  --info-tint: #edf3fa;
-  --info-line: #a9c3dd;
+  /* Brand / interaction. */
+  --primary: #2f6fe0;
+  --primary-hover: #6ba1ff; /* link and outline hover */
+  --primary-strong: #2258c8; /* filled-button hover keeps white text AA */
+  --primary-ink: #1f4fb8; /* primary-coloured text on light surfaces meets AA */
+  --on-primary: #ffffff;
+  --accent: #4f8bff;
+  --accent-hover: #6ba1ff;
+  --focus: #9dbeff;
 
-  /* Provenance: three distinct hues + distinct icons. */
-  --prov-historical-ink: #416951;
-  --prov-historical-tint: #e8f0f8;
-  --prov-synthetic-ink: #5b3a8c;
-  --prov-synthetic-tint: #f2edf9;
-  --prov-device-ink: #0f5f5c;
-  --prov-device-tint: #e6f4f3;
+  /* Status families. */
+  --ok: #2fbf8f;
+  --ok-ink: #0b6b4f;
+  --ok-tint: #e6f8f1;
+  --ok-line: #8be0c3;
+
+  --watch: #f2b44e;
+  --watch-ink: #6e4700;
+  --watch-tint: #fdf3e2;
+  --watch-line: #f2b44e;
+
+  --slate: #8fa3c7;
+  --slate-ink: #3e5475;
+  --slate-tint: #edf1f9;
+  --slate-line: #b7c5de;
+
+  --danger-ink: #8e2f45;
+  --danger-tint: #fbeef1;
+  --danger-line: #e3a8b5;
+
+  --info-ink: #244e9e;
+  --info-tint: #eaf0ff;
+  --info-line: #a9c3ff;
+
+  --muted-ink: #4a5878;
+  --muted-tint: #edf1f9;
+  --muted-line: #c7d2e6;
+
+  /* Provenance families. */
+  --prov-historical-ink: #0e6b85;
+  --prov-historical-tint: #e6f7fc;
+  --prov-synthetic-ink: #5b3e9e;
+  --prov-synthetic-tint: #f1ecff;
+  --prov-device-ink: #244c9a;
+  --prov-device-tint: #eaf0ff;
 
   --space-1: 0.25rem;
   --space-2: 0.5rem;
@@ -53,12 +95,13 @@
   --space-5: 1.5rem;
   --space-6: 2rem;
 
-  --radius: 12px;
+  --radius: 10px;
   --radius-lg: 16px;
-  --shadow-pop: 0 2px 4px rgba(31, 78, 121, 0.06), 0 0 1px rgba(90, 107, 124, 0.2);
-  --shadow-drawer: -8px 0 24px rgba(17, 29, 39, 0.12);
+  --shadow-pop: 0 8px 30px rgba(2, 6, 16, 0.35);
+  --shadow-drawer: -16px 0 40px rgba(2, 6, 16, 0.45);
+  --shadow-glass: 0 24px 80px rgba(2, 6, 16, 0.45);
 
-  /* 13px floor for captions/badges, 14–16px for reading text. */
+  /* 13px floor for secondary labels; 14-16px reading text. */
   --text-xs: 0.8125rem;
   --text-sm: 0.875rem;
   --text-md: 1rem;
@@ -66,10 +109,10 @@
   --text-xl: 1.375rem;
   --text-2xl: 1.75rem;
 
-  --duration: 160ms;
-  --target: 44px; /* minimum touch target */
+  --duration: 170ms;
+  --target: 44px;
 
-  color-scheme: light;
+  color-scheme: dark;
 }
 
 @media (prefers-reduced-motion: reduce) {
@@ -84,22 +127,33 @@
   box-sizing: border-box;
 }
 
+/* The galaxy paints itself behind everything; the base colour stays on <html>. */
 html {
+  background: var(--canvas);
   font-family: var(--font-sans);
   font-size: 100%;
   line-height: 1.5;
-  color: var(--ink);
-  background: var(--canvas);
+  color: var(--space-text);
   -webkit-text-size-adjust: 100%;
 }
 
 body {
   margin: 0;
-  background: var(--canvas);
+  background: transparent;
+}
+
+#galaxy {
+  position: fixed;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  z-index: -1;
+  display: block;
+  pointer-events: none;
 }
 
 :focus-visible {
-  outline: 3px solid var(--focus);
+  outline: 2px solid var(--focus);
   outline-offset: 2px;
 }
 
@@ -120,7 +174,31 @@ body {
   font-variant-numeric: tabular-nums;
 }
 
-::selection { background: #c1d5bc; color: #18241f; }
-* { scrollbar-color: #8d9f8b transparent; scrollbar-width: thin; }
-input, textarea { caret-color: var(--primary); }
-button { font-variant-numeric: tabular-nums; }
+::selection {
+  background: #9dbeff;
+  color: #0e1a33;
+}
+
+* {
+  scrollbar-color: var(--border-strong) transparent;
+  scrollbar-width: thin;
+}
+
+input,
+textarea {
+  caret-color: var(--primary);
+}
+
+button {
+  font-variant-numeric: tabular-nums;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation: none !important;
+    transition: none !important;
+    scroll-behavior: auto !important;
+  }
+}

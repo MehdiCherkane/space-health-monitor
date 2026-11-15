@@ -20,14 +20,14 @@ describe('observatory presentation and navigation', () => {
     const onAction = vi.fn(), onSelectSource = vi.fn(), onOpenEvidence = vi.fn()
     const original = JSON.stringify(crew)
     view = await render(<ObservatoryScene state={crew} selectedSource="crew_sleep_log" onAction={onAction} onSelectSource={onSelectSource} onOpenEvidence={onOpenEvidence} />)
-    const label = () => view!.container.querySelector('[role="img"]')!.getAttribute('aria-label')
-    expect(label()).toBe('Male anatomy illustration, front view')
+    const label = () => view!.container.querySelector('[role="img"]')!.getAttribute('aria-label') ?? ''
+    expect(label()).toContain('male hologram figure, front view')
     await click(buttonByText(view.container, 'Back'))
-    expect(label()).toBe('Male anatomy illustration, back view')
+    expect(label()).toContain('male hologram figure, back view')
     await click(buttonByText(view.container, 'Female'))
-    expect(label()).toBe('Female anatomy illustration, back view')
+    expect(label()).toContain('female hologram figure, back view')
     await click(buttonByText(view.container, 'Front'))
-    expect(label()).toBe('Female anatomy illustration, front view')
+    expect(label()).toContain('female hologram figure, front view')
     expect(buttonByText(view.container, 'Female').getAttribute('aria-pressed')).toBe('true')
     expect(JSON.stringify(crew)).toBe(original)
     expect(onAction).not.toHaveBeenCalled()
@@ -42,9 +42,10 @@ describe('observatory presentation and navigation', () => {
     const onSelectSource = vi.fn()
     view = await render(<ObservatoryScene state={radlab} selectedSource="DosTel1" onAction={vi.fn()} onSelectSource={onSelectSource} onOpenEvidence={vi.fn()} />)
     expect(view.container.querySelector('.anatomy')).toBeNull()
-    expect(text(view.container)).toContain('Historical cabin measurements, not personal exposure.')
+    expect(text(view.container)).toContain('Historical cabin measurements — not personal exposure.')
+    expect(text(view.container.querySelector('.detector__sources'))).not.toContain('current')
     const detector = buttonByText(view.container, 'DosTel1')
-    expect(text(detector)).toContain('stale')
+    expect(detector.querySelector('.detector__node-key')?.getAttribute('data-state')).toBe('stale')
     await click(buttonByText(view.container, 'DosTel2'))
     expect(onSelectSource).toHaveBeenCalledWith('DosTel2')
   })
@@ -54,11 +55,33 @@ describe('observatory presentation and navigation', () => {
     expect(view.container.querySelector('svg')).toBeNull()
     const zero = { ...radlab.observations[0], value: 0 }
     await view.rerender(<HistoryPlot observations={[zero]} />)
-    const dots = view.container.querySelectorAll('circle')
+    const dots = view.container.querySelectorAll('.history-plot__point')
     expect(dots).toHaveLength(1)
-    expect(text(dots[0])).toContain('0 µGy/h')
+    expect(dots[0].getAttribute('aria-label')).toContain('0 µGy/h')
     expect(dots[0].getAttribute('cy')).not.toContain('NaN')
-    expect(view.container.querySelector('path')).toBeNull()
+    expect(view.container.querySelector('.history-plot__line')).toBeNull()
+    expect(view.container.querySelector('.history-plot__area')).toBeNull()
+    expect(text(view.container)).toContain('Single recorded reading')
+  })
+
+  it('draws line and area plus a returned baseline band with focusable point details', async () => {
+    const rows = [
+      { ...radlab.observations[0], id: 'a', value: 380, unit: 'min', observed_at: '2026-01-08T07:00:00Z' },
+      { ...radlab.observations[0], id: 'b', value: 420, unit: 'min', observed_at: '2026-01-10T07:00:00Z' },
+    ]
+    view = await render(
+      <HistoryPlot observations={rows} band={{ min: 440, max: 460, label: 'Returned demo baseline range' }} />,
+    )
+    expect(view.container.querySelector('.history-plot__line')).not.toBeNull()
+    expect(view.container.querySelector('.history-plot__area')).not.toBeNull()
+    expect(view.container.querySelector('.history-plot__band')).not.toBeNull()
+    expect(text(view.container)).toContain('Returned demo baseline range')
+
+    const point = view.container.querySelector('.history-plot__point') as SVGElement
+    await act(async () => {
+      point.dispatchEvent(new FocusEvent('focusin', { bubbles: true }))
+    })
+    expect(view.container.querySelector('.history-plot__tooltip')).not.toBeNull()
   })
 
   it('does not combine different units in one chart', async () => {
@@ -78,7 +101,7 @@ describe('ambient motion has priority below measurement and accessibility', () =
     let hidden = false
     vi.spyOn(document, 'hidden', 'get').mockImplementation(() => hidden)
     view = await render(<MotionHarness />)
-    const paused = () => view!.container.querySelector('.cosmos')!.getAttribute('data-paused')
+    const paused = () => view!.container.querySelector('#galaxy')!.getAttribute('data-paused')
     expect(paused()).toBe('false')
     await click(buttonByText(view.container, 'Pause motion'))
     await view.rerender(<MotionHarness measuring />)
@@ -100,9 +123,9 @@ describe('ambient motion has priority below measurement and accessibility', () =
     vi.stubGlobal('matchMedia', vi.fn(() => query))
     view = await render(<MotionHarness />)
     expect(buttonByText(view.container, 'Reduced motion').disabled).toBe(true)
-    expect(view.container.querySelector('.cosmos')!.getAttribute('data-paused')).toBe('true')
+    expect(view.container.querySelector('#galaxy')!.getAttribute('data-paused')).toBe('true')
     await act(async () => { query.matches = false; listener?.() })
-    expect(view.container.querySelector('.cosmos')!.getAttribute('data-paused')).toBe('false')
+    expect(view.container.querySelector('#galaxy')!.getAttribute('data-paused')).toBe('false')
     view.unmount(); view = null
     expect(query.removeEventListener).toHaveBeenCalledWith('change', listener)
   })

@@ -12,6 +12,7 @@ import { DataModeBadge } from './ui'
 
 export default function App() {
   const replay = useReplay('radlab_stale')
+  const { isPlaying, togglePlay } = replay
   const [measuring, setMeasuring] = useState(false)
   const motion = useAmbientMotion(measuring)
   const { run, state, clock } = replay
@@ -39,6 +40,11 @@ export default function App() {
     setEvidenceOpen(false)
     setHistorySourceId(null)
   }, [run?.run_id])
+
+  // Measurement timing has priority over replay progress as well as decorative motion.
+  useEffect(() => {
+    if (measuring && isPlaying) togglePlay()
+  }, [measuring, isPlaying, togglePlay])
 
   const focusSection = (element: HTMLElement | null) => {
     const reduce = window.matchMedia?.('(prefers-reduced-motion: reduce)').matches
@@ -90,15 +96,27 @@ export default function App() {
       </a>
       <header className="app-header">
         <div className="app-brand">
-          <svg className="app-mark" viewBox="0 0 40 40" aria-hidden="true"><circle cx="20" cy="20" r="12" fill="none" stroke="currentColor" strokeWidth="1.5" /><ellipse cx="20" cy="20" rx="19" ry="7" transform="rotate(-35 20 20)" fill="none" stroke="currentColor" strokeWidth="1.5" /><circle cx="29" cy="10" r="3" fill="currentColor" /></svg>
-          <div><h1>Astro Vital</h1>
-          <p>Evidence for the next decision.</p></div>
+          <img className="app-mark" src="/art/heart-planets-logo.svg" alt="" width={40} height={40} />
+          <div>
+            <h1>Astro Vital</h1>
+            <p>Evidence for the next decision.</p>
+          </div>
         </div>
         <div className="app-header__tools">
-          <span className="app-prototype">Replay prototype</span>
-          <DataModeBadge mode={replay.dataMode} />
-          <button className="motion-control" type="button" onClick={motion.toggle} disabled={motion.locked} aria-pressed={motion.paused}>
-            <svg width="16" height="16" viewBox="0 0 16 16" aria-hidden="true" fill="currentColor">{motion.paused ? <path d="m5 3 8 5-8 5Z" /> : <path d="M4 3h3v10H4zm5 0h3v10H9z" />}</svg>
+          <div className="app-mode" role="group" aria-label="Run mode">
+            <span className="app-mode__label">Replay prototype</span>
+            <DataModeBadge mode={replay.dataMode} />
+          </div>
+          <button
+            className="motion-control"
+            type="button"
+            onClick={motion.toggle}
+            disabled={motion.locked}
+            aria-pressed={motion.paused}
+          >
+            <svg width="16" height="16" viewBox="0 0 16 16" aria-hidden="true" fill="currentColor">
+              {motion.paused ? <path d="m5 3 8 5-8 5Z" /> : <path d="M4 3h3v10H4zm5 0h3v10H9z" />}
+            </svg>
             {motion.label}
           </button>
         </div>
@@ -130,10 +148,22 @@ export default function App() {
           }}
           onOpenEvidence={() => setEvidenceOpen(true)}
           onCloseEvidence={() => setEvidenceOpen(false)}
+          replayControls={{
+            playing: replay.isPlaying,
+            speed: replay.speed,
+            rangeStart: replay.run?.range_start ?? null,
+            rangeEnd: replay.run?.range_end ?? null,
+            onTogglePlay: replay.togglePlay,
+            onSpeedChange: replay.setSpeed,
+            onScrub: replay.seek,
+          }}
           aside={checkIn}
         />
       </main>
-      <footer className="app-footer"><span>Astro Vital · Space Apps prototype</span><span>Explainable replay. Not a medical device.</span></footer>
+      <footer className="app-footer">
+        <span>Astro Vital · Space Apps prototype</span>
+        <span>Explainable replay. Not a medical device.</span>
+      </footer>
     </div>
   )
 }

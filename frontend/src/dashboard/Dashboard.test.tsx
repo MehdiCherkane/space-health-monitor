@@ -9,7 +9,7 @@ import type {
 } from '../api/types'
 import gallery from '../gallery/states.json'
 import { buttonByText, click, render, text, type Rendered } from '../test/dom'
-import { Dashboard } from './Dashboard'
+import { Dashboard, type DashboardExtras } from './Dashboard'
 
 const states = gallery as { id: string; label: string; state: StateEnvelope }[]
 
@@ -37,7 +37,7 @@ const CREW_CHECKPOINTS: Checkpoint[] = [
   { id: '09:01', label: '09:01', as_of: '2026-01-10T09:01:00Z' },
 ]
 
-function props(overrides: Partial<DashboardProps> = {}): DashboardProps {
+function props(overrides: Partial<DashboardProps & DashboardExtras> = {}): DashboardProps & DashboardExtras {
   return {
     state: EXAMPLE_A,
     dataMode: 'integrated',
@@ -103,7 +103,8 @@ describe('Example A rendering', () => {
     const stale = sourceCard(view.container, 'DosTel1')
     expect(text(stale)).toContain('stale')
     expect(text(stale)).toContain('455 s · 7 min 35 s')
-    expect(text(stale)).toContain('1.65945 µGy/h')
+    expect(text(stale)).toContain('1.66 µGy/h')
+    expect(stale.querySelector('.ui-source__value')?.getAttribute('title')).toBe('1.659450 µGy/h')
     expect(text(stale)).toContain('2022-04-01 23:12:25 UTC')
     expect(text(stale)).toContain('2022-04-01T23:12:25')
     expect(text(stale)).toContain('Historical NASA telemetry')
@@ -111,7 +112,8 @@ describe('Example A rendering', () => {
     const current = sourceCard(view.container, 'DosTel2')
     expect(text(current)).toContain('current')
     expect(text(current)).toContain('0 s')
-    expect(text(current)).toContain('2.211496 µGy/h')
+    expect(text(current)).toContain('2.21 µGy/h')
+    expect(current.querySelector('.ui-source__value')?.getAttribute('title')).toBe('2.211496 µGy/h')
     expect(text(current)).toContain('2022-04-01 23:20:00 UTC')
     expect(text(current)).toContain('Historical NASA telemetry')
 
@@ -121,6 +123,12 @@ describe('Example A rendering', () => {
     expect(text(view.container.querySelector('.ui-assessment .ui-rule'))).toBe(
       'SOURCE_FRESHNESS@1',
     )
+
+    const comparison = view.container.querySelector('.detector-compare')!
+    expect(text(comparison)).toContain('DosTel1 1.66 µGy/h')
+    expect(text(comparison)).toContain('DosTel2 2.21 µGy/h')
+    expect(text(comparison)).toContain('+33.3%')
+    expect(text(comparison)).toContain('Not in agreement')
 
     const incident = view.container.querySelector('.ui-incident')!
     expect(text(incident)).toContain('open')
@@ -291,6 +299,45 @@ describe('incident history', () => {
   })
 })
 
+describe('replay transport and action hierarchy', () => {
+  it('exposes play, speed and scrub range tied to the run', async () => {
+    const onTogglePlay = vi.fn()
+    const onSpeedChange = vi.fn()
+    const onScrub = vi.fn()
+    const replayControls = {
+      playing: false,
+      speed: 1,
+      rangeStart: '2022-04-01T23:00:00Z',
+      rangeEnd: '2022-04-02T01:04:59Z',
+      onTogglePlay,
+      onSpeedChange,
+      onScrub,
+    }
+    view = await render(<Dashboard {...props({ replayControls })} />)
+
+    const play = view.container.querySelector<HTMLButtonElement>('.dash-play')!
+    expect(text(play)).toContain('Play replay')
+    await click(play)
+    expect(onTogglePlay).toHaveBeenCalledTimes(1)
+    await click(buttonByText(view.container, '2×'))
+    expect(onSpeedChange).toHaveBeenCalledWith(2)
+
+    const range = view.container.querySelector<HTMLInputElement>('input[type="range"]')!
+    expect(range.getAttribute('aria-label')).toBe('Scrub replay clock')
+    expect(range.min).toBe(String(Date.parse(replayControls.rangeStart)))
+    expect(range.max).toBe(String(Date.parse(replayControls.rangeEnd)))
+    expect(range.value).toBe(String(Date.parse(EXAMPLE_A.as_of)))
+  })
+
+  it('makes the resolving action primary and Why? an outline secondary', async () => {
+    view = await render(<Dashboard {...props({})} />)
+    expect(buttonByText(view.container, 'Review source history').className).toContain(
+      'ui-button--primary',
+    )
+    expect(buttonByText(view.container, 'Why?').className).toContain('ui-button--secondary')
+  })
+})
+
 describe('actions', () => {
   it('routes an available action to its parent action ID', async () => {
     const onAction = vi.fn()
@@ -416,6 +463,7 @@ describe('source history', () => {
 
     const rows = view.container.querySelectorAll('.ui-table tbody tr')
     expect(rows).toHaveLength(2)
+    expect(text(view.container.querySelector('.history-details > summary'))).toContain('2 rows')
     expect(text(rows[0])).toContain('2022-04-01 23:12:25 UTC')
     expect(text(rows[0])).toContain('1.65945 µGy/h')
     expect(text(rows[0])).toContain('Historical NASA telemetry')
@@ -428,6 +476,20 @@ describe('source history', () => {
 
     await click(buttonByText(sourceCard(view.container, 'DosTel1'), 'History'))
     expect(onSelectHistorySource).toHaveBeenCalledWith('DosTel1')
+  })
+
+  it('uses the singular row label for one returned observation', async () => {
+    view = await render(
+      <Dashboard
+        {...props({
+          history: [history[0]],
+          historyStatus: 'ready',
+          historySourceId: 'DosTel1',
+        })}
+      />,
+    )
+    expect(text(view.container.querySelector('.history-details > summary'))).toContain('1 row')
+    expect(text(view.container.querySelector('.history-details > summary'))).not.toContain('1 rows')
   })
 
   it('renders history failure with a parent-owned retry', async () => {
@@ -492,9 +554,12 @@ describe('loading and empty feature states', () => {
     empty.incidents = []
     view = await render(<Dashboard {...props({ state: empty })} />)
 
-    const featureText = text(view.container.querySelector('.dash-main'))
-    expect(featureText).toContain('No assessment was returned for this time.')
-    expect(featureText).toContain('No sources were returned.')
+    expect(text(view.container.querySelector('.dash-banner'))).toContain(
+      'No assessment was returned for this time.',
+    )
+    expect(text(view.container.querySelector('.dash-readings'))).toContain(
+      'No sources were returned.',
+    )
     expect(text(view.container.querySelector('.dash-side'))).toContain(
       'No incidents at this time.',
     )

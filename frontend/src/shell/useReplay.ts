@@ -20,12 +20,23 @@ export interface Replay {
   dataMode: DataMode
   status: ReplayStatus
   error: string | null
+  /** Playback advances the replay clock through the run's range at the selected speed. */
+  isPlaying: boolean
+  speed: number
+  togglePlay(): void
+  setSpeed(speed: number): void
   setScenario(scenarioId: ScenarioId): void
   seek(asOf: string): void
   retry(): void
   /** Re-read the state at the current clock, e.g. after a submission. */
   refresh(): void
   reset(): void
+}
+
+const REPLAY_SPEEDS = [1, 2, 4] as const
+
+function toUtcSecond(milliseconds: number): string {
+  return new Date(milliseconds).toISOString().slice(0, 19) + 'Z'
 }
 
 /** The shell owns the clock and every request; features only render what it hands them. */
@@ -39,6 +50,8 @@ export function useReplay(initialScenario: ScenarioId = 'radlab_stale'): Replay 
   const [error, setError] = useState<string | null>(null)
   const [runAttempt, setRunAttempt] = useState(0)
   const [stateAttempt, setStateAttempt] = useState(0)
+  const [isPlaying, setIsPlaying] = useState(false)
+  const [speed, setSpeedState] = useState(1)
   const gate = useRef(createRequestGate())
 
   useEffect(() => {
@@ -95,6 +108,42 @@ export function useReplay(initialScenario: ScenarioId = 'radlab_stale'): Replay 
     }
   }, [run, clock, stateAttempt])
 
+  // Playback is a shell concern: it only advances the authoritative replay clock.
+  // One tick per second keeps the request gate from being flooded with updates.
+  useEffect(() => {
+    if (!isPlaying || !run) return undefined
+    const interval = window.setInterval(() => {
+      setClock((current) => {
+        const end = Date.parse(run.range_end)
+        const next = Math.min(Date.parse(current || run.initial_as_of) + speed * 30_000, end)
+        return toUtcSecond(next)
+      })
+    }, 1000)
+    return () => window.clearInterval(interval)
+  }, [isPlaying, run, speed])
+
+  useEffect(() => {
+    if (!isPlaying || !run) return
+    if (Date.parse(clock) >= Date.parse(run.range_end)) setIsPlaying(false)
+  }, [clock, isPlaying, run])
+
+  // A new run or scenario is a new replay context; never carry playback across it.
+  useEffect(() => {
+    setIsPlaying(false)
+  }, [run?.run_id, scenarioId])
+
+  const togglePlay = useCallback(() => {
+    if (!run) return
+    if (!isPlaying && Date.parse(clock || run.initial_as_of) >= Date.parse(run.range_end)) {
+      setClock(toUtcSecond(Date.parse(run.range_start)))
+    }
+    setIsPlaying((playing) => !playing)
+  }, [run, isPlaying, clock])
+
+  const setSpeed = useCallback((next: number) => {
+    setSpeedState(REPLAY_SPEEDS.includes(next as (typeof REPLAY_SPEEDS)[number]) ? next : 1)
+  }, [])
+
   const seek = useCallback((asOf: string) => {
     gate.current.invalidate()
     setClock(asOf)
@@ -120,6 +169,7 @@ export function useReplay(initialScenario: ScenarioId = 'radlab_stale'): Replay 
 
   const reset = useCallback(() => {
     gate.current.invalidate()
+    setIsPlaying(false)
     setClock('')
     setRunAttempt((attempt) => attempt + 1)
   }, [])
@@ -132,6 +182,10 @@ export function useReplay(initialScenario: ScenarioId = 'radlab_stale'): Replay 
     dataMode,
     status,
     error,
+    isPlaying,
+    speed,
+    togglePlay,
+    setSpeed,
     setScenario,
     seek,
     retry,

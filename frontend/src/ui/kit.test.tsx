@@ -61,8 +61,16 @@ describe('SourceCard', () => {
     view = await render(<SourceCard source={source({})} lastObservation={reading} />)
     const card = text(view.container)
     expect(card).toContain('Age0 s')
-    expect(card).toContain('2.211496 µGy/h')
+    expect(card).toContain('2.21 µGy/h')
+    expect(card).not.toContain('2.211496 µGy/h')
+    const value = view.container.querySelector('.ui-source__value')
+    expect(value?.getAttribute('title')).toBe('2.211496 µGy/h')
     expect(card).toContain('Historical NASA telemetry')
+  })
+
+  it('labels compact readings as an age and keeps zero honest', async () => {
+    view = await render(<SourceCard compact source={source({})} lastObservation={reading} />)
+    expect(text(view.container)).toContain('Reading age: 0 s (just now)')
   })
 
   it('shows No reading and no age when there is no observation', async () => {
