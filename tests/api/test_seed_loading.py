@@ -194,6 +194,107 @@ def test_loader_reports_the_missing_field_for_a_present_bad_file(tmp_path):
         load_crew_fixture(path)
 
 
+@pytest.mark.parametrize('timestamp', [
+    '2026-01-10T09:01:0١Z',
+    '2026-01-10T09:0١:00Z',
+])
+def test_unicode_seed_timestamp_is_rejected_before_a_run_exists(tmp_path, timestamp):
+    path = write_variant(
+        tmp_path,
+        lambda data: data['observations'][-1].update(observed_at=timestamp),
+    )
+    db_path = tmp_path / 'unicode-seed.db'
+    with TestClient(create_app(db_path, crew_fixture_path=path)) as client:
+        response = client.post('/api/v1/runs', json={'scenario_id': 'sleep_vigilance'})
+        assert response.status_code == 500, response.text
+        assert 'whole-second UTC timestamp' in response.json()['detail']
+    assert Storage(db_path).count_runs() == 0
+
+
+@pytest.mark.parametrize('value', [10**19, 1e19, 2**63, 1e308])
+def test_large_finite_reaction_seed_can_be_stored_and_evaluated(tmp_path, value):
+    path = write_variant(
+        tmp_path,
+        lambda data: data['observations'][-1].update(value=value),
+    )
+    with TestClient(create_app(tmp_path / 'large-seed.db', crew_fixture_path=path)) as client:
+        created = client.post('/api/v1/runs', json={'scenario_id': 'sleep_vigilance'})
+        assert created.status_code == 201, created.text
+        run_id = created.json()['run_id']
+        state = client.get(
+            f'/api/v1/runs/{run_id}/state', params={'as_of': '2026-01-10T09:01:00Z'}
+        )
+        assert state.status_code == 200, state.text
+        reaction = next(row for row in state.json()['observations'] if row['id'] == 'reaction-10')
+        assert float(reaction['value']) == float(value)
+        assert state.json()['assessments'][0]['state'] == 'watch'
+
+
+def test_seed_integer_outside_finite_storage_range_is_rejected_clearly(tmp_path):
+    path = write_variant(
+        tmp_path,
+        lambda data: data['observations'][-1].update(value=10**400),
+    )
+    with pytest.raises(CrewFixtureError, match='finite number'):
+        load_crew_fixture(path)
+    db_path = tmp_path / 'unrepresentable-seed.db'
+    with TestClient(create_app(db_path, crew_fixture_path=path)) as client:
+        response = client.post('/api/v1/runs', json={'scenario_id': 'sleep_vigilance'})
+        assert response.status_code == 500
+        assert 'finite number' in response.json()['detail']
+    assert Storage(db_path).count_runs() == 0
+
+
+@pytest.mark.parametrize('metadata', [
+    {'note': '\ud800'},
+    {'nested': [{'note': '\udfff'}]},
+    {'\ud800': 'value'},
+])
+def test_unpaired_surrogate_metadata_is_rejected_before_seed_persistence(tmp_path, metadata):
+    path = write_variant(
+        tmp_path,
+        lambda data: data['observations'][0].update(metadata=metadata),
+    )
+    with pytest.raises(CrewFixtureError, match='valid Unicode text'):
+        load_crew_fixture(path)
+    db_path = tmp_path / 'surrogate-seed.db'
+    with TestClient(create_app(db_path, crew_fixture_path=path)) as client:
+        response = client.post('/api/v1/runs', json={'scenario_id': 'sleep_vigilance'})
+        assert response.status_code == 500
+        assert 'valid Unicode text' in response.json()['detail']
+    assert Storage(db_path).count_runs() == 0
+
+
+def test_valid_unicode_metadata_survives_seed_storage_and_api_response(tmp_path):
+    metadata = {'équipage': ['مرحبا', '🛰️']}
+    path = write_variant(
+        tmp_path,
+        lambda data: data['observations'][-1].setdefault('metadata', {}).update(metadata),
+    )
+    with TestClient(create_app(tmp_path / 'unicode-metadata.db', crew_fixture_path=path)) as client:
+        run_id = client.post('/api/v1/runs', json={'scenario_id': 'sleep_vigilance'}).json()['run_id']
+        response = client.get(
+            f'/api/v1/runs/{run_id}/state', params={'as_of': '2026-01-10T09:01:00Z'}
+        )
+        assert response.status_code == 200
+        row = next(row for row in response.json()['observations'] if row['id'] == 'reaction-10')
+        assert row['metadata']['équipage'] == metadata['équipage']
+
+
+@pytest.mark.parametrize('field', ['id', 'source_timestamp', 'source_id', 'metric', 'unit'])
+def test_unpaired_surrogate_observation_text_is_rejected_before_seed_persistence(tmp_path, field):
+    path = write_variant(
+        tmp_path,
+        lambda data: data['observations'][0].update({field: '\ud800'}),
+    )
+    db_path = tmp_path / 'surrogate-observation.db'
+    with TestClient(create_app(db_path, crew_fixture_path=path)) as client:
+        response = client.post('/api/v1/runs', json={'scenario_id': 'sleep_vigilance'})
+        assert response.status_code == 500
+        assert 'valid Unicode text' in response.json()['detail']
+    assert Storage(db_path).count_runs() == 0
+
+
 @pytest.mark.parametrize('literal', ['NaN', 'Infinity', '-Infinity', '1e999'])
 @pytest.mark.parametrize('observation_id', ['sleep-08', 'reaction-10'])
 def test_nonfinite_nested_metadata_is_rejected_before_persistence(

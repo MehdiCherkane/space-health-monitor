@@ -75,6 +75,23 @@ const title = () => text(view!.container.querySelector('.ui-assessment__title'))
 const clockText = () => text(view!.container.querySelector('.dash-clock'))
 
 describe('replay state ownership (bug A)', () => {
+  it('keeps the pending response when its checkpoint is selected again', async () => {
+    api.createRun.mockResolvedValue(radlabRun('r1'))
+    const slow = deferred<client.StateResult>()
+    api.getStateAt.mockImplementation(async (runId, asOf) => {
+      if (asOf === '2022-04-01T23:30:00Z') return slow.promise
+      return { state: at(EXAMPLE_A, runId, asOf), dataMode: 'integrated' }
+    })
+    view = await render(<App />)
+    await flush()
+    await click(buttonByText(view.container, '23:30:00'))
+    await click(buttonByText(view.container, '23:30:00'))
+    slow.resolve({ state: at(RECOVERED, 'r1', '2022-04-01T23:30:00Z'), dataMode: 'integrated' })
+    await flush()
+    expect(title()).toBe('DosTel1 current · DosTel2 current')
+    expect(api.getStateAt.mock.calls.filter(([, time]) => time === '2022-04-01T23:30:00Z')).toHaveLength(1)
+  })
+
   it('withholds the 23:30 state after a failed rewind to 23:20', async () => {
     api.createRun.mockResolvedValue(radlabRun('r1'))
     api.getStateAt.mockImplementation(async (runId, asOf) => ({

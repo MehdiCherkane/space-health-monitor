@@ -46,6 +46,12 @@ Entry metadata is checked recursively; `NaN`/`Infinity` anywhere returns `422` a
 batch is not written. A fixture-preview response keeps the example's own `as_of` (a fixed
 snapshot) instead of echoing the requested clock.
 
+Timestamp digits must be ASCII. Boolean measurement values and unpaired Unicode
+surrogates in submitted text/metadata are rejected before persistence. Validation
+errors remain valid JSON even when the rejected input contains nonfinite numbers or
+malformed Unicode. History limits must fit a signed SQLite integer. Large finite
+reaction values are stored as SQLite REAL values without introducing a clinical cutoff.
+
 Resource override for B04: `ASTRO_VITAL_RESOURCES='{"local_reaction_task": false}'` (or
 `create_app(resources=...)` in tests). Only resources named in `rules/demo-v1.json` with
 boolean values are accepted.

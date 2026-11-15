@@ -26,8 +26,11 @@ from typing import Any, Literal
 from uuid import uuid4
 
 from fastapi import FastAPI, HTTPException, Query, Response
+from fastapi.encoders import jsonable_encoder
+from fastapi.exceptions import RequestValidationError
+from fastapi.responses import JSONResponse
 from fastapi.staticfiles import StaticFiles
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, Field, field_validator
 
 from backend.engine import evaluate
 from backend.replay import (
@@ -61,8 +64,9 @@ SCENARIOS = {
     for scenario_id, config in POLICY["scenarios"].items()
 }
 
-WHOLE_SECOND_UTC = re.compile(r"^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}Z$")
+WHOLE_SECOND_UTC = re.compile(r"^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}Z$")
 SUBMISSION_ID = re.compile(r"^[A-Za-z0-9][A-Za-z0-9._:-]{0,127}$")
+SQLITE_MAX_INTEGER = 2**63 - 1
 
 SUBJECT_ID = "crew-demo-1"
 PREVIEW_MODE = "fixture-preview"
@@ -80,6 +84,13 @@ class Entry(BaseModel):
     unit: str
     source_id: str
     metadata: dict[str, Any] | None = None
+
+    @field_validator('value', mode='before')
+    @classmethod
+    def reject_boolean_measurement(cls, value: Any) -> Any:
+        if isinstance(value, bool):
+            raise ValueError('measurement value must be a number, not a boolean')
+        return value
 
 
 class Submission(BaseModel):
@@ -107,11 +118,14 @@ def _clock_in_range(run: dict[str, str], value: str, field: str) -> None:
 
 
 def _require_finite(value: Any, path: str) -> None:
-    """Reject NaN/Infinity anywhere in metadata; they poison later evaluation."""
+    """Reject JSON data that cannot be returned as finite UTF-8 JSON."""
     if isinstance(value, float) and not math.isfinite(value):
         raise ValueError(f"{path} must be a finite number")
+    if isinstance(value, str) and any(0xD800 <= ord(char) <= 0xDFFF for char in value):
+        raise ValueError(f"{path} must contain valid Unicode text")
     if isinstance(value, dict):
         for key, item in value.items():
+            _require_finite(key, f"{path} key")
             _require_finite(item, f"{path}.{key}")
     elif isinstance(value, list):
         for index, item in enumerate(value):
@@ -119,6 +133,8 @@ def _require_finite(value: Any, path: str) -> None:
 
 
 def _validate_entry(entry: Entry) -> None:
+    for field in ('metric', 'unit', 'source_id'):
+        _require_finite(getattr(entry, field), field)
     if entry.metadata is not None:
         _require_finite(entry.metadata, "metadata")
     if (entry.source_id, entry.metric, entry.unit) == (
@@ -151,7 +167,24 @@ def _validate_entry(entry: Entry) -> None:
 
 
 def _stored_value(entry: Entry) -> int | float:
-    return int(entry.value) if entry.value.is_integer() else entry.value
+    # SQLite REAL can represent every finite accepted float. Its INTEGER binding
+    # cannot represent an arbitrary Python int, even when derived from that float.
+    if entry.value.is_integer() and -(2**63) <= entry.value < 2**63:
+        return int(entry.value)
+    return entry.value
+
+
+def _validation_json(value: Any) -> Any:
+    """Keep invalid NaN/Infinity inputs printable in a valid JSON error response."""
+    if isinstance(value, float) and not math.isfinite(value):
+        return str(value)
+    if isinstance(value, str):
+        return value.encode('utf-8', errors='backslashreplace').decode('utf-8')
+    if isinstance(value, dict):
+        return {_validation_json(key): _validation_json(item) for key, item in value.items()}
+    if isinstance(value, list):
+        return [_validation_json(item) for item in value]
+    return value
 
 
 def _observation(submission: Submission, entry: Entry, index: int) -> dict[str, Any]:
@@ -260,6 +293,13 @@ def create_app(
 
     app = FastAPI(title="Astro Vital API")
 
+    @app.exception_handler(RequestValidationError)
+    async def validation_error_response(_request, error: RequestValidationError) -> JSONResponse:
+        return JSONResponse(
+            status_code=422,
+            content={'detail': _validation_json(jsonable_encoder(error.errors()))},
+        )
+
     def run_or_404(run_id: str) -> dict[str, str]:
         run = store.get_run(run_id)
         if run is None:
@@ -315,7 +355,7 @@ def create_app(
         as_of: str = Query(...),
         source_id: str | None = None,
         metric: str | None = None,
-        limit: int = Query(180, ge=1),
+        limit: int = Query(180, ge=1, le=SQLITE_MAX_INTEGER),
     ) -> dict[str, list[dict[str, Any]]]:
         run = run_or_404(run_id)
         _clock_in_range(run, as_of, "as_of")
