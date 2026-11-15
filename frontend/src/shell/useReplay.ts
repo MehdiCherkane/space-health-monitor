@@ -33,6 +33,8 @@ export function useReplay(initialScenario: ScenarioId = 'radlab_stale'): Replay 
   const [scenarioId, setScenarioId] = useState<ScenarioId>(initialScenario)
   const [run, setRun] = useState<Run | null>(null)
   const [clock, setClock] = useState('')
+  const requestedClock = useRef(clock)
+  requestedClock.current = clock
   const [state, setState] = useState<StateEnvelope | null>(null)
   const [dataMode, setDataMode] = useState<DataMode>('unknown')
   const [status, setStatus] = useState<ReplayStatus>('idle')
@@ -96,6 +98,10 @@ export function useReplay(initialScenario: ScenarioId = 'radlab_stale'): Replay 
   }, [run, clock, stateAttempt])
 
   const seek = useCallback((asOf: string) => {
+    // A repeated checkpoint must not invalidate its only pending request: React
+    // does not rerun the loading effect when the clock value stays unchanged.
+    if (asOf === requestedClock.current) return
+    requestedClock.current = asOf
     gate.current.invalidate()
     setClock(asOf)
   }, [])

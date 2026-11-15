@@ -58,6 +58,104 @@ def test_impossible_as_of_is_rejected(client):
         assert response.status_code == 422, as_of
 
 
+@pytest.mark.parametrize('clock', ['2026-01-10T09:00:0١Z', '2026-01-10T09:0١:00Z'])
+def test_noncanonical_unicode_clock_cannot_poison_a_run(client, clock):
+    run_id = create_run(client)
+    response = client.post(
+        f'/api/v1/runs/{run_id}/observations',
+        json={'submission_id': 'unicode-time', 'observed_at': clock, 'entries': [SLEEP]},
+    )
+    assert response.status_code == 422
+    assert stored(client, run_id) == []
+    for endpoint in ('state', 'observations'):
+        response = client.get(f'/api/v1/runs/{run_id}/{endpoint}', params={'as_of': clock})
+        assert response.status_code == 422
+    assert client.get(
+        f'/api/v1/runs/{run_id}/state', params={'as_of': '2026-01-10T10:00:00Z'}
+    ).status_code == 200
+
+
+@pytest.mark.parametrize('value', [1e19, 1.7976931348623157e308])
+def test_finite_reaction_values_survive_sqlite_storage_and_retry(client, value):
+    run_id = create_run(client)
+    payload = {
+        'submission_id': 'large-reaction',
+        'observed_at': '2026-01-10T09:00:00Z',
+        'entries': [{'source_id': 'reaction_task', 'metric': 'reaction_time', 'unit': 'ms',
+                     'value': value}],
+    }
+    first = client.post(f'/api/v1/runs/{run_id}/observations', json=payload)
+    assert first.status_code == 201
+    retry = client.post(f'/api/v1/runs/{run_id}/observations', json=payload)
+    assert retry.status_code == 200
+    assert retry.json() == first.json()
+    [row] = stored(client, run_id)
+    assert row['value'] == value
+    assert client.get(
+        f'/api/v1/runs/{run_id}/state', params={'as_of': payload['observed_at']}
+    ).status_code == 200
+
+
+@pytest.mark.parametrize('metadata', [float('nan'), float('inf'), [float('nan')]])
+def test_invalid_nonfinite_metadata_shape_returns_json_422(client, metadata):
+    run_id = create_run(client)
+    response = raw_post(client, run_id, json.dumps({
+        'submission_id': 'bad-shape', 'observed_at': '2026-01-10T09:00:00Z',
+        'entries': [SLEEP, {**SLEEP, 'metadata': metadata}],
+    }))
+    assert response.status_code == 422
+    assert response.json()['detail']
+    # Validation errors must themselves be valid JSON and must never partially write a batch.
+    json.loads(response.text, parse_constant=lambda token: pytest.fail(f'invalid JSON: {token}'))
+    assert stored(client, run_id) == []
+
+
+def test_history_limit_rejects_values_outside_sqlite_integer_range(client):
+    run_id = create_run(client)
+    endpoint = f'/api/v1/runs/{run_id}/observations'
+    for limit in (2**63, 10**30):
+        response = client.get(endpoint, params={'as_of': '2026-01-10T09:00:00Z', 'limit': limit})
+        assert response.status_code == 422
+    assert client.get(endpoint, params={
+        'as_of': '2026-01-10T09:00:00Z', 'limit': 181,
+    }).status_code == 200
+
+
+@pytest.mark.parametrize('entry', [
+    {**SLEEP, 'value': True},
+    {'source_id': 'crew_self_report', 'metric': 'fatigue', 'unit': 'score_0_10', 'value': False},
+    {'source_id': 'reaction_task', 'metric': 'reaction_time', 'unit': 'ms', 'value': True},
+])
+def test_boolean_measurements_are_rejected_before_numeric_coercion(client, entry):
+    run_id = create_run(client)
+    response = client.post(f'/api/v1/runs/{run_id}/observations', json={
+        'submission_id': 'boolean-value', 'observed_at': '2026-01-10T09:00:00Z',
+        'entries': [SLEEP, entry],
+    })
+    assert response.status_code == 422
+    assert stored(client, run_id) == []
+
+
+@pytest.mark.parametrize('change', [
+    {'metadata': {'note': '\ud800'}},
+    {'metadata': {'\udfff': 'invalid key'}},
+    {'source_id': '\ud800'},
+    {'value': '\udfff'},
+])
+def test_unpaired_surrogates_cannot_poison_storage_or_error_responses(client, change):
+    run_id = create_run(client)
+    response = raw_post(client, run_id, json.dumps({
+        'submission_id': 'bad-unicode', 'observed_at': '2026-01-10T09:05:00Z',
+        'entries': [SLEEP, {**SLEEP, **change}],
+    }))
+    assert response.status_code == 422
+    assert response.json()['detail']
+    assert stored(client, run_id) == []
+    assert client.get(
+        f'/api/v1/runs/{run_id}/state', params={'as_of': '2026-01-10T10:00:00Z'}
+    ).status_code == 200
+
+
 @pytest.mark.parametrize('token', ['NaN', 'Infinity', '-Infinity'])
 def test_nonfinite_metadata_is_rejected_and_batch_not_written(client, token):
     run_id = create_run(client)

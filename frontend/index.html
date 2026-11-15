@@ -698,7 +698,7 @@ function Cabin({ state, selected, select }) {
     h(DetectorComparison, { state }))
 }
 
-function CrewFigure({ selected, select, onAction, onWhy }) {
+function CrewFigure({ selected, select, onAction, onWhy, actions }) {
   const [variant, setVariant] = useState('Male')
   const [side, setSide] = useState('Front')
   const back = side === 'Back'
@@ -707,6 +707,10 @@ function CrewFigure({ selected, select, onAction, onWhy }) {
     ? 'M141 86 137 96 114 109 104 136 94 175 83 209 90 215 106 180 119 151 125 175 119 203 127 229 134 260 147 259 148 225 152 205 157 225 158 259 171 260 178 229 185 204 179 175 185 150 198 178 214 215 221 209 210 175 200 136 189 109 166 96 162 86'
     : 'M141 86 136 97 109 107 99 136 87 183 79 211 87 216 105 178 118 148 125 174 123 197 126 220 132 260 147 259 147 230 152 203 158 230 158 259 173 260 179 220 182 197 179 174 186 148 199 178 217 216 225 211 217 183 205 136 195 107 168 97 163 86'
   const mark = useId()
+  const reactionReasonId = useId()
+  const reaction = actions.find((action) => action.id === 'start_reaction_check')
+  const fallback = actions.find((action) => action.id === 'review_available_inputs')
+  const reactionReason = reaction?.unavailable_reason ?? 'No reaction check is offered for this time.'
   return h('section', { className:'glass astro-hero', 'aria-labelledby':'crew-figure-title' },
     h('header', null, h('h2', { id:'crew-figure-title' }, 'Crew demo 01'), h('small', null, 'Synthetic crew scenario')),
     h('svg', { className:'astro-scene', viewBox:'0 0 304 282', role:'img',
@@ -730,8 +734,13 @@ function CrewFigure({ selected, select, onAction, onWhy }) {
           h('text', { x, y:y+4, textAnchor:'middle', fill:'#f3f6fd', fontSize:13 }, label)))),
     h('div', { className:'astro-callout-row' },
       iconButton(h(Fragment, null, '01 Sleep history', h('small', null, 'View recorded nights')), { 'aria-pressed':selected === 'crew_sleep_log', onClick:() => select('crew_sleep_log') }),
-      iconButton(h(Fragment, null, '02 Reaction check', h('small', null, 'Open device check')), { onClick:() => onAction('start_reaction_check') }),
+      iconButton(h(Fragment, null, '02 Reaction check', h('small', null, reaction?.available ? reaction.label : 'Unavailable')), {
+        disabled:!reaction?.available, 'aria-describedby':reaction?.available ? undefined : reactionReasonId,
+        onClick:() => onAction(reaction.id) }),
       iconButton(h(Fragment, null, '03 Why evidence', h('small', null, 'Read the explanation')), { onClick:onWhy })),
+    !reaction?.available && h('div', { className:'astro-note' },
+      h('p', { id:reactionReasonId }, reactionReason),
+      fallback && h(ActionButton, { action:fallback, onAction })),
     h('div', { className:'astro-hero-controls', role:'group', 'aria-label':'Anatomy view' },
       ['Male','Female'].map((item) => iconButton(item, { key:item, 'aria-pressed':item === variant, onClick:() => setVariant(item) })),
       ['Front','Back'].map((item) => iconButton(item, { key:item, 'aria-pressed':item === side, onClick:() => setSide(item) }))),
@@ -1001,7 +1010,7 @@ function AstroApp() {
             source, reading:observationIndex.get(source.last_observation_id), selected:source.source_id === selected?.source_id,
             onHistory:() => select(source.source_id), action:source.source_id === 'reaction_task' ? reaction : null, onAction }))
             : h(StateMessage, { kind:'empty' }, 'No sources were returned.')),
-        crew ? h(CrewFigure, { selected:selected?.source_id, select, onAction, onWhy })
+        crew ? h(CrewFigure, { selected:selected?.source_id, select, onAction, onWhy, actions:state.actions })
           : h(Cabin, { state, selected:selected?.source_id, select }),
         h('div', { className:'astro-side' },
           h(History, { state, history, source:selected, selected:selected?.source_id, select, clock, mode:dataMode,

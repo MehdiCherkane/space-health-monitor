@@ -26,7 +26,7 @@ SCHEMA_VERSION = 1
 SCENARIO_ID = "sleep_vigilance"
 SUBJECT_ID = "crew-demo-1"
 
-WHOLE_SECOND_UTC = re.compile(r"^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}Z$")
+WHOLE_SECOND_UTC = re.compile(r"^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}Z$")
 
 # (source_id, metric, unit) -> inclusive (minimum, maximum); None means unbounded.
 # A crew seed only carries the scheduled sleep and reaction rows; self-reports arrive
@@ -64,23 +64,37 @@ def _utc(value: Any, field: str) -> str:
 def _number(value: Any, field: str) -> int | float:
     if isinstance(value, bool) or not isinstance(value, (int, float)):
         raise CrewFixtureError(f"{field} must be a number, got {value!r}")
-    if not math.isfinite(value):
+    try:
+        finite = math.isfinite(value)
+    except OverflowError:
+        finite = False
+    if not finite:
         raise CrewFixtureError(f"{field} must be a finite number, got {value!r}")
-    if isinstance(value, int):
-        return value
-    return int(value) if value.is_integer() else value
+    # SQLite only binds signed 64-bit integers. Keep larger finite values as REAL
+    # instead of converting integral floats to an unbindable Python integer.
+    if -(2**63) <= value < 2**63 and (
+        isinstance(value, int) or value.is_integer()
+    ):
+        return int(value)
+    return float(value)
 
 
-def _require_finite_metadata(value: Any, field: str) -> None:
-    """Reject non-finite JSON numbers, including nested extras and exponent overflow."""
+def _require_json_safe(value: Any, field: str) -> None:
+    """Reject metadata that cannot round-trip through the UTF-8 JSON API."""
+    if isinstance(value, str):
+        try:
+            value.encode("utf-8")
+        except UnicodeEncodeError as error:
+            raise CrewFixtureError(f"{field} must contain valid Unicode text") from error
     if isinstance(value, float) and not math.isfinite(value):
         raise CrewFixtureError(f"{field} must be a finite number, got {value!r}")
     if isinstance(value, dict):
         for key, item in value.items():
-            _require_finite_metadata(item, f"{field}.{key}")
+            _require_json_safe(key, f"{field} key")
+            _require_json_safe(item, f"{field}.{key}")
     elif isinstance(value, list):
         for index, item in enumerate(value):
-            _require_finite_metadata(item, f"{field}[{index}]")
+            _require_json_safe(item, f"{field}[{index}]")
 
 
 def _validate_reaction_metadata(observation_id: str, metadata: Any) -> dict[str, Any]:
@@ -123,6 +137,7 @@ def _validate_observation(raw: Any) -> dict[str, Any]:
     observation_id = raw.get("id")
     if not isinstance(observation_id, str) or not observation_id:
         raise CrewFixtureError(f"Observation missing valid 'id': {raw!r}")
+    _require_json_safe(observation_id, "Observation id")
 
     # The subject is part of the contract, not a default: seeds must say it explicitly.
     if raw.get("subject_id") != SUBJECT_ID:
@@ -140,6 +155,7 @@ def _validate_observation(raw: Any) -> dict[str, Any]:
     for field in ("metric", "unit", "source_id"):
         if not isinstance(raw.get(field), str) or not raw.get(field):
             raise CrewFixtureError(f"Observation {observation_id} missing valid '{field}'")
+        _require_json_safe(raw[field], f"Observation {observation_id} {field}")
 
     pair = (raw["source_id"], raw["metric"], raw["unit"])
     if pair not in ALLOWED_PAIRS:
@@ -179,12 +195,13 @@ def _validate_observation(raw: Any) -> dict[str, Any]:
             raise CrewFixtureError(
                 f"Observation {observation_id} source_timestamp must be non-empty text"
             )
+        _require_json_safe(source_timestamp, f"Observation {observation_id} source_timestamp")
         row["source_timestamp"] = source_timestamp
 
     metadata = raw.get("metadata")
     if metadata is not None and not isinstance(metadata, dict):
         raise CrewFixtureError(f"Observation {observation_id} metadata must be an object")
-    _require_finite_metadata(metadata, f"Observation {observation_id} metadata")
+    _require_json_safe(metadata, f"Observation {observation_id} metadata")
     if pair[1] == "reaction_time":
         row["metadata"] = _validate_reaction_metadata(observation_id, metadata)
     elif metadata is not None:
