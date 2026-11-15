@@ -4,7 +4,7 @@ import { afterEach, describe, expect, it, vi } from 'vitest'
 import type { Action, Observation, SourceStatus } from '../api/types'
 import { buttonByText, click, render, text, type Rendered } from '../test/dom'
 import { Drawer } from './Drawer'
-import { formatAge } from './format'
+import { formatAge, formatNumber } from './format'
 import { ActionButton, EvidenceList, ProvenanceBadge, SourceCard } from './kit'
 
 let view: Rendered | null = null
@@ -43,6 +43,16 @@ describe('formatAge', () => {
     expect(formatAge(455)).toBe('455 s · 7 min 35 s')
     expect(formatAge(7200)).toBe('7200 s · 2 h 0 min')
     expect(formatAge(null)).toBeNull()
+  })
+})
+
+describe('formatNumber', () => {
+  it('keeps readable compact values while trimming runaway floating-point tails', () => {
+    expect(formatNumber(1.65945)).toBe('1.65945')
+    expect(formatNumber(2.211496)).toBe('2.211496')
+    expect(formatNumber(6.025896666666667)).toBe('6.025897')
+    expect(formatNumber(0)).toBe('0')
+    expect(formatNumber(310)).toBe('310')
   })
 })
 

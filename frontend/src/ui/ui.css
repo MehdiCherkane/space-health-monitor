@@ -428,3 +428,40 @@ code,
   text-transform: uppercase;
   letter-spacing: 0.05em;
 }
+
+/* Observatory visual system. Shared primitives retain their data semantics. */
+.ui-card { border:0; color:var(--ink); }
+.ui-badge { text-transform:none; letter-spacing:0; font-family:var(--font-sans); border-radius:7px; font-weight:500; }
+.ui-prov { border-radius:7px; white-space:normal; }
+.ui-button { font-weight:500; }
+.ui-assessment { border:0; }
+.ui-assessment--watch { background:#f4e9d5; }
+.ui-assessment--insufficient_data { background:#e5eeed; }
+.ui-assessment__top .ui-rule { font-size:13px; }
+.ui-source--compact { padding:18px; gap:6px; }
+.ui-source--compact .ui-source__name { font:400 13px var(--font-sans); color:var(--ink-subtle); }
+.ui-source--compact .ui-source__metric { order:-1; font-size:17px; font-weight:500; color:var(--ink); }
+.ui-source--compact .ui-source__value { font:500 clamp(23px,2.3vw,34px) var(--font-sans); font-variant-numeric:tabular-nums; letter-spacing:-.025em; margin:5px 0; }
+.ui-source__value small { font-size:14px; font-weight:400; letter-spacing:0; color:var(--ink-subtle); }
+.ui-source--compact .ui-source__value > span { overflow-wrap:anywhere; }
+.ui-source--compact .source-details { border-top:1px solid var(--border); }
+.ui-source--compact .source-details > summary { flex-wrap:wrap; min-height:44px; gap:4px; }
+.ui-source--compact .source-details > summary > span { color:var(--ink-subtle); font-size:13px; }
+.ui-source--compact .ui-meta { padding-bottom:12px; }
+.ui-source--compact .ui-source__foot { align-items:center; gap:4px; padding-top:8px; margin-top:4px; }
+.ui-source--compact .ui-reason { font-size:13px; }
+.ui-source--compact .ui-reason code { display:none; }
+.ui-source--compact .ui-source__foot .ui-button { padding:7px; font-size:13px; }
+.ui-source--compact .ui-prov { font-size:13px; align-self:flex-start; }
+.ui-drawer { color:var(--ink); }
+.ui-drawer__panel { background:var(--surface); }
+.ui-drawer[open] { animation-duration:240ms; }
+.ui-drawer::backdrop { background:#07121dbf; backdrop-filter:blur(4px); }
+.evidence-status__subhead { text-transform:none; letter-spacing:0; }
+.evidence-status__row { border-left-width:1px; }
+.crew-checkin__unavailable, .crew-checkin__request-error { border-left-width:1px; }
+.ui-source--compact { padding:16px 18px; gap:4px; }
+.ui-source--compact .ui-source__foot { padding:0; border-top:0; }
+.ui-source--compact .ui-source__foot .ui-prov { align-self:center; }
+.ui-source--compact .source-details .ui-reason { padding-bottom:12px; }
+.ui-source--compact .source-details .ui-reason code { display:block; }

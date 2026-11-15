@@ -5,12 +5,15 @@ import { submitObservations } from './api/client'
 import type { SubmissionRequest } from './api/types'
 import { CrewCheckIn } from './checkin'
 import { Dashboard } from './dashboard/Dashboard'
+import { GalaxyBackground, useAmbientMotion } from './dashboard/GalaxyBackground'
 import { CHECKPOINTS } from './shell/replay'
 import { useReplay, useSourceHistory } from './shell/useReplay'
 import { DataModeBadge } from './ui'
 
 export default function App() {
   const replay = useReplay('radlab_stale')
+  const [measuring, setMeasuring] = useState(false)
+  const motion = useAmbientMotion(measuring)
   const { run, state, clock } = replay
   const [evidenceOpen, setEvidenceOpen] = useState(false)
   const [historySourceId, setHistorySourceId] = useState<string | null>(null)
@@ -67,6 +70,7 @@ export default function App() {
       <div ref={checkInRef} tabIndex={-1} className="app-checkin" aria-label="Crew check-in">
         {/* Keyed by run: a fresh run never inherits form, task or retry state (bug C). */}
         <CrewCheckIn
+          onTaskActiveChange={setMeasuring}
           key={run.run_id}
           run={run}
           scenarioId={run.scenario_id}
@@ -79,16 +83,25 @@ export default function App() {
     ) : null
 
   return (
-    <div className="app">
+    <div className="app" data-motion-paused={motion.paused}>
+      <GalaxyBackground paused={motion.paused} />
       <a className="app-skip" href="#main">
         Skip to dashboard
       </a>
       <header className="app-header">
         <div className="app-brand">
-          <h1>Astro Vital</h1>
-          <p>Offline replay prototype · not a medical device</p>
+          <svg className="app-mark" viewBox="0 0 40 40" aria-hidden="true"><circle cx="20" cy="20" r="12" fill="none" stroke="currentColor" strokeWidth="1.5" /><ellipse cx="20" cy="20" rx="19" ry="7" transform="rotate(-35 20 20)" fill="none" stroke="currentColor" strokeWidth="1.5" /><circle cx="29" cy="10" r="3" fill="currentColor" /></svg>
+          <div><h1>Astro Vital</h1>
+          <p>Evidence for the next decision.</p></div>
         </div>
-        <DataModeBadge mode={replay.dataMode} />
+        <div className="app-header__tools">
+          <span className="app-prototype">Replay prototype</span>
+          <DataModeBadge mode={replay.dataMode} />
+          <button className="motion-control" type="button" onClick={motion.toggle} disabled={motion.locked} aria-pressed={motion.paused}>
+            <svg width="16" height="16" viewBox="0 0 16 16" aria-hidden="true" fill="currentColor">{motion.paused ? <path d="m5 3 8 5-8 5Z" /> : <path d="M4 3h3v10H4zm5 0h3v10H9z" />}</svg>
+            {motion.label}
+          </button>
+        </div>
       </header>
 
       <main id="main" className="app-main" tabIndex={-1}>
@@ -120,6 +133,7 @@ export default function App() {
           aside={checkIn}
         />
       </main>
+      <footer className="app-footer"><span>Astro Vital · Space Apps prototype</span><span>Explainable replay. Not a medical device.</span></footer>
     </div>
   )
 }

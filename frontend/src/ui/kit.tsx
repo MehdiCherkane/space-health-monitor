@@ -20,6 +20,7 @@ import {
   REASON_TEXT,
   humanize,
   formatAge,
+  formatNumber,
   formatTime,
   formatUtc,
   formatValue,
@@ -129,27 +130,24 @@ export function SourceCard({
   source,
   lastObservation,
   onHistory,
+  compact = false,
+  selected = false,
 }: {
   source: SourceStatus
   lastObservation: Observation | undefined
   onHistory?: () => void
+  compact?: boolean
+  selected?: boolean
 }) {
   const age = formatAge(source.age_seconds)
   const titleId = useId()
-  return (
-    <article className="ui-card ui-source" aria-labelledby={titleId} data-state={source.state}>
-      <header className="ui-source__head">
-        <h3 id={titleId} className="ui-source__name">
-          {source.source_id}
-        </h3>
-        <StatusBadge kind="source" state={source.state} />
-      </header>
-      <p className="ui-source__metric">{humanize(source.metric)}</p>
-      {source.last_observation_id === null ? (
-        <p className="ui-source__empty">No reading</p>
-      ) : lastObservation ? (
-        <>
-          <p className="ui-source__value mono">{formatValue(lastObservation)}</p>
+  const reason = (
+<p className="ui-reason">
+          {REASON_TEXT[source.reason_code] ?? humanize(source.reason_code)}
+          <code title="Engine reason code">{source.reason_code}</code>
+        </p>
+  )
+  const metadata = lastObservation ? (
           <dl className="ui-meta">
             <div>
               <dt>Age</dt>
@@ -168,7 +166,29 @@ export function SourceCard({
               </div>
             )}
           </dl>
-          <ProvenanceBadge provenance={lastObservation.provenance} />
+  ) : null
+  return (
+    <article className={`ui-card ui-source${compact ? " ui-source--compact" : ""}`} aria-labelledby={titleId} data-state={source.state} data-selected={selected}>
+      <header className="ui-source__head">
+        <h3 id={titleId} className="ui-source__name">
+          {source.source_id}
+        </h3>
+        <StatusBadge kind="source" state={source.state} />
+      </header>
+      <p className="ui-source__metric">{humanize(source.metric)}</p>
+      {source.last_observation_id === null ? (
+        <p className="ui-source__empty">No reading</p>
+      ) : lastObservation ? (
+        <>
+          <p className="ui-source__value mono"><span>{formatNumber(lastObservation.value)}</span> <small>{lastObservation.unit}</small></p>
+          {compact ? <details className="source-details"><summary>Reading details{age !== null && <span>{age}</span>}</summary>
+{metadata}
+            {reason}
+          </details> : <>
+{metadata}
+          </>}
+
+          {!compact && <ProvenanceBadge provenance={lastObservation.provenance} />}
         </>
       ) : (
         <>
@@ -178,10 +198,7 @@ export function SourceCard({
         </>
       )}
       <footer className="ui-source__foot">
-        <p className="ui-reason">
-          {REASON_TEXT[source.reason_code] ?? humanize(source.reason_code)}
-          <code title="Engine reason code">{source.reason_code}</code>
-        </p>
+        {compact && lastObservation ? <ProvenanceBadge provenance={lastObservation.provenance} /> : reason}
         {onHistory && (
           <button type="button" className="ui-button ui-button--ghost" onClick={onHistory}>
             <Icon name="history" />
