@@ -17,6 +17,21 @@ The root app is the integrated replay. `/?gallery` remains a labeled fixture pre
 
 Fira Sans regular and medium are locally bundled, unmodified font files under the SIL Open Font License. The license is included at `frontend/public/fonts/OFL.txt`. Nothing requests fonts, textures, models or scripts from an external origin at runtime.
 
+## Verification at this branch
+
+- Frontend: **91 Vitest tests (9 files) + 41 Node tests passed**; production build
+  (`tsc --noEmit` + Vite) passed.
+- Backend: **187 Python tests + 45 subtests passed**; the combined runtime gate
+  (`tests/e2e/test_e2e.py`) passed with **X01 still Not run**; `run.py --check-archive` passed.
+- Browser: 17 checks passed against the built app and an isolated database, including replay
+  boundaries and rewind, all four anatomy views, Why drawer focus/Escape, galaxy rotation and
+  pause, reduced motion, no overflow at 1440/1366/1024/390/320, mid-task cancellation,
+  a 3-practice + 12-trial keyboard result with identical-payload retry, retained result,
+  Fresh run, failed seek/retry, gallery preview and zero external requests.
+
+A human keyboard spot-check and the network-disabled X01 rehearsal remain pending. Final
+screenshot paths, tested SHA and remaining checks are recorded in the handoff.
+
 ## Run and verify
 
 From the repository root with dependencies installed:

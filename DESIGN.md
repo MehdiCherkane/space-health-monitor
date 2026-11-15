@@ -235,7 +235,7 @@ At 960px and below, readings and scene share two columns while history and evide
 
 Data panels are flat at rest, separated by tonal contrast and spacing. The anatomical illustration has a soft drop shadow; its scene uses a faint radial light. The drawer uses the existing diffuse lateral shadow, a dimmed backdrop and backdrop blur. Do not copy scene depth onto every reading card.
 
-The page enters once over 500ms with a small vertical translation. The galaxy turns once every 120 seconds using a single linear transform; static stars stay fixed. Shared control feedback takes 160ms, anatomy changes fade over 260ms and the drawer slides over the shared 160ms duration. These are the implemented values, including the drawer's shorter duration than the brief's suggested range. Shadow and motion values live in the sidecar.
+The page enters once over 500ms with a small vertical translation. The galaxy turns once every 120 seconds using a single linear transform; static stars stay fixed. Shared control feedback takes 160ms, anatomy changes fade over 260ms and the drawer slides over 240ms. These are the implemented values within the brief's interaction windows. Shadow and motion values live in the sidecar.
 
 **The Measurement Stillness Rule.** Display supplied values immediately without counting or interpolation. Pause decorative motion during the reaction task, when the document is hidden, and when reduced motion is requested.
 
